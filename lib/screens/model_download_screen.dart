@@ -78,6 +78,7 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
     final speed = ref.watch(downloadSpeedProvider);
     final downloadedBytes = ref.watch(downloadedBytesProvider);
     final totalBytes = ref.watch(totalBytesProvider);
+    final phaseLabel = ref.watch(downloadPhaseLabelProvider);
 
     // Auto-navigate if ready (and not just starting)
     // We check if progress > 0 to ensure we don't skip if it was already ready from before?
@@ -255,7 +256,7 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                '${(progress * 100).toInt()}% READY', // e.g. 65% READY
+                                '$phaseLabel • ${(progress * 100).toInt()}%',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,

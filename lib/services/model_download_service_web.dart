@@ -35,4 +35,17 @@ class ModelDownloadService {
   }
 
   void cancelDownload() {}
+
+  // Web has no local embedding model (no llama.cpp bindings in-browser);
+  // RetrievalService falls back to keyword scoring instead. Reported as
+  // already "downloaded" so onboarding doesn't wait on it.
+  Future<String> getEmbeddingModelPath() async => 'web_no_embedding_model';
+
+  Future<bool> isEmbeddingModelDownloaded() async => true;
+
+  Future<void> downloadEmbeddingModel({
+    required Function(int received, int total) onProgress,
+  }) async {}
+
+  Future<bool> isReady() async => isModelDownloaded();
 }

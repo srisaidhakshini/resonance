@@ -20,11 +20,16 @@ class ChatSession extends HiveObject {
   @HiveField(4)
   final String? subject;
 
+  // Id of the StudyContent chapter this session is grounded in, if any.
+  @HiveField(5)
+  final String? contentId;
+
   ChatSession({
     required this.id,
     required this.title,
     required this.messages,
     required this.lastUpdated,
     this.subject,
+    this.contentId,
   });
 }

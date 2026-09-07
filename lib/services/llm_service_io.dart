@@ -375,7 +375,11 @@ class LLMService {
     }
   }
 
-  Stream<String> streamResponse(String message) async* {
+  /// [groundingContext], when provided (retrieved chunks from an active
+  /// study chapter), is prepended to the prompt for THIS turn only - it is
+  /// never written into `_chatHistory`, so replayed history doesn't
+  /// accumulate repeated context dumps from earlier questions.
+  Stream<String> streamResponse(String message, {String? groundingContext}) async* {
     _currentGenerationId++;
     final myGenerationId = _currentGenerationId;
 
@@ -487,6 +491,15 @@ class LLMService {
       // Only for very short queries (< 20 chars), force structure with bullet points
       effectivePrompt =
           '$message (explain simply with bullet points)'; // Forces formatting!
+    }
+
+    // 2. GROUNDING: wrap with retrieved chapter context for this turn only.
+    if (groundingContext != null && groundingContext.trim().isNotEmpty) {
+      effectivePrompt =
+          'Context from the loaded chapter:\n$groundingContext\n\n'
+          "Using the context above, answer the question below. If the context "
+          "doesn't contain the answer, say so and answer from general "
+          "knowledge instead.\n\nQuestion: $effectivePrompt";
     }
 
     _log('💬 [STREAM] Starting for: "$message" (Hidden: "$effectivePrompt")');

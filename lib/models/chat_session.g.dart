@@ -22,13 +22,14 @@ class ChatSessionAdapter extends TypeAdapter<ChatSession> {
       messages: (fields[2] as List).cast<ChatMessage>(),
       lastUpdated: fields[3] as DateTime,
       subject: fields[4] as String?,
+      contentId: fields[5] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, ChatSession obj) {
     writer
-      ..writeByte(4)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class ChatSessionAdapter extends TypeAdapter<ChatSession> {
       ..writeByte(3)
       ..write(obj.lastUpdated)
       ..writeByte(4)
-      ..write(obj.subject);
+      ..write(obj.subject)
+      ..writeByte(5)
+      ..write(obj.contentId);
   }
 
   @override

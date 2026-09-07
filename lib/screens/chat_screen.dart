@@ -267,12 +267,53 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       drawer: const AppDrawer(),
       body: Column(
         children: [
+          _buildGroundingBanner(),
           Expanded(
             child: messages.isEmpty
                 ? _buildEmptyState()
                 : _buildMessageList(messages),
           ),
           _buildInputArea(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroundingBanner() {
+    final contentId = ref.watch(currentContentIdProvider);
+    if (contentId == null) return const SizedBox.shrink();
+
+    final contentBox = ref.watch(contentBoxProvider);
+    final content = contentBox.get(contentId);
+    if (content == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF3E8FF),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.menu_book_rounded, size: 16, color: Color(0xFF8B7FD6)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Grounded in "${content.title}"',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF6B5FBD),
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          InkWell(
+            onTap: () => ref.read(currentContentIdProvider.notifier).state = null,
+            child: const Icon(Icons.close, size: 16, color: Color(0xFF6B5FBD)),
+          ),
         ],
       ),
     );
