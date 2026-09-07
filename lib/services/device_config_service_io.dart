@@ -14,7 +14,8 @@ class ModelConfig {
   nGpuLayers; // GPU Acceleration Layers (Currently 0 - CPU-only binaries)
   final int batchSize; // nBatch - Prefill batch size for prompt processing
   final bool enableSmartContext; // Use silent injection?
-  final String systemPrompt; // Dynamic system prompt per tier
+  final String hardwareSpecificInstructions; // Hardware constraints per tier
+  final String systemPrompt; // Retained for backwards compatibility
 
   const ModelConfig({
     required this.tierName,
@@ -25,8 +26,9 @@ class ModelConfig {
     this.nGpuLayers = 0,
     this.batchSize = 512,
     this.enableSmartContext = true,
-    required this.systemPrompt,
-  });
+    required this.hardwareSpecificInstructions,
+    String? systemPrompt,
+  }) : systemPrompt = systemPrompt ?? hardwareSpecificInstructions;
 
   // Utility to create a modified copy of config
   ModelConfig copyWith({
@@ -38,6 +40,7 @@ class ModelConfig {
     int? nGpuLayers,
     int? batchSize,
     bool? enableSmartContext,
+    String? hardwareSpecificInstructions,
     String? systemPrompt,
   }) {
     return ModelConfig(
@@ -49,6 +52,8 @@ class ModelConfig {
       nGpuLayers: nGpuLayers ?? this.nGpuLayers,
       batchSize: batchSize ?? this.batchSize,
       enableSmartContext: enableSmartContext ?? this.enableSmartContext,
+      hardwareSpecificInstructions:
+          hardwareSpecificInstructions ?? this.hardwareSpecificInstructions,
       systemPrompt: systemPrompt ?? this.systemPrompt,
     );
   }
@@ -56,6 +61,13 @@ class ModelConfig {
   // 🛡️ TIER 1: Low End (<4GB RAM) - Smart efficiency + LaTeX
   // Default short, expands for detailed requests
   factory ModelConfig.lowSpec() {
+    const hw = '''RULES:
+1. Use **Bold** for key terms.
+2. Use Bullet points for lists.
+3. Keep answers concise (3-4 sentences maximum).
+4. For Math/Science, show steps safely.
+Do not hallucinate.''';
+
     return const ModelConfig(
       tierName: 'Efficiency Mode',
       contextSize: 1024,
@@ -65,21 +77,21 @@ class ModelConfig {
       nGpuLayers: 0, // CPU-only: No GPU backend compiled in binaries
       batchSize: 512, // Conservative batch for memory safety
       enableSmartContext: true,
-      // OPTIMIZED PROMPT: < 40 tokens for fast start
-      systemPrompt:
-          '''You are Echo, a helpful tutor. Explain simply in easy English.
-RULES:
-1. Use **Bold** for key terms.
-2. Use Bullet points for lists.
-3. Keep answers short (3-4 sentences).
-4. For Math/Science, show steps safely.
-Do not hallucinate.''',
+      hardwareSpecificInstructions: hw,
+      systemPrompt: hw,
     );
   }
 
   // ⚖️ TIER 2: Mid Range (4GB - 8GB RAM) - Friendly + LaTeX
   // Explains so a 12-year-old can understand
   factory ModelConfig.midSpec() {
+    const hw = '''FORMATTING RULES:
+- Use **Bold** for important concepts.
+- ALWAYS use Bullet points for steps or lists.
+- Use new lines to separate ideas.
+- For Math: Show the formula, then the steps.
+- Start concise; only provide long details if explicitly asked.''';
+
     return const ModelConfig(
       tierName: 'Balanced Mode',
       contextSize: 2048,
@@ -89,21 +101,20 @@ Do not hallucinate.''',
       nGpuLayers: 0, // CPU-only: No GPU backend compiled in binaries
       batchSize: 1024, // Higher batch for faster prefill on mid-range CPUs
       enableSmartContext: true,
-      // OPTIMIZED PROMPT: Focuses on structure and tone
-      systemPrompt:
-          '''You are Echo, a friendly student tutor. Explain concepts clearly using simple language.
-FORMATTING RULES:
-- Use **Bold** for important concepts.
-- ALWAYS use Bullet points for steps or lists.
-- Use new lines to separate ideas.
-- For Math: Show the formula, then the steps.
-- Start concise; only provide long details if explicitly asked.''',
+      hardwareSpecificInstructions: hw,
+      systemPrompt: hw,
     );
   }
 
   // 🚀 TIER 3: High End (>8GB RAM) - Adaptive: concise OR detailed
   // Uses template only when user asks for explanation
   factory ModelConfig.highSpec() {
+    const hw = '''GUIDELINES:
+1. **Format**: Use Headers, **Bold terms**, and Bullet points to break up text.
+2. **Math/Science**: Define the formula, show the substitution, then solve step-by-step.
+3. **Tone**: Encouraging and academic.
+4. **Length**: Adapt to the user. Give a summary first, then details if the topic is complex.''';
+
     return const ModelConfig(
       tierName: 'Performance Mode',
       contextSize: 4096,
@@ -114,14 +125,8 @@ FORMATTING RULES:
           0, // CPU-only: Recompile with Vulkan to enable GPU acceleration
       batchSize: 2048, // Max batch for flagship CPUs - fastest prefill
       enableSmartContext: true,
-      // OPTIMIZED PROMPT: detailed instructions without wasting tokens on examples
-      systemPrompt:
-          '''You are Echo, an expert tutor. Provide comprehensive but easy-to-understand explanations.
-GUIDELINES:
-1. **Format**: Use Headers, **Bold terms**, and Bullet points to break up text.
-2. **Math/Science**: Define the formula, show the substitution, then solve step-by-step.
-3. **Tone**: Encouraging and academic but simple.
-4. **Length**: Adapt to the user. Give a summary first, then details if the topic is complex.''',
+      hardwareSpecificInstructions: hw,
+      systemPrompt: hw,
     );
   }
 }

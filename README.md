@@ -203,7 +203,7 @@ You can run the web client using Flutter's development server or compile a produ
    - On first launch, the app prompts you to download the quantized small language model (`Qwen2.5-0.5B-Instruct-Q4_K_M.gguf`, ~350MB).
    - Alternatively, you can copy the `.gguf` model file directly to the device storage directory via ADB:
      ```bash
-     adb push qwen.gguf /sdcard/Android/data/com.example.shiksha_v1/files/model/qwen.gguf
+     adb push qwen.gguf /sdcard/Android/data/com.example.echo/files/model/qwen.gguf
      ```
    - Once loaded, all inference computation, token generation, and chat persistence run completely offline.
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../models/user_profile.dart';
+import '../services/personalization_service.dart';
 
 class ProfileSetupScreen extends StatefulWidget {
   final bool isEditMode;
@@ -14,33 +15,37 @@ class ProfileSetupScreen extends StatefulWidget {
 class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final _nameController = TextEditingController();
   String? _selectedGrade;
+  TeachingStyle _selectedTeachingStyle = TeachingStyle.socratic;
+  PacingLevel _selectedPacingLevel = PacingLevel.stepByStep;
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
-    if (widget.isEditMode) {
-      _loadExistingData();
-    }
+    _loadExistingData();
   }
 
   Future<void> _loadExistingData() async {
-    final prefs = await SharedPreferences.getInstance();
+    final profile = await PersonalizationService.instance.getUserProfile();
     setState(() {
-      _nameController.text = prefs.getString('user_name') ?? '';
-      _selectedGrade = prefs.getString('user_grade');
+      if (widget.isEditMode || profile.userName != 'Student') {
+        _nameController.text = profile.userName;
+      }
+      _selectedGrade = profile.grade;
+      _selectedTeachingStyle = profile.teachingStyle;
+      _selectedPacingLevel = profile.pacingLevel;
     });
   }
 
   Future<void> _saveProfile() async {
     if (_formKey.currentState!.validate() && _selectedGrade != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('user_name', _nameController.text.trim());
-      await prefs.setString('user_grade', _selectedGrade!);
-
-      if (!widget.isEditMode) {
-        await prefs.setBool('is_profile_completed', true);
-      }
+      final profile = UserProfile(
+        userName: _nameController.text.trim(),
+        grade: _selectedGrade!,
+        teachingStyle: _selectedTeachingStyle,
+        pacingLevel: _selectedPacingLevel,
+      );
+      await PersonalizationService.instance.saveUserProfile(profile);
 
       if (mounted) {
         if (widget.isEditMode) {
@@ -317,6 +322,122 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                     _selectedGrade = value;
                                   });
                                 },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'TEACHING STYLE',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8F9FA),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<TeachingStyle>(
+                                value: _selectedTeachingStyle,
+                                isExpanded: true,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Color(0xFF8B7FD6),
+                                ),
+                                items: TeachingStyle.values.map(
+                                  (style) => DropdownMenuItem(
+                                    value: style,
+                                    child: Text(
+                                      style.displayName,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      _selectedTeachingStyle = value;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Text(
+                              _selectedTeachingStyle.description,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'LEARNING PACING',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF8F9FA),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: DropdownButtonHideUnderline(
+                              child: DropdownButton<PacingLevel>(
+                                value: _selectedPacingLevel,
+                                isExpanded: true,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: Color(0xFF8B7FD6),
+                                ),
+                                items: PacingLevel.values.map(
+                                  (pacing) => DropdownMenuItem(
+                                    value: pacing,
+                                    child: Text(
+                                      pacing.displayName,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ).toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() {
+                                      _selectedPacingLevel = value;
+                                    });
+                                  }
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Text(
+                              _selectedPacingLevel.description,
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                color: Colors.grey[600],
                               ),
                             ),
                           ),
