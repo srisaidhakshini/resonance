@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'dart:async'; // Required for runZonedGuarded
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/chat_message.dart';
 import 'models/chat_session.dart';
@@ -13,24 +11,21 @@ import 'providers/chat_provider.dart';
 import 'providers/download_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/chat_screen.dart';
 import 'screens/content_library_screen.dart';
+import 'screens/main_navigation_shell.dart';
 import 'screens/model_download_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'services/native_loader.dart';
+import 'theme/app_theme.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
-  // ✅ CRITICAL: Wrap ENTIRE main in runZonedGuarded to fix Zone mismatch
   runZonedGuarded(
     () async {
-      // ✅ STEP 1: MUST be called FIRST, before anything else
       WidgetsFlutterBinding.ensureInitialized();
 
-      // ✅ STEP 2: Load native libraries (before runApp)
       loadNativeLibraries();
 
-      // ✅ STEP 3: Initialize Hive (same zone as runApp now)
       await Hive.initFlutter();
       Hive.registerAdapter(ChatMessageAdapter());
       Hive.registerAdapter(ChatSessionAdapter());
@@ -40,7 +35,6 @@ void main() {
       final chatBox = await Hive.openBox<ChatSession>('chat_sessions');
       final contentBox = await Hive.openBox<StudyContent>('study_content');
 
-      // ✅ STEP 4: Set up global error handlers
       FlutterError.onError = (details) {
         FlutterError.presentError(details);
         debugPrint('❌ [FLUTTER ERROR]: ${details.exception}');
@@ -52,7 +46,6 @@ void main() {
         return true;
       };
 
-      // ✅ STEP 5: Run app (now in same zone as binding initialization)
       runApp(
         ProviderScope(
           overrides: [
@@ -95,21 +88,15 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
     switch (state) {
       case AppLifecycleState.paused:
-        // 🟡 Backgrounded: Cancel active generation but KEEP model in RAM
-        // This ensures instant resume when user returns
         debugPrint('📱 [LIFECYCLE] App paused - Cancelling active generation');
         llmService.cancelGeneration();
         break;
 
       case AppLifecycleState.inactive:
-        // ⚠️ NOTE: 'inactive' triggers when keyboard opens/closes
-        // DO NOT cancel generation here - it's not a true background event
         debugPrint('📱 [LIFECYCLE] App inactive (keyboard or transition)');
-        // Removed: llmService.cancelGeneration() - was causing false cancels
         break;
 
       case AppLifecycleState.detached:
-        // 🔴 Closed/Killed: Unload model to free RAM
         debugPrint('📱 [LIFECYCLE] App detached - Unloading model');
         llmService.unloadModel();
         break;
@@ -128,91 +115,27 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
-      title: 'Echo',
+      title: 'Pocket Tutor (Echo)',
       debugShowCheckedModeBanner: false,
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         physics: const BouncingScrollPhysics(),
       ),
       themeMode: themeMode,
-      theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF8F9FA), // Off-White
-        colorScheme: const ColorScheme.light(
-          primary: Color(0xFF8B7FD6), // Light Violet
-          onPrimary: Colors.white,
-          surface: Color(0xFFF8F9FA), // Off-White
-          onSurface: Color(0xFF1A1A1A), // Near Black (Primary Heading)
-          onSurfaceVariant: Color(0xFF4A4A4A), // Dark Grey (Body)
-        ),
-        useMaterial3: true,
-        textTheme: GoogleFonts.outfitTextTheme().apply(
-          bodyColor: const Color(0xFF4A4A4A),
-          displayColor: const Color(0xFF1A1A1A),
-        ),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF8B7FD6),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            textStyle: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        pageTransitionsTheme: const PageTransitionsTheme(
-          builders: {
-            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          },
-        ),
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        colorScheme: const ColorScheme.dark(
-          primary: Color(
-            0xFF8B7FD6,
-          ), // Keep primary mostly same or adjust for dark
-          onPrimary: Colors.white,
-          surface: Color(0xFF1E1E1E),
-          onSurface: Colors.white,
-          onSurfaceVariant: Color(0xFFB0B0B0),
-        ),
-        useMaterial3: true,
-        textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme),
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: const Color(0xFF8B7FD6),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            textStyle: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       home: Consumer(
         builder: (context, ref, _) {
           final downloadService = ref.watch(modelDownloadServiceProvider);
 
-          // Helper to check state
           Future<String> checkInitialRoute() async {
             final isDownloaded = await downloadService.isReady();
             if (!isDownloaded) return '/onboarding';
 
             final prefs = await SharedPreferences.getInstance();
-            final isProfileComplete =
-                prefs.getBool('is_profile_completed') ?? false;
+            final isProfileComplete = prefs.getBool('is_profile_completed') ?? false;
             if (!isProfileComplete) return '/profile_setup';
 
-            return '/home'; // Or /chat depending on preference
+            return '/home';
           }
 
           return FutureBuilder<String>(
@@ -220,14 +143,14 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Scaffold(
-                  body: Center(child: CircularProgressIndicator()),
+                  body: Center(child: CircularProgressIndicator(color: AppColors.lightTeal)),
                 );
               }
 
               final route = snapshot.data ?? '/onboarding';
 
               if (route == '/home') {
-                return const ChatScreen(); // Updated to new Home
+                return const MainNavigationShell();
               }
               if (route == '/profile_setup') return const ProfileSetupScreen();
               return const OnboardingScreen();
@@ -237,8 +160,10 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       ),
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
-        '/home': (context) => const ChatScreen(),
-        '/chat': (context) => const ChatScreen(),
+        '/home': (context) => const MainNavigationShell(),
+        '/chat': (context) => const MainNavigationShell(initialIndex: 2),
+        '/learn': (context) => const MainNavigationShell(initialIndex: 1),
+        '/progress': (context) => const MainNavigationShell(initialIndex: 3),
         '/download': (context) => const ModelDownloadScreen(),
         '/profile_setup': (context) => const ProfileSetupScreen(),
         '/library': (context) => const ContentLibraryScreen(),
