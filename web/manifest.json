@@ -1,6 +1,6 @@
 {
-    "name": "shiksha_v1",
-    "short_name": "shiksha_v1",
+    "name": "Echo",
+    "short_name": "Echo",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

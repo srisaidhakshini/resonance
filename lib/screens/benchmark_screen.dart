@@ -321,7 +321,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
               const Icon(Icons.science, color: Colors.white, size: 24),
               const SizedBox(width: 8),
               Text(
-                'SHIKSHA AI',
+                'ECHO',
                 style: GoogleFonts.outfit(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,

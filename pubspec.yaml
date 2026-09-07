@@ -1,5 +1,5 @@
-name: shiksha_v1
-description: "Mobileshiksha - Offline educational assistant powered by local SLM"
+name: echo
+description: "Echo - Offline educational assistant powered by local SLM"
 publish_to: 'none'
 
 version: 1.0.0+1

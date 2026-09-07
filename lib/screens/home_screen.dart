@@ -42,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Shiksha AI',
+                        'Echo',
                         style: GoogleFonts.outfit(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

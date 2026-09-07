@@ -56,7 +56,7 @@ class ModelConfig {
       maxTokens: 256,
       threads: 4,
       systemPrompt:
-          'You are Mobileshiksha, a patient, knowledgeable, and encouraging offline AI tutor.',
+          'You are Echo, a patient, knowledgeable, and encouraging offline AI tutor.',
     );
   }
 
@@ -68,7 +68,7 @@ class ModelConfig {
       maxTokens: 384,
       threads: 4,
       systemPrompt:
-          'You are Mobileshiksha, a patient, knowledgeable, and encouraging offline AI tutor.',
+          'You are Echo, a patient, knowledgeable, and encouraging offline AI tutor.',
     );
   }
 
@@ -80,7 +80,7 @@ class ModelConfig {
       maxTokens: 512,
       threads: 4,
       systemPrompt:
-          'You are Mobileshiksha, a patient, knowledgeable, and encouraging offline AI tutor.',
+          'You are Echo, a patient, knowledgeable, and encouraging offline AI tutor.',
     );
   }
 }

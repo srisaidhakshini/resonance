@@ -407,7 +407,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             const SizedBox(height: 24),
             Center(
               child: Text(
-                'Shiksha AI',
+                'Echo',
                 style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[400]),
               ),
             ),

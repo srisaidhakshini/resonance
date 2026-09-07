@@ -118,7 +118,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     final themeMode = ref.watch(themeProvider);
 
     return MaterialApp(
-      title: 'Shiksha AI',
+      title: 'Echo',
       debugShowCheckedModeBanner: false,
       scrollBehavior: const MaterialScrollBehavior().copyWith(
         physics: const BouncingScrollPhysics(),

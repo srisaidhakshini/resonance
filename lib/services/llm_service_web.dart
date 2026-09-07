@@ -127,9 +127,9 @@ class LLMService {
         lower.startsWith('hello ') ||
         lower.startsWith('hey') ||
         lower.contains('who are you')) {
-      return r'''### 👋 Welcome to Mobileshiksha
+      return r'''### 👋 Welcome to Echo
 
-Hello! I am **Mobileshiksha**, your offline educational AI tutor.
+Hello! I am **Echo**, your offline educational AI tutor.
 
 I am designed to provide clear, step-by-step guidance across:
 - 📐 **Mathematics**: Arithmetic, Algebra, Geometry, Calculus

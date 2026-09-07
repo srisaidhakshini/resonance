@@ -112,7 +112,7 @@ class BenchmarkReport {
   String toShareableReport() {
     final buf = StringBuffer();
     buf.writeln('======================================');
-    buf.writeln('  SHIKSHA AI - WEB BENCHMARK REPORT');
+    buf.writeln('  ECHO - WEB BENCHMARK REPORT');
     buf.writeln('======================================');
     buf.writeln('Platform: Web Browser');
     buf.writeln('Timestamp: $timestamp');

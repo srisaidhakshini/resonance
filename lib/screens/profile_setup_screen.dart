@@ -156,7 +156,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           ),
                           const Spacer(),
                           Text(
-                            'STEP 3 OF 3',
+                            'PROFILE SETUP',
                             style: GoogleFonts.inter(
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -340,7 +340,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'This helps Shiksha AI personalize your learning.',
+                    'This helps Echo personalize your learning.',
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: const Color(0xFF9CA3AF), // Medium Grey

@@ -1,6 +1,6 @@
-# Resonance
+# Echo
 
-Resonance is a mobile-first, privacy-focused educational assistant powered by local on-device small language models (SLMs). It provides students with an intelligent, interactive tutor that operates completely offline on consumer smartphones without cloud dependencies.
+Echo is a mobile-first, privacy-focused educational assistant powered by local on-device small language models (SLMs). It provides students with an intelligent, interactive tutor that operates completely offline on consumer smartphones without cloud dependencies.
 
 ---
 
@@ -18,7 +18,7 @@ Without an internet connection, existing digital tutoring assistants become comp
 
 ## Solution
 
-Resonance resolves this gap by embedding quantized language models directly onto the user's mobile device:
+Echo resolves this gap by embedding quantized language models directly onto the user's mobile device:
 
 - **100% On-Device Inference**: After the initial model file is placed on the device, all prompt tokenization, inference computation, and response generation occur locally. No prompts, notes, or chat logs ever leave the phone.
 - **Dynamic Hardware Profiling**: The system profiles available device memory (MemAvailable via system accounting) and battery level to automatically configure optimal context window sizes, thread allocation, and batch processing limits.

@@ -67,7 +67,7 @@ class ModelConfig {
       enableSmartContext: true,
       // OPTIMIZED PROMPT: < 40 tokens for fast start
       systemPrompt:
-          '''You are Shiksha AI, a helpful tutor. Explain simply in easy English.
+          '''You are Echo, a helpful tutor. Explain simply in easy English.
 RULES:
 1. Use **Bold** for key terms.
 2. Use Bullet points for lists.
@@ -91,7 +91,7 @@ Do not hallucinate.''',
       enableSmartContext: true,
       // OPTIMIZED PROMPT: Focuses on structure and tone
       systemPrompt:
-          '''You are Shiksha AI, a friendly student tutor. Explain concepts clearly using simple language.
+          '''You are Echo, a friendly student tutor. Explain concepts clearly using simple language.
 FORMATTING RULES:
 - Use **Bold** for important concepts.
 - ALWAYS use Bullet points for steps or lists.
@@ -116,7 +116,7 @@ FORMATTING RULES:
       enableSmartContext: true,
       // OPTIMIZED PROMPT: detailed instructions without wasting tokens on examples
       systemPrompt:
-          '''You are Shiksha AI, an expert tutor. Provide comprehensive but easy-to-understand explanations.
+          '''You are Echo, an expert tutor. Provide comprehensive but easy-to-understand explanations.
 GUIDELINES:
 1. **Format**: Use Headers, **Bold terms**, and Bullet points to break up text.
 2. **Math/Science**: Define the formula, show the substitution, then solve step-by-step.

@@ -147,7 +147,7 @@ class BenchmarkReport {
   String toShareableReport() {
     final buf = StringBuffer();
     buf.writeln('======================================');
-    buf.writeln('  SHIKSHA AI - DEVICE BENCHMARK REPORT');
+    buf.writeln('  ECHO - DEVICE BENCHMARK REPORT');
     buf.writeln('======================================');
     buf.writeln();
     buf.writeln('Date    : ${timestamp.toLocal().toString().split('.').first}');
