@@ -130,11 +130,15 @@ flowchart TD
 
 ### Prerequisites
 
-- Flutter SDK (version 3.22 or higher)
-- Android SDK (API Level 24 or higher recommended)
-- Physical Android phone with ARM64 CPU (recommended for on-device inference) or a modern web browser for preview
+- **Flutter SDK**: Version 3.22 or higher ([flutter.dev](https://flutter.dev/docs/get-started/install))
+- **Dart SDK**: Version 3.4 or higher (bundled with Flutter)
+- **Target Platform**:
+  - **Android**: Physical ARM64 device (recommended for native SLM inference with llama.cpp) or Android Emulator running API Level 24+
+  - **Web**: Google Chrome or any modern Chromium/WebKit browser
 
-### Installation
+---
+
+### Installation & Setup
 
 1. Clone the repository:
    ```bash
@@ -142,30 +146,71 @@ flowchart TD
    cd resonance
    ```
 
-2. Install dependencies:
+2. Fetch Flutter package dependencies:
    ```bash
    flutter pub get
    ```
 
-3. Verify codebase integrity:
+3. Verify codebase integrity and ensure zero analysis errors:
    ```bash
    flutter analyze
    ```
 
-### Running the App
+---
 
-#### Mobile (Android)
-Ensure your Android device has Developer Options and USB Debugging enabled:
-```bash
-flutter run
-```
+### How to Run
 
-#### Web Browser
-Run the local web preview:
-```bash
-flutter run -d chrome
-```
-Or build the static web bundle:
-```bash
-flutter build web
-```
+#### Option 1: Web Browser (Instant Preview & Smart Pedagogical Engine)
+
+You can run the web client using Flutter's development server or compile a production bundle:
+
+1. **Development Server**:
+   ```bash
+   flutter run -d chrome
+   ```
+
+2. **Production Web Build & Local Server**:
+   ```bash
+   # Build the static web assets
+   flutter build web --base-href "/"
+
+   # Serve the build directory on port 8085 (using Python)
+   python -m http.server 8085 --directory build/web
+   ```
+   Open your browser and navigate to:
+   ```text
+   http://localhost:8085/
+   ```
+
+*Note for Web*: Flutter Web sandboxes native C++ binaries (`libllama.so`). The web runtime automatically utilizes the built-in educational intelligence engine with LaTeX math typesetting, step-by-step arithmetic solvers, and local Ollama proxy capabilities if an Ollama instance is running locally on port 11434.
+
+---
+
+#### Option 2: Mobile (Android Physical Device with On-Device SLM)
+
+1. Enable **Developer Options** and **USB Debugging** on your Android smartphone.
+2. Connect your smartphone via USB and verify device detection:
+   ```bash
+   flutter devices
+   ```
+3. Run the app directly on your phone:
+   ```bash
+   flutter run --release
+   ```
+   *(Release mode is recommended for optimal inference speed and memory performance).*
+
+4. **Model Initialization on Android**:
+   - On first launch, the app prompts you to download the quantized small language model (`Qwen2.5-0.5B-Instruct-Q4_K_M.gguf`, ~350MB).
+   - Alternatively, you can copy the `.gguf` model file directly to the device storage directory via ADB:
+     ```bash
+     adb push qwen.gguf /sdcard/Android/data/com.example.shiksha_v1/files/model/qwen.gguf
+     ```
+   - Once loaded, all inference computation, token generation, and chat persistence run completely offline.
+
+---
+
+### Troubleshooting
+
+- **Android 64-bit Architecture**: Ensure your target device is an `arm64-v8a` device. The native C++ inference libraries are compiled for ARM64 architectures.
+- **Port Conflicts on Web**: If port 8085 is in use, supply any available port (e.g., `python -m http.server 8080 --directory build/web`).
+- **Memory Profiling**: On Android, Echo automatically inspects available system memory. If other heavy applications are running in background, close them to allow optimal context buffer allocation.
