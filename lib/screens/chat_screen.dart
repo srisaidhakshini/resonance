@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/chat_provider.dart';
 import '../providers/ui_provider.dart';
+import '../services/voice_service.dart';
 import '../widgets/app_drawer.dart';
 import 'profile_setup_screen.dart';
 
@@ -60,6 +61,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _textController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  final VoiceService _voiceService = VoiceService();
+
   // ✅ NEW: Silent background loading states
   bool _isModelLoading = true;
   bool _hasError = false;
@@ -68,6 +71,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     _initializeModelSilently();
+    _voiceService.initialize();
 
     // Check for initial text injection from Home Screen
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -78,6 +82,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         setState(() {}); // Update UI to show text
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _voiceService.stopSpeaking();
+    _voiceService.stopListening();
+    _textController.dispose();
+    _scrollController.dispose();
+    super.dispose();
   }
 
   /// ✅ NEW: Load model silently in background - no blocking UI
@@ -297,7 +310,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
         final message = messages[index];
         final isUser = message.role == 'user';
-        return _buildMessageBubble(context, message.content, isUser);
+        final messageId = message.timestamp.toIso8601String();
+        return _buildMessageBubble(context, message.content, isUser, messageId);
       },
     );
   }
@@ -483,8 +497,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget _buildMessageBubble(
     BuildContext context,
     String content,
-    bool isUser,
-  ) {
+    bool isUser, [
+    String? messageId,
+  ]) {
     if (isUser) {
       // User Message: Right Aligned, White, Rounded-TR-None
       return Align(
@@ -576,7 +591,64 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                     ),
                   ],
                 ),
-                child: _buildMessageContent(content, isUser, context),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _buildMessageContent(content, isUser, context),
+                    if (!isThinking && content.trim().isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: ValueListenableBuilder<String?>(
+                          valueListenable:
+                              _voiceService.currentlySpeakingIdNotifier,
+                          builder: (context, speakingId, _) {
+                            final isSpeaking = speakingId == messageId;
+                            return InkWell(
+                              borderRadius: BorderRadius.circular(16),
+                              onTap: () => _voiceService.speakText(
+                                content,
+                                messageId: messageId,
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isSpeaking
+                                          ? Icons.stop_circle_outlined
+                                          : Icons.volume_up_outlined,
+                                      size: 16,
+                                      color: isSpeaking
+                                          ? Colors.red
+                                          : const Color(0xFF8B7FD6),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      isSpeaking ? 'Stop' : 'Listen',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: isSpeaking
+                                            ? Colors.red
+                                            : const Color(0xFF8B7FD6),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -712,6 +784,60 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       minLines: 1,
                       maxLines: 5,
                       textCapitalization: TextCapitalization.sentences,
+                    ),
+                  ),
+                  // Voice Input / Microphone Button
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 5),
+                    child: ValueListenableBuilder<bool>(
+                      valueListenable: _voiceService.isListeningNotifier,
+                      builder: (context, isListening, _) {
+                        return IconButton(
+                          tooltip: isListening
+                              ? 'Listening... Tap to stop'
+                              : 'Voice Input',
+                          icon: Icon(
+                            isListening ? Icons.mic : Icons.mic_none_outlined,
+                            size: 24,
+                            color: isListening
+                                ? Colors.red
+                                : const Color(0xFF8B7FD6),
+                          ),
+                          onPressed: () async {
+                            if (isListening) {
+                              await _voiceService.stopListening();
+                            } else {
+                              final messenger = ScaffoldMessenger.of(context);
+                              final started =
+                                  await _voiceService.startListening(
+                                onResult: (words) {
+                                  if (!mounted) return;
+                                  setState(() {
+                                    _textController.text = words;
+                                    _textController.selection =
+                                        TextSelection.fromPosition(
+                                      TextPosition(offset: words.length),
+                                    );
+                                  });
+                                },
+                              );
+                              if (!started && mounted) {
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Microphone permission or speech recognition unavailable.',
+                                    ),
+                                    duration: Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          style: IconButton.styleFrom(
+                            foregroundColor: const Color(0xFF8B7FD6),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   // Send Button - centered vertically
