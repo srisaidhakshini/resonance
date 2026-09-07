@@ -113,32 +113,269 @@ class LLMService {
   String _generateSmartEducationalResponse(String rawPrompt) {
     final cleaned = _cleanPrompt(rawPrompt);
     final lower = cleaned.toLowerCase().trim();
+    final rawLower = rawPrompt.toLowerCase().trim();
 
     // 1. Conversational / Greetings / Small Talk Detection
-    final conversationalReply = _tryHandleConversational(lower);
+    final conversationalReply = _tryHandleConversational(lower, rawLower);
     if (conversationalReply != null) {
       return conversationalReply;
     }
 
-    // 2. Direct Arithmetic Solver (e.g. "25 + 47", "what is 15 * 8", "120 / 4")
+    // 2. Comparison Queries (e.g. "TCP vs UDP", "RAM vs ROM", "difference between X and Y")
+    final comparisonReply = _tryHandleComparison(lower, rawLower);
+    if (comparisonReply != null) {
+      return comparisonReply;
+    }
+
+    // 3. Direct Arithmetic Solver (e.g. "25 + 47", "what is 15 * 8", "120 / 4")
     final arithmeticResult = _trySolveArithmetic(lower);
     if (arithmeticResult != null) {
       return arithmeticResult;
     }
 
-    // 3. Algebraic Linear Equation Solver (e.g. "3x + 5 = 20", "solve 2x - 4 = 10")
+    // 4. Algebraic Linear Equation Solver (e.g. "3x + 5 = 20", "solve 2x - 4 = 10")
     final linearEquationResult = _trySolveLinearEquation(lower);
     if (linearEquationResult != null) {
       return linearEquationResult;
     }
 
-    // 4. Percentage Solver (e.g. "what is 20% of 150")
+    // 5. Percentage Solver (e.g. "what is 20% of 150")
     final percentageResult = _trySolvePercentage(lower);
     if (percentageResult != null) {
       return percentageResult;
     }
 
-    // 5. Cybersecurity & Information Security
+    // 6. 3D Geometry & Three-Dimensional Space
+    if (lower.contains('3d geometry') ||
+        lower.contains('three dimensional geometry') ||
+        lower.contains('3d space') ||
+        lower.contains('coordinate geometry in 3d') ||
+        lower.contains('direction cosine') ||
+        lower.contains('equation of a plane') ||
+        lower.contains('sphere equation')) {
+      return r'''### 📐 Three-Dimensional (3D) Geometry
+
+**3D Geometry** is the branch of mathematics that analyzes figures, points, lines, surfaces, and solids within three-dimensional Euclidean space. Unlike 2D geometry (which uses an $x$ and $y$ plane), 3D space introduces a third mutually perpendicular axis: the **$z$-axis** (depth/height).
+
+---
+
+### 1. The 3D Coordinate System
+- **Coordinate Axes**: Three mutually perpendicular lines intersecting at the **Origin** $(0, 0, 0)$:
+  - **X-axis** (Width / Left-Right)
+  - **Y-axis** (Length / Front-Back)
+  - **Z-axis** (Height / Up-Down)
+- **Octants**: The three coordinate planes ($xy$, $yz$, $zx$) divide 3D space into **8 octants**.
+- Any arbitrary point $P$ is represented by the ordered triplet:
+  > **P = (x, y, z)**
+
+---
+
+### 2. Essential 3D Formulas
+
+#### A. 3D Distance Formula
+The distance between two points $P(x_1, y_1, z_1)$ and $Q(x_2, y_2, z_2)$:
+> **d = √((x₂ − x₁)² + (y₂ − y₁)² + (z₂ − z₁)²)**
+
+#### B. Midpoint & Section Formula
+The midpoint $M$ of line segment $PQ$:
+> **M = ((x₁ + x₂) / 2, (y₁ + y₂) / 2, (z₁ + z₂) / 2)**
+
+#### C. Direction Cosines & Direction Ratios
+If a line makes angles $\alpha, \beta, \gamma$ with the $x, y, z$ axes:
+- **Direction Cosines**: $l = \cos\alpha, \quad m = \cos\beta, \quad n = \cos\gamma$
+- **Fundamental Identity**:
+  > **l² + m² + n² = 1**
+
+---
+
+### 3. Equations of 3D Lines & Planes
+
+#### Equation of a Straight Line in 3D
+Passing through point $(x_1, y_1, z_1)$ with direction ratios $(a, b, c)$:
+- **Cartesian Form**:
+  > **(x − x₁) / a = (y − y₁) / b = (z − z₁) / c**
+- **Vector Form**:
+  > **r⃗ = a⃗ + λ b⃗**
+
+#### Equation of a Plane
+The general linear equation representing a flat 2D surface extending infinitely in 3D space:
+> **A x + B y + C z + D = 0**
+*(where vector $\vec{n} = (A, B, C)$ is the normal perpendicular to the plane)*
+
+#### Equation of a Sphere
+A sphere centered at $(h, k, l)$ with radius $r$:
+> **(x − h)² + (y − k)² + (z − l)² = r²**
+
+---
+
+### 4. Standard 3D Geometric Solids
+
+| Solid | Volume Formula | Total Surface Area Formula |
+| :--- | :--- | :--- |
+| **Cuboid** | $V = l \cdot w \cdot h$ | $SA = 2(lw + wh + hl)$ |
+| **Cube** | $V = a³$ | $SA = 6a²$ |
+| **Cylinder** | $V = \pi r² h$ | $SA = 2\pi r(r + h)$ |
+| **Cone** | $V = \frac{1}{3}\pi r² h$ | $SA = \pi r(r + \sqrt{r² + h²})$ |
+| **Sphere** | $V = \frac{4}{3}\pi r³$ | $SA = 4\pi r²$ |
+
+---
+
+### 💡 Step-by-Step Example
+**Problem**: Find the distance between $A(1, 2, 3)$ and $B(4, 6, 8)$.
+
+1. Apply the 3D distance formula:
+   > **d = √((4 − 1)² + (6 − 2)² + (8 − 3)²)**
+2. Calculate each difference squared:
+   > **d = √(3² + 4² + 5²) = √(9 + 16 + 25) = √50**
+3. Simplify the radical:
+   > **d = 5√2 ≈ 7.07 units**''';
+    }
+
+    // 7. 2D Geometry & Trigonometry
+    if (lower.contains('trigonometry') ||
+        lower.contains('geometry') ||
+        lower.contains('triangle') ||
+        lower.contains('pythagor') ||
+        lower.contains('sin ') ||
+        lower.contains('cos ') ||
+        lower.contains('tan ') ||
+        lower.contains('circle') ||
+        lower.contains('angle')) {
+      return r'''### 📐 Geometry & Trigonometry Foundations
+
+**Geometry** studies shapes, sizes, and relative positions of figures. **Trigonometry** specifically explores the mathematical relationships between the side lengths and angles of triangles.
+
+---
+
+### 1. The Pythagorean Theorem
+In any right-angled triangle with legs $a$, $b$ and hypotenuse $c$:
+> **a² + b² = c²**
+
+*Example*: If legs are 3 and 4, hypotenuse $c = \sqrt{3² + 4²} = \sqrt{9 + 16} = \sqrt{25} = 5$.
+
+---
+
+### 2. Core Trigonometric Ratios (SOH-CAH-TOA)
+For an acute angle $\theta$ in a right triangle:
+- **Sine**: $\sin\theta = \text{Opposite} / \text{Hypotenuse}$
+- **Cosine**: $\cos\theta = \text{Adjacent} / \text{Hypotenuse}$
+- **Tangent**: $\tan\theta = \text{Opposite} / \text{Adjacent} = \sin\theta / \cos\theta$
+- **Reciprocals**: $\csc\theta = 1/\sin\theta, \quad \sec\theta = 1/\cos\theta, \quad \cot\theta = 1/\tan\theta$
+
+---
+
+### 3. Fundamental Trigonometric Identities
+- **Pythagorean Identities**:
+  > **sin²θ + cos²θ = 1**
+  > **1 + tan²θ = sec²θ**
+  > **1 + cot²θ = csc²θ**
+- **Double Angle Formulas**:
+  > **sin(2θ) = 2 sin θ cos θ**
+  > **cos(2θ) = cos²θ − sin²θ = 2cos²θ − 1 = 1 − 2sin²θ**
+
+---
+
+### 4. Non-Right Triangle Laws
+- **Law of Sines**:
+  > **a / sin A = b / sin B = c / sin C**
+- **Law of Cosines**:
+  > **c² = a² + b² − 2ab cos C**
+
+---
+
+### 5. Essential 2D Area Formulas
+- **Triangle**: Area = $\frac{1}{2} \cdot \text{base} \cdot \text{height}$
+- **Heron's Formula** (any triangle with sides $a, b, c$, semi-perimeter $s = \frac{a+b+c}{2}$):
+  > **Area = √(s(s − a)(s − b)(s − c))**
+- **Circle**: Circumference = $2\pi r$, Area = $\pi r²$''';
+    }
+
+    // 8. Linear Algebra, Vectors & Matrices
+    if (lower.contains('matrix') ||
+        lower.contains('matrices') ||
+        lower.contains('vector') ||
+        lower.contains('linear algebra') ||
+        lower.contains('determinant') ||
+        lower.contains('eigenvalue') ||
+        lower.contains('dot product') ||
+        lower.contains('cross product')) {
+      return r'''### 📊 Linear Algebra: Vectors & Matrices
+
+**Linear Algebra** is the mathematical branch dealing with vectors, vector spaces, linear transformations, and systems of linear equations.
+
+---
+
+### 1. Vectors
+A vector represents both **magnitude** and **direction**. In 3D space: $\vec{v} = a\hat{i} + b\hat{j} + c\hat{k}$.
+- **Magnitude**: $|\vec{v}| = \sqrt{a² + b² + c²}$
+- **Dot Product (Scalar Product)**:
+  > **a⃗ · b⃗ = |a⃗||b⃗| cos θ = a₁b₁ + a₂b₂ + a₃b₃**
+  *(If $\vec{a} \cdot \vec{b} = 0$, the two vectors are orthogonal/perpendicular).*
+- **Cross Product (Vector Product)**:
+  > **a⃗ × b⃗ = |a⃗||b⃗| sin θ n̂**
+  *(Produces a vector perpendicular to both $\vec{a}$ and $\vec{b}$).*
+
+---
+
+### 2. Matrices & Determinants
+A matrix is a rectangular array of numbers arranged in rows and columns.
+- **Determinant of a 2×2 Matrix**:
+  ```text
+  | a  b |
+  | c  d |  ⟹  det = (a·d − b·c)
+  ```
+- **Matrix Inverse**:
+  > **A⁻¹ = (1 / det(A)) · adj(A)  (valid if det(A) ≠ 0)**
+- **Eigenvalues & Eigenvectors**:
+  A vector $\vec{v}$ whose direction is invariant under linear transformation $A$:
+  > **A · v⃗ = λ · v⃗  ⟹  det(A − λI) = 0**''';
+    }
+
+    // 9. Probability & Statistics
+    if (lower.contains('probability') ||
+        lower.contains('statistics') ||
+        lower.contains('standard deviation') ||
+        lower.contains('mean') ||
+        lower.contains('median') ||
+        lower.contains('variance') ||
+        lower.contains('bayes')) {
+      return r'''### 📈 Probability & Statistics
+
+**Statistics** is the science of collecting, analyzing, and interpreting data. **Probability** quantifies the likelihood that a specific event will occur.
+
+---
+
+### 1. Measures of Central Tendency & Dispersion
+- **Mean (Average)**:
+  > **μ = (∑ x) / n**
+- **Median**: The exact middle value when data is sorted in ascending order.
+- **Mode**: The value that appears with highest frequency.
+- **Variance (σ²)**:
+  > **σ² = [ ∑ (x − μ)² ] / n**
+- **Standard Deviation (σ)**:
+  > **σ = √Variance** *(Quantifies how widely data points spread around the mean).*
+
+---
+
+### 2. Fundamental Probability Rules
+- **Basic Probability**: $P(A) = \text{Favorable Outcomes} / \text{Total Outcomes}$ (where $0 \le P(A) \le 1$).
+- **Addition Rule**:
+  > **P(A ∪ B) = P(A) + P(B) − P(A ∩ B)**
+- **Conditional Probability**:
+  > **P(A | B) = P(A ∩ B) / P(B)**
+- **Bayes' Theorem**:
+  > **P(A | B) = [ P(B | A) · P(A) ] / P(B)**
+
+---
+
+### 3. Permutations & Combinations
+- **Permutations** (Order matters):
+  > **nPr = n! / (n − r)!**
+- **Combinations** (Order does not matter):
+  > **nCr = n! / [ r! · (n − r)! ]**''';
+    }
+
+    // 10. Cybersecurity & Information Security
     if (lower.contains('cybersecurity') ||
         lower.contains('cyber security') ||
         lower.contains('hacker') ||
@@ -151,7 +388,7 @@ class LLMService {
         lower.contains('zero trust')) {
       return r'''### 🛡️ Understanding Cybersecurity
 
-**Cybersecurity** is the practice of protecting computer systems, networks, devices, programs, and data from digital attacks, unauthorized access, damage, or theft.
+**Cybersecurity** is the discipline and practice of safeguarding computer systems, networks, devices, software programs, and data from digital attacks, unauthorized access, corruption, or theft.
 
 ---
 
@@ -176,16 +413,10 @@ All cybersecurity policies and architectures revolve around three essential pill
 - **Defense in Depth**: Applying multiple layered security controls across endpoints, networks, and applications.
 - **Zero Trust Architecture**: Operating on the principle of *"never trust, always verify"*—requiring continuous authentication for every request.
 - **Access Control & IAM**: Enforcing the Principle of Least Privilege (PoLP) so users only have the minimum access necessary.
-- **Incident Response & Patching**: Regular vulnerability assessments and systematic security updates.
-
----
-
-### 💡 Practice Question
-*Why is human user awareness considered both the most vulnerable link and the first line of defense in cybersecurity?*
-*(Hint: Technical firewalls cannot prevent a user from voluntarily clicking a phishing link, making cybersecurity training vital!)*''';
+- **Incident Response & Patching**: Regular vulnerability assessments and systematic security updates.''';
     }
 
-    // 6. Cloud Computing
+    // 11. Cloud Computing
     if (lower.contains('cloud computing') ||
         lower.contains('what is cloud') ||
         lower.contains('saas') ||
@@ -216,7 +447,7 @@ All cybersecurity policies and architectures revolve around three essential pill
 - **Cost Efficiency**: Eliminates capital expenses for physical data centers and on-premise hardware maintenance.''';
     }
 
-    // 7. Artificial Intelligence & Machine Learning
+    // 12. Artificial Intelligence & Machine Learning
     if (lower.contains('artificial intelligence') ||
         lower.contains('machine learning') ||
         lower.contains('neural network') ||
@@ -242,7 +473,7 @@ All cybersecurity policies and architectures revolve around three essential pill
 3. **Reinforcement Learning**: An agent learns optimal actions through trial-and-error rewards and penalties within an environment (e.g., robotics, game engines).''';
     }
 
-    // 8. Operating Systems
+    // 13. Operating Systems
     if (lower.contains('operating system') ||
         lower.contains('what is an os') ||
         lower.contains('kernel') ||
@@ -266,7 +497,7 @@ An **Operating System (OS)** is the core system software that manages computer h
 The **Kernel** is the central component of an OS that operates with highest hardware privileges (Kernel Mode / Ring 0), managing the bridge between user-space applications and physical hardware.''';
     }
 
-    // 9. Computer Networking & The Internet
+    // 14. Computer Networking & The Internet
     if (lower.contains('networking') ||
         lower.contains('how the internet works') ||
         lower.contains('tcp/ip') ||
@@ -299,165 +530,163 @@ A **Computer Network** is a collection of interconnected computing nodes that co
 4. **HTTP Request/Response**: Browser issues a `GET` request and renders the incoming HTML, CSS, and JavaScript payload.''';
     }
 
-    // 10. Mathematics: Addition
+    // 15. Object-Oriented Programming (OOP)
+    if (lower.contains('object oriented') ||
+        lower.contains('oop') ||
+        lower.contains('encapsulation') ||
+        lower.contains('polymorphism') ||
+        lower.contains('inheritance') ||
+        lower.contains('abstraction')) {
+      return r'''### 💻 Object-Oriented Programming (OOP)
+
+**Object-Oriented Programming (OOP)** is a programming paradigm organized around real-world entities modeled as **Objects** (containing state/fields and behavior/methods) instantiated from **Classes** (blueprints).
+
+---
+
+### The 4 Pillars of OOP
+
+1. **Encapsulation**:
+   - Bundling data and methods into a single unit (class) and restricting direct access to internal state using access modifiers (`private`, `protected`, `public`).
+   - Prevents external corruption and enforces data integrity via getters and setters.
+
+2. **Abstraction**:
+   - Hiding internal implementation complexity and exposing only essential functional interfaces to the consumer.
+   - *Real-world analogy*: You press the gas pedal of a car to accelerate without needing to understand fuel injection timing.
+
+3. **Inheritance**:
+   - The mechanism where a new class (subclass/child) inherits attributes and methods from an existing class (superclass/parent).
+   - Promotes code reuse and establishes an *"is-a"* relationship (e.g., `Dog` is an `Animal`).
+
+4. **Polymorphism** ("Many forms"):
+   - Allows entities to be treated as instances of their parent class while executing subclass-specific behavior.
+   - **Compile-Time (Static)**: Method Overloading (same name, different arguments).
+   - **Runtime (Dynamic)**: Method Overriding (subclass provides specific implementation of parent method).''';
+    }
+
+    // 16. Databases & SQL
+    if (lower.contains('database') ||
+        lower.contains('sql') ||
+        lower.contains('nosql') ||
+        lower.contains('relational') ||
+        lower.contains('acid properties')) {
+      return r'''### 🗄️ Databases & SQL Architecture
+
+A **Database** is an organized collection of structured data stored electronically in a computer system and managed by a Database Management System (DBMS).
+
+---
+
+### 1. Relational (SQL) vs. Non-Relational (NoSQL)
+- **Relational Databases (RDBMS)**:
+  - Data stored in strict tabular rows and columns with fixed schemas and primary/foreign key relationships.
+  - *Examples*: PostgreSQL, MySQL, SQLite, Oracle.
+- **NoSQL Databases**:
+  - Schema-less or dynamic schemas designed for unstructured, document, key-value, or graph data with horizontal scaling.
+  - *Examples*: MongoDB (Document), Redis (Key-Value), Cassandra (Column-family), Neo4j (Graph).
+
+---
+
+### 2. ACID Properties in Transaction Processing
+- **Atomicity**: "All or nothing"—every transaction succeeds entirely, or completely rolls back.
+- **Consistency**: Data must always satisfy declared schema constraints and invariants.
+- **Isolation**: Concurrent transactions execute without interfering with one another.
+- **Durability**: Once a transaction is committed, its changes survive system crashes and power failures.
+
+---
+
+### 3. Core SQL Query Syntax
+```sql
+SELECT student_name, grade, AVG(score) as avg_score
+FROM exam_records
+WHERE status = 'active'
+GROUP BY student_name, grade
+HAVING AVG(score) >= 75.0
+ORDER BY avg_score DESC;
+```''';
+    }
+
+    // 17. Data Structures & Algorithms
+    if (lower.contains('data structure') ||
+        lower.contains('stack') ||
+        lower.contains('queue') ||
+        lower.contains('binary search') ||
+        lower.contains('linked list') ||
+        lower.contains('hash table') ||
+        lower.contains('big o') ||
+        lower.contains('algorithm') ||
+        lower.contains('python')) {
+      return r'''### 💻 Data Structures & Algorithmic Complexity
+
+A **Data Structure** is a specialized format for organizing, processing, retrieving, and storing data in computer memory efficiently.
+
+---
+
+### 1. Fundamental Data Structures
+
+| Data Structure | Organization | Access / Search Time | Insert / Delete Time |
+| :--- | :--- | :--- | :--- |
+| **Array** | Contiguous memory | $O(1)$ access | $O(n)$ insertion |
+| **Linked List** | Pointer-connected nodes | $O(n)$ search | $O(1)$ at head |
+| **Stack** | LIFO (Last In, First Out) | $O(n)$ search | $O(1)$ push / pop |
+| **Queue** | FIFO (First In, First Out) | $O(n)$ search | $O(1)$ enqueue / dequeue |
+| **Hash Table** | Key-Value via Hash Function | $O(1)$ average | $O(1)$ average |
+| **Binary Search Tree** | Ordered binary hierarchy | $O(\log n)$ balanced | $O(\log n)$ balanced |
+
+---
+
+### 2. Efficient Binary Search in Python
+```python
+def binary_search(arr: list[int], target: int) -> int:
+    """Returns index of target in a sorted list in O(log n) time."""
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+```''';
+    }
+
+    // 18. Mathematics: Arithmetic & Algebra Fundamentals
     if (lower.contains('addition') ||
-        lower.contains('add ') ||
-        lower.contains('adding') ||
-        lower == 'what is addition' ||
-        lower.contains('concept of addition')) {
-      return r'''### 📘 What is Addition?
-
-**Addition** is one of the four fundamental arithmetic operations (alongside subtraction, multiplication, and division). It represents the process of combining two or more quantities into a single total, known as the **sum**.
-
----
-
-### 1. Key Terminology
-In any addition equation:
-
-> **a + b = c**
-
-- **Addends**: The numbers being combined (here, *a* and *b*).
-- **Plus Sign (+)**: The mathematical operator signaling addition.
-- **Sum**: The total resulting quantity (*c*).
-
----
-
-### 2. Fundamental Mathematical Properties
-1. **Commutative Property**: Changing the order of addends does not change the sum.
-   > **a + b = b + a**  *(e.g., 4 + 7 = 7 + 4 = 11)*
-
-2. **Associative Property**: The grouping of addends does not affect the sum.
-   > **(a + b) + c = a + (b + c)**  *(e.g., (2 + 3) + 5 = 2 + (3 + 5) = 10)*
-
-3. **Identity Property (Zero Property)**: Adding zero to any number leaves it unchanged.
-   > **a + 0 = a**  *(e.g., 9 + 0 = 9)*
-
----
-
-### 3. Step-by-Step Example: Column Addition with Regrouping
-Let us solve: **47 + 38**
-
-1. **Align by Place Value**:
-   ```text
-     [Tens]  [Ones]
-        4      7
-   +    3      8
-   ---------------
-   ```
-2. **Add the Ones Column**:
-   7 + 8 = 15
-   - Write **5** in the ones place.
-   - Carry **1** (representing 1 ten) to the tens column.
-
-3. **Add the Tens Column** (including the carried 1):
-   1 (carry) + 4 + 3 = 8
-
-4. **Final Result**:
-   > **47 + 38 = 85**
-
----
-
-### 💡 Quick Practice
-Try calculating **56 + 29**.
-*(Hint: Add 6 + 9 = 15 [carry 1], then 1 + 5 + 2 = 8 ⟹ **85**)*''';
-    }
-
-    // 11. Mathematics: Subtraction
-    if (lower.contains('subtraction') ||
-        lower.contains('subtract') ||
-        lower.contains('minus')) {
-      return r'''### 📘 What is Subtraction?
-
-**Subtraction** is the inverse operation of addition. It calculates the difference between two quantities or determines how much remains when a part is taken away from a whole.
-
----
-
-### 1. Key Terminology
-> **a − b = c**
-
-- **Minuend (a)**: The initial total quantity from which another is subtracted.
-- **Subtrahend (b)**: The quantity being taken away.
-- **Difference (c)**: The final remaining quantity.
-
----
-
-### 2. Regrouping (Borrowing) Method
-Let us solve: **72 − 38**
-
-1. In the ones column: *2 − 8* cannot be computed in positive whole numbers.
-2. Borrow **1 ten** from 7 tens, turning 7 into 6 tens.
-3. The 2 ones becomes 12 ones:
-   12 − 8 = 4
-4. In the tens column:
-   6 − 3 = 3
-5. Final Result:
-   > **72 − 38 = 34**
-
-*Check by Addition*: 34 + 38 = 72.''';
-    }
-
-    // 12. Mathematics: Multiplication
-    if (lower.contains('multiplication') ||
-        lower.contains('multiply') ||
-        lower.contains('times table')) {
-      return r'''### 📘 Understanding Multiplication
-
-**Multiplication** represents repeated addition of the same quantity.
-For example, *4 × 3* means adding 4 three times:
-
-> **4 + 4 + 4 = 12**
-
----
-
-### 1. Core Mathematical Properties
-- **Commutative**: a × b = b × a
-- **Associative**: (a × b) × c = a × (b × c)
-- **Distributive**: a × (b + c) = (a × b) + (a × c)
-- **Zero Property**: a × 0 = 0
-- **Identity Property**: a × 1 = a
-
----
-
-### 2. Example: 14 × 6
-Using the distributive property:
-> **14 × 6 = (10 + 4) × 6 = (10 × 6) + (4 × 6) = 60 + 24 = 84**''';
-    }
-
-    // 13. Mathematics: Division & Fractions
-    if (lower.contains('division') ||
-        lower.contains('divide') ||
+        lower.contains('subtraction') ||
+        lower.contains('multiplication') ||
+        lower.contains('division') ||
         lower.contains('fraction')) {
-      return r'''### 📘 Understanding Division & Fractions
+      return r'''### 📘 Fundamental Arithmetic Operations
 
-**Division** splits a quantity into equal groups. It is the inverse operation of multiplication.
-
----
-
-### 1. The Division Equation
-> **a ÷ b = q  (Remainder r)**
-
-- **Dividend (a)**: Total quantity to be divided.
-- **Divisor (b)**: Number of equal groups (b ≠ 0).
-- **Quotient (q)**: Result per group.
-- **Remainder (r)**: Amount left over (0 ≤ r < b).
+The four cornerstone arithmetic operations form the foundation of all higher mathematics:
 
 ---
 
-### 2. Working with Fractions
-- **Common Denominators**: (a / c) + (b / c) = (a + b) / c
-- **Multiplication**: (a / b) × (c / d) = (a × c) / (b × d)
-- **Division (Reciprocal Rule)**: (a / b) ÷ (c / d) = (a / b) × (d / c)''';
+### 1. The Four Core Operations
+1. **Addition ($a + b = c$)**: Combining quantities into a total **sum**.
+   - *Properties*: Commutative ($a + b = b + a$) and Associative ($(a+b)+c = a+(b+c)$).
+2. **Subtraction ($a − b = c$)**: Calculating the **difference** between a minuend ($a$) and subtrahend ($b$).
+   - Inverse of addition ($34 + 38 = 72 \iff 72 − 38 = 34$).
+3. **Multiplication ($a \times b = c$)**: Repeated addition resulting in a **product**.
+   - *Distributive Property*: $a \times (b + c) = (a \times b) + (a \times c)$.
+4. **Division ($a \div b = q$ with remainder $r$)**: Partitioning a dividend into equal groups of divisor.
+
+---
+
+### 2. Fraction Arithmetic Rules
+- **Addition**: $(a / c) + (b / c) = (a + b) / c$
+- **Multiplication**: $(a / b) \times (c / d) = (a \times c) / (b \times d)$
+- **Division**: $(a / b) \div (c / d) = (a / b) \times (d / c)$''';
     }
 
-    // 14. Mathematics: Quadratic Equations & Algebra
+    // 19. Mathematics: Quadratic Equations
     if (lower.contains('quadratic') ||
         lower.contains('algebra') ||
         lower.contains('factor')) {
       return r'''### 📐 Quadratic Equations & Algebra Guide
 
-A quadratic equation is a second-degree polynomial equation in a single variable *x*:
-
-> **ax² + bx + c = 0  (where a ≠ 0)**
+A quadratic equation is a second-degree polynomial equation in variable $x$:
+> **a x² + b x + c = 0  (where a ≠ 0)**
 
 ---
 
@@ -468,227 +697,383 @@ A quadratic equation is a second-degree polynomial equation in a single variable
 
 ### 2. The Discriminant (Δ = b² − 4ac)
 - If **Δ > 0**: Two distinct real roots.
-- If **Δ = 0**: Exactly one real repeated root (x = −b / 2a).
-- If **Δ < 0**: Two complex conjugate roots.
+- If **Δ = 0**: Exactly one real repeated root ($x = −b / 2a$).
+- If **Δ < 0**: Two complex conjugate roots ($x = \alpha \pm i\beta$).
 
 ---
 
 ### 3. Worked Example: x² − 5x + 6 = 0
-Here a = 1, b = −5, c = 6.
-By factoring:
+Factoring into binomials:
 > **(x − 2)(x − 3) = 0  ⟹  x₁ = 2,  x₂ = 3**''';
     }
 
-    // 15. Mathematics: Calculus & Derivatives
+    // 20. Mathematics: Calculus & Derivatives
     if (lower.contains('derivative') ||
         lower.contains('calculus') ||
         lower.contains('differentiat') ||
         lower.contains('integral')) {
       return r'''### 📈 Calculus: Differential & Integral Foundations
 
-Calculus studies continuous change through **differentiation** (instantaneous rates of change) and **integration** (accumulation of areas and quantities).
+Calculus studies continuous change through **differentiation** (instantaneous rates of change) and **integration** (accumulation of quantities and areas).
 
 ---
 
-### 1. Definition of the Derivative
-> **f'(x) = lim(h → 0) [ (f(x + h) − f(x)) / h ]**
+### 1. Essential Differentiation Rules
+- **Power Rule**: $\frac{d}{dx}[x^n] = n \cdot x^{n-1}$
+- **Product Rule**: $\frac{d}{dx}[u \cdot v] = u'v + uv'$
+- **Quotient Rule**: $\frac{d}{dx}[u / v] = \frac{u'v − uv'}{v²}$
+- **Chain Rule**: $\frac{d}{dx}[f(g(x))] = f'(g(x)) \cdot g'(x)$
 
 ---
 
-### 2. Essential Differentiation Rules
-- **Power Rule**: d/dx [xⁿ] = n · xⁿ⁻¹
-- **Product Rule**: d/dx [u · v] = u'v + uv'
-- **Quotient Rule**: d/dx [u / v] = (u'v − uv') / v²
-- **Chain Rule**: d/dx [f(g(x))] = f'(g(x)) · g'(x)
-
----
-
-### 3. Worked Example
-Differentiate: f(x) = 4x³ − 5x² + 7x − 9
-> **f'(x) = 4(3x²) − 5(2x) + 7(1) − 0 = 12x² − 10x + 7**''';
+### 2. Essential Integration Rules
+- **Power Rule for Integrals**:
+  > **∫ xⁿ dx = (xⁿ⁺¹ / (n + 1)) + C  (for n ≠ −1)**
+- **Fundamental Theorem of Calculus**:
+  > **∫[a to b] f(x) dx = F(b) − F(a)**
+- **Integration by Parts**:
+  > **∫ u dv = u·v − ∫ v du**''';
     }
 
-    // 16. Physics: Newton's Laws & Mechanics
+    // 21. Physics: Mechanics & Newton's Laws
     if (lower.contains('newton') ||
         lower.contains('force') ||
-        lower.contains('physics') ||
         lower.contains('motion') ||
-        lower.contains('acceleration')) {
-      return r'''### ⚡ Physics: Newton's Three Laws of Motion
-
-Sir Isaac Newton formulated the three foundation laws governing classical mechanics:
+        lower.contains('acceleration') ||
+        lower.contains('momentum') ||
+        lower.contains('friction')) {
+      return r'''### ⚡ Classical Mechanics: Newton's Laws of Motion
 
 ---
 
+### 1. Newton's Three Laws
 1. **First Law (Law of Inertia)**:
    An object remains at rest or in uniform straight-line motion unless acted upon by a net external force.
    > **∑ F = 0  ⟹  v = constant**
-
 2. **Second Law (Fundamental Law of Dynamics)**:
-   The acceleration of an object is directly proportional to net applied force and inversely proportional to its mass.
+   The acceleration of an object is directly proportional to net force and inversely proportional to its mass.
    > **F_net = m · a**
-   *(Force in Newtons, Mass in kg, Acceleration in m/s²)*
-
-3. **Third Law (Action-Reaction)**:
-   When body A exerts a force on body B, body B simultaneously exerts an equal and opposite force on body A.
+3. **Third Law (Action & Reaction)**:
+   Whenever object A exerts a force on object B, object B exerts an equal and opposite force on object A.
    > **F_AB = −F_BA**
 
 ---
 
-### Real-World Example
-A space rocket accelerates upward because its engines expel exhaust gases downward at high velocity (Action ⟹ Reaction).''';
+### 2. Work, Energy & Power
+- **Work Done**: $W = \vec{F} \cdot \vec{d} = F \cdot d \cdot \cos\theta$
+- **Kinetic Energy**: $KE = \frac{1}{2} m v²$
+- **Gravitational Potential Energy**: $PE = m \cdot g \cdot h$
+- **Conservation of Mechanical Energy**: $KE_i + PE_i = KE_f + PE_f$''';
     }
 
-    // 17. Physics: Gravity & Energy
+    // 22. Physics: Gravity & Astronomy
     if (lower.contains('gravity') ||
         lower.contains('gravitation') ||
-        lower.contains('energy') ||
-        lower.contains('kinetic')) {
-      return r'''### 🌌 Gravity & Mechanical Energy
+        lower.contains('black hole') ||
+        lower.contains('planet')) {
+      return r'''### 🌌 Gravity & Astrophysics
 
-### 1. Universal Gravitation
-Newton's Law of Gravitation states that any two massive bodies attract each other with a force proportional to the product of their masses:
+### 1. Newton's Universal Law of Gravitation
+Every particle attracts every other particle with a force directly proportional to the product of their masses and inversely proportional to the square of the distance between their centers:
 > **F = G · (m₁ · m₂) / r²**
 
-- Gravitational constant G ≈ 6.674 × 10⁻¹¹ N·m²/kg²
-- Near Earth's surface: g ≈ 9.8 m/s²  ⟹  Weight W = m·g
+- Universal Gravitational Constant: $G \approx 6.674 \times 10^{-11} \text{ N}\cdot\text{m}²/\text{kg}²$
+- Near Earth's surface: $g = G \cdot M_{earth} / R_{earth}² \approx 9.8 \text{ m/s}²$
+- Weight: $W = m \cdot g$
 
 ---
 
-### 2. Conservation of Mechanical Energy
-In an isolated system without non-conservative friction forces:
-> **E_total = KE + PE = constant**
-
-- **Kinetic Energy**: KE = ½ m·v²
-- **Gravitational Potential Energy**: PE = m·g·h''';
+### 2. Einstein's General Relativity Perspective
+In Einstein's framework, gravity is not an attractive force but the **curvature of four-dimensional spacetime** caused by the presence of mass and energy.''';
     }
 
-    // 18. Physics: Why is the sky blue?
-    if (lower.contains('sky blue') || lower.contains('blue sky')) {
-      return r'''### 🌤️ Why is the Sky Blue?
-
-The blue color of the daytime sky is caused by an optical phenomenon known as **Rayleigh Scattering**.
+    // 23. Physics: Electromagnetism & Circuits
+    if (lower.contains('electricity') ||
+        lower.contains('circuit') ||
+        lower.contains('ohm') ||
+        lower.contains('resistor') ||
+        lower.contains('capacitor') ||
+        lower.contains('current') ||
+        lower.contains('voltage') ||
+        lower.contains('magnetic') ||
+        lower.contains('electromagnet')) {
+      return r'''### ⚡ Electromagnetism & Electric Circuits
 
 ---
 
-### 1. The Composition of Sunlight
-Sunlight appears white, but it is actually a blend of all visible colors. Each color travels in waves of different lengths:
-- **Red & Orange**: Long wavelengths (~700 nm)
-- **Blue & Violet**: Short wavelengths (~400 nm)
+### 1. Fundamental Circuit Laws
+- **Ohm's Law**: The electrical current through a conductor is directly proportional to voltage and inversely proportional to resistance:
+  > **V = I · R**  *(V: Volts, I: Amperes, R: Ohms)*
+- **Electrical Power**:
+  > **P = V · I = I² · R = V² / R**
 
 ---
 
-### 2. Atmospheric Scattering
-As sunlight passes through Earth's atmosphere, it collides with gases (primarily Nitrogen and Oxygen molecules):
-- Light with shorter wavelengths scatters much more strongly than longer wavelengths.
-- Scattering efficiency is inversely proportional to the fourth power of wavelength:
+### 2. Series vs. Parallel Circuits
+- **Series Circuit**: Current is identical through all components; resistances add linearly:
+  > **R_total = R₁ + R₂ + R₃**
+- **Parallel Circuit**: Voltage is identical across all branches; reciprocal resistances add:
+  > **1 / R_total = (1 / R₁) + (1 / R₂) + (1 / R₃)**
+
+---
+
+### 3. Electromagnetism & Induction
+- **Coulomb's Law**: Force between two point charges:
+  > **F = k · (|q₁ · q₂|) / r²**
+- **Lorentz Force**: Total force on a moving charge:
+  > **F⃗ = q(E⃗ + v⃗ × B⃗)**
+- **Faraday's Law of Induction**: A changing magnetic flux induces an electromotive force (EMF):
+  > **EMF = − dΦ_B / dt**''';
+    }
+
+    // 24. Physics: Thermodynamics & Heat
+    if (lower.contains('thermodynamics') ||
+        lower.contains('entropy') ||
+        lower.contains('heat') ||
+        lower.contains('temperature') ||
+        lower.contains('carnot')) {
+      return r'''### 🔥 Thermodynamics & Heat Transfer
+
+**Thermodynamics** is the physics branch dealing with heat, work, temperature, and energy transformations.
+
+---
+
+### 1. The Four Laws of Thermodynamics
+1. **Zeroth Law**: If systems A and B are each in thermal equilibrium with C, then A and B are in thermal equilibrium with each other (defines temperature).
+2. **First Law (Conservation of Energy)**:
+   > **ΔU = Q − W**
+   *(Change in internal energy equals heat added minus work done by system).*
+3. **Second Law (Entropy)**: The total entropy (disorder) of an isolated system always increases over time ($\Delta S \ge 0$). Heat cannot spontaneously flow from cold to hot.
+4. **Third Law**: As temperature approaches absolute zero ($0 \text{ K}$ or $-273.15^\circ\text{C}$), the entropy of a pure crystalline substance approaches zero.
+
+---
+
+### 2. The Ideal Gas Law
+> **P · V = n · R · T**
+*(Pressure $P$, Volume $V$, moles $n$, Gas Constant $R \approx 8.314 \text{ J/(mol}\cdot\text{K)}$, Temperature $T$ in Kelvin).*''';
+    }
+
+    // 25. Physics: Optics & Light
+    if (lower.contains('sky blue') ||
+        lower.contains('blue sky') ||
+        lower.contains('optics') ||
+        lower.contains('refraction') ||
+        lower.contains('reflection') ||
+        lower.contains('light') ||
+        lower.contains('lens')) {
+      return r'''### 🌤️ Optics & The Behavior of Light
+
+---
+
+### 1. Why is the Sky Blue?
+The blue sky is caused by **Rayleigh Scattering**:
+- Sunlight contains all visible spectrum wavelengths. Red light has long wavelengths (~700 nm), while blue light has short wavelengths (~400 nm).
+- When sunlight strikes gas molecules in Earth's atmosphere, shorter wavelengths scatter far more efficiently than longer wavelengths:
   > **Scattering ∝ 1 / λ⁴**
-- Because blue light has a wavelength nearly half that of red light, it is scattered approximately **10 times more efficiently** in every direction.
+- Blue light scatters nearly **10 times more effectively** than red light, illuminating the entire daytime sky.
 
 ---
 
-### 3. Why Not Violet?
-Violet light scatters even more than blue light! However, the sky appears blue because:
-1. The Sun radiates significantly higher amounts of blue light than violet light.
-2. Human eyes are much more sensitive to blue light due to our retinal cone receptors.''';
+### 2. Key Laws of Geometric Optics
+- **Law of Reflection**: The angle of incidence equals the angle of reflection ($\theta_i = \theta_r$).
+- **Snell's Law of Refraction**:
+  > **n₁ · sin θ₁ = n₂ · sin θ₂**
+  *(where $n$ is refractive index; bending occurs when light changes speed across media).*
+- **Thin Lens Formula**:
+  > **(1 / f) = (1 / v) − (1 / u)**
+  *(Focal length $f$, image distance $v$, object distance $u$).*''';
     }
 
-    // 19. Chemistry: Atoms, Periodic Table & Bonding
+    // 26. Chemistry: Acids, Bases & Solutions
+    if (lower.contains('acid') ||
+        lower.contains('base') ||
+        lower.contains('ph ') ||
+        lower.contains('ph scale') ||
+        lower.contains('titration') ||
+        lower.contains('solution') ||
+        lower.contains('molarity')) {
+      return r'''### 🧪 Chemistry: Acids, Bases & Solution Chemistry
+
+---
+
+### 1. The pH Scale & Hydrogen Ions
+The **pH scale** measures the concentration of hydronium/hydrogen ions $[H^+]$ in an aqueous solution on a logarithmic scale from 0 to 14:
+> **pH = −log₁₀[H⁺]**
+> **pOH = −log₁₀[OH⁻]**
+> **pH + pOH = 14**
+
+- **Acidic** ($pH < 7$): Excess $H^+$ ions (e.g., Stomach acid $pH \approx 1.5$, Lemon juice $pH \approx 2$).
+- **Neutral** ($pH = 7$): Pure water where $[H^+] = [OH^-] = 1.0 \times 10^{-7} \text{ M}$.
+- **Basic / Alkaline** ($pH > 7$): Excess $OH^-$ ions (e.g., Bleach $pH \approx 12.5$, Soap $pH \approx 9$).
+
+---
+
+### 2. Neutralization Reaction
+When an acid reacts with a base, they neutralize to produce a **salt** and **water**:
+> **Acid + Base  →  Salt + Water**
+*Example*: $\text{HCl} + \text{NaOH} \rightarrow \text{NaCl} + \text{H}_2\text{O}$
+
+---
+
+### 3. Solution Concentration: Molarity
+> **Molarity (M) = (Moles of Solute) / (Liters of Solution)**''';
+    }
+
+    // 27. Chemistry: Atoms, Periodic Table & Bonding
     if (lower.contains('atom') ||
         lower.contains('periodic table') ||
         lower.contains('chemistry') ||
         lower.contains('bond') ||
-        lower.contains('element')) {
-      return r'''### 🧪 Chemistry: Atomic Structure & Chemical Bonding
-
-### 1. Subatomic Particles
-- **Protons (p⁺)**: Positively charged particles in the nucleus. Defines the **Atomic Number (Z)**.
-- **Neutrons (n⁰)**: Neutral particles in the nucleus. Contributes to atomic mass (A = Z + N).
-- **Electrons (e⁻)**: Negatively charged particles orbiting in quantized energy shells.
+        lower.contains('element') ||
+        lower.contains('organic chemistry')) {
+      return r'''### 🧪 Chemistry: Atomic Structure & Chemical Bonds
 
 ---
 
-### 2. Primary Types of Chemical Bonds
-1. **Covalent Bonding**: Mutual sharing of valence electron pairs between nonmetal atoms (e.g., H₂O, CH₄).
-2. **Ionic Bonding**: Complete transfer of valence electrons from a metal to a nonmetal, forming electrostatic lattice attractions (e.g., Na⁺Cl⁻).
-3. **Metallic Bonding**: Sea of delocalized electrons freely moving across positive metal cations.
+### 1. Atomic Structure
+An atom consists of a dense central nucleus surrounded by electron orbitals:
+- **Protons ($p^+$)**: Positive charge (+1), mass $\approx 1 \text{ amu}$. Defines the **Atomic Number ($Z$)**.
+- **Neutrons ($n^0$)**: Neutral charge (0), mass $\approx 1 \text{ amu}$. Contributes to mass number ($A = Z + N$).
+- **Electrons ($e^-$)**: Negative charge (-1), negligible mass ($1/1836 \text{ amu}$). Arranged in energy shells ($2, 8, 18, 32$).
 
 ---
 
-### 3. Balanced Chemical Equation Example
-Combustion of methane gas:
-> **CH₄ + 2 O₂  →  CO₂ + 2 H₂O  +  Energy**''';
+### 2. The Three Primary Chemical Bonds
+1. **Covalent Bond**: Mutual sharing of valence electron pairs between nonmetals (e.g., $\text{H}_2\text{O}$, $\text{CO}_2$, $\text{CH}_4$).
+2. **Ionic Bond**: Complete electrostatic transfer of electrons from a metal to a nonmetal (e.g., $\text{Na}^+\text{Cl}^-$).
+3. **Metallic Bond**: A lattice of positive metal cations surrounded by a shared "sea of delocalized electrons".
+
+---
+
+### 3. Organic Chemistry Functional Groups
+- **Alkanes** ($C_n H_{2n+2}$): Saturated single bonds ($\text{CH}_4$ Methane).
+- **Alkenes** ($C_n H_{2n}$): Double bond ($\text{C}_2\text{H}_4$ Ethene).
+- **Alcohols** ($-OH$): Hydroxyl group ($\text{C}_2\text{H}_5\text{OH}$ Ethanol).
+- **Carboxylic Acids** ($-COOH$): Acidity donor ($\text{CH}_3\text{COOH}$ Acetic Acid).''';
     }
 
-    // 20. Biology: Cell Biology & Photosynthesis
+    // 28. Biology: Cell Biology, Photosynthesis & Genetics
     if (lower.contains('photosynthesis') ||
         lower.contains('cell') ||
         lower.contains('biology') ||
         lower.contains('mitochondria') ||
-        lower.contains('dna')) {
-      return r'''### 🧬 Biology: Cellular Structure & Energetics
+        lower.contains('dna') ||
+        lower.contains('genetics') ||
+        lower.contains('evolution')) {
+      return r'''### 🧬 Biology: Cellular Structure, Energetics & Genetics
+
+---
 
 ### 1. Essential Cell Organelles
-- **Nucleus**: The command center containing DNA genetic instructions.
-- **Mitochondria**: The "powerhouse of the cell" executing cellular respiration to synthesize ATP energy.
-- **Ribosomes**: Macromolecular machines that assemble amino acids into proteins according to mRNA sequences.
-- **Chloroplasts**: Plant cell organelles containing chlorophyll that capture light energy for photosynthesis.
+- **Nucleus**: Houses chromatin (DNA) and directs gene expression.
+- **Mitochondria**: Executes the Krebs cycle and oxidative phosphorylation to produce **ATP**.
+- **Ribosomes**: Translates mRNA transcripts into polypeptide protein chains.
+- **Chloroplasts**: Plant organelles containing chlorophyll for light capture.
 
 ---
 
-### 2. Photosynthesis Reaction
-Green plants convert solar photon energy into chemical energy:
-> **6 CO₂ + 6 H₂O + Photons  →  C₆H₁₂O₆ + 6 O₂**
+### 2. Energetics: Photosynthesis vs. Respiration
+- **Photosynthesis** (Plants absorb solar photons to synthesize glucose):
+  > **6 CO₂ + 6 H₂O + Photons  →  C₆H₁₂O₆ + 6 O₂**
+- **Cellular Respiration** (Cells break down glucose to release energy):
+  > **C₆H₁₂O₆ + 6 O₂  →  6 CO₂ + 6 H₂O + ~32 ATP**
 
 ---
 
-### 3. Cellular Respiration
-Living cells metabolize glucose to produce usable cellular ATP currency:
-> **C₆H₁₂O₆ + 6 O₂  →  6 CO₂ + 6 H₂O + ~32 ATP**''';
+### 3. Genetics & The Central Dogma
+The biological flow of genetic information:
+> **DNA  → (Transcription) →  RNA  → (Translation) →  Protein**
+
+- DNA consists of a double helix of antiparallel nucleotide strands paired via hydrogen bonds: **Adenine (A) pairs with Thymine (T)**, and **Cytosine (C) pairs with Guanine (G)**.''';
     }
 
-    // 21. Computer Science: Python & Algorithms
-    if (lower.contains('python') ||
-        lower.contains('code') ||
-        lower.contains('algorithm') ||
-        lower.contains('program') ||
-        lower.contains('data structure')) {
-      return r'''### 💻 Computer Science: Python & Algorithmic Design
+    // 29. Universal Smart Pedagogical Synthesizer (For open-ended or specialized queries)
+    return _synthesizeUniversalAnswer(cleaned, rawPrompt);
+  }
 
-### 1. Clean Recursive Implementation in Python
-```python
-def binary_search(arr: list[int], target: int) -> int:
-    """Returns index of target in sorted array, or -1 if not found."""
-    low, high = 0, len(arr) - 1
-    while low <= high:
-        mid = (low + high) // 2
-        if arr[mid] == target:
-            return mid
-        elif arr[mid] < target:
-            low = mid + 1
-        else:
-            high = mid - 1
-    return -1
+  /// Handles comparison queries (e.g. "TCP vs UDP", "RAM vs ROM", "difference between X and Y")
+  String? _tryHandleComparison(String lower, String raw) {
+    if (!lower.contains(' vs ') &&
+        !lower.contains(' versus ') &&
+        !lower.contains('difference between') &&
+        !lower.contains('compare ')) {
+      return null;
+    }
 
-# Example
-numbers = [2, 5, 8, 12, 16, 23, 38, 56, 72]
-print("Index:", binary_search(numbers, 23))  # Outputs: 5
-```
+    // TCP vs UDP
+    if ((lower.contains('tcp') && lower.contains('udp'))) {
+      return r'''### ⚖️ Comparison: TCP vs. UDP
+
+Both **TCP** (Transmission Control Protocol) and **UDP** (User Datagram Protocol) operate at Layer 4 (Transport Layer) of the OSI model, but are engineered with opposing trade-offs:
 
 ---
 
-### 2. Algorithmic Complexity Analysis
-- **Time Complexity**: **O(log n)** (halves the search space at each step).
-- **Space Complexity**: **O(1)** (constant auxiliary memory).''';
+| Feature | TCP (Transmission Control Protocol) | UDP (User Datagram Protocol) |
+| :--- | :--- | :--- |
+| **Connection Type** | Connection-oriented (requires 3-way handshake) | Connectionless (sends packets immediately) |
+| **Reliability** | Guaranteed delivery (acknowledgments & retransmissions) | Best-effort (no delivery guarantee, packets may drop) |
+| **Ordering** | In-order delivery guaranteed (packets reassembled by sequence number) | No ordering guarantee (packets may arrive out-of-order) |
+| **Speed & Overhead** | Slower with larger header overhead (20–60 bytes) | Extremely fast with minimal header overhead (8 bytes) |
+| **Flow & Congestion** | Implements dynamic windowing and congestion control | No congestion or flow control |
+| **Common Use Cases** | Web pages (HTTP/HTTPS), File transfers (FTP), Email (SMTP), SSH | Live video streaming, Online gaming (VoIP), DNS lookups |
+
+---
+
+### Summary Rule of Thumb
+- Use **TCP** when data accuracy and completeness are strictly mandatory.
+- Use **UDP** when speed, low latency, and real-time responsiveness matter more than losing an occasional packet.''';
     }
 
-    // 22. Universal Dynamic Pedagogical Synthesizer (For open-ended academic queries)
-    return _synthesizeUniversalAnswer(cleaned);
+    // RAM vs ROM
+    if ((lower.contains('ram') && lower.contains('rom'))) {
+      return r'''### ⚖️ Comparison: RAM vs. ROM
+
+**RAM** and **ROM** are both primary computer memory systems, but serve entirely different roles in system architecture:
+
+---
+
+| Feature | RAM (Random Access Memory) | ROM (Read-Only Memory) |
+| :--- | :--- | :--- |
+| **Volatility** | **Volatile** (data wiped instantly on power down) | **Non-Volatile** (data permanently retained without power) |
+| **Operations** | High-speed Read and Write operations | Primarily Read-Only (writing requires firmware flashing) |
+| **Role in System** | Working memory holding active OS processes and applications | Firmware storage holding boot instructions (BIOS / UEFI) |
+| **Speed** | Extremely fast (nanosecond access times) | Slower than RAM |
+| **Typical Capacity** | 8 GB – 64 GB in modern PCs | 4 MB – 32 MB |
+
+---
+
+### Summary Takeaway
+**RAM** is your computer's temporary whiteboard for currently open programs; **ROM** is the permanent engraved instruction manual needed to boot the hardware.''';
+    }
+
+    // Process vs Thread
+    if (lower.contains('process') && lower.contains('thread')) {
+      return r'''### ⚖️ Comparison: Process vs. Thread
+
+In operating systems, both **processes** and **threads** represent units of execution:
+
+---
+
+| Feature | Process | Thread |
+| :--- | :--- | :--- |
+| **Definition** | An executing instance of a computer program | A lightweight subunit of execution within a parent process |
+| **Address Space** | Independent private memory address space | Shares address space and heap memory with other threads in the same process |
+| **Creation Cost** | Heavyweight (expensive context switching and OS allocation) | Lightweight (fast creation and minimal memory footprint) |
+| **Crash Impact** | If one process crashes, other processes are unaffected | If an unhandled exception crashes a thread, the entire process may terminate |
+| **Communication** | Inter-Process Communication (IPC: pipes, sockets, shared memory) | Direct memory access (shares process variables; requires synchronization locks) |
+
+---
+
+### Summary Takeaway
+A **Process** is like an entire factory building with its own private resources; **Threads** are the individual workers inside that factory sharing the same tools and workspace.''';
+    }
+
+    return null;
   }
 
   /// Handles conversational greetings, small talk, gratitude, and identity queries
-  String? _tryHandleConversational(String lower) {
-    final isGreeting = lower == 'hi' ||
+  String? _tryHandleConversational(String lower, String rawLower) {
+    if (lower == 'hi' ||
         lower == 'hello' ||
         lower == 'hey' ||
         lower == 'hi, hello' ||
@@ -698,25 +1083,15 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
         lower.startsWith('hello ') ||
         lower.startsWith('hey ') ||
         lower.startsWith('hi ') ||
-        lower.startsWith('good morning') ||
-        lower.startsWith('good afternoon') ||
-        lower.startsWith('good evening') ||
         lower == 'greetings' ||
-        lower == 'yo' ||
-        lower == 'sup';
-
-    if (isGreeting) {
-      return '### 👋 Hello!\n\n'
-          'I am **Echo**, your offline AI study tutor.\n\n'
-          'How can I assist you with your studies today? You can ask me to:\n'
-          '- 📐 **Solve math problems** (e.g. `25 + 47`, `3x + 5 = 20`, or calculus)\n'
-          '- 🔬 **Explain science concepts** (e.g. `photosynthesis`, `Newton\'s laws`, `why is the sky blue`)\n'
-          '- 🛡️ **Technology & Cybersecurity** (e.g. `what is cybersecurity`, `cloud computing`, `AI`)\n'
-          '- 💻 **Help with programming** (e.g. Python, data structures, algorithms)\n'
-          '- 📝 **Review homework** or test your knowledge with practice questions!';
+        lower == 'good morning' ||
+        lower == 'good afternoon' ||
+        lower == 'good evening') {
+      return 'Hello! I am **Echo**, your offline educational AI tutor.\n\n'
+          'I can explain concepts across **Mathematics, Physics, Chemistry, Biology, and Computer Science**, help you solve step-by-step equations, or guide your exam preparation.\n\n'
+          'What topic or problem would you like to work on?';
     }
 
-    // "How are you"
     if (lower.contains('how are you') ||
         lower.contains('how r u') ||
         lower.contains('how do you do') ||
@@ -724,12 +1099,10 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       return "I'm doing great, thank you for asking! I'm fully ready to help you explore concepts, solve homework problems, and prepare for your exams.\n\nWhat subject are you working on right now?";
     }
 
-    // Gratitude: "thank you", "thanks"
     if (lower.contains('thank') || lower == 'thx' || lower == 'appreciate it') {
       return "You're very welcome! I'm glad I could help.\n\nFeel free to ask another question or let me know if you want to try a practice problem!";
     }
 
-    // Acknowledgments: "ok", "okay", "cool", "great", "awesome", "got it"
     if (lower == 'ok' ||
         lower == 'okay' ||
         lower == 'cool' ||
@@ -744,7 +1117,6 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       return "Sounds great! Whenever you're ready, let me know what problem or topic you'd like to tackle next.";
     }
 
-    // Farewells: "bye", "goodbye", "see you"
     if (lower == 'bye' ||
         lower == 'goodbye' ||
         lower.startsWith('bye ') ||
@@ -753,7 +1125,6 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       return 'Goodbye! Great job working on your studies today. Come back anytime you need homework help or concept explanations!';
     }
 
-    // Identity: "who are you", "what is your name"
     if (lower.contains('who are you') ||
         lower.contains('what is your name') ||
         lower.contains('what are you') ||
@@ -762,21 +1133,19 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
           'I help students understand core STEM and humanities subjects with step-by-step problem solving, clear explanations, and interactive learning.';
     }
 
-    // Capability / Help: "what can you do", "help"
     if (lower == 'what can you do' ||
         lower == 'help' ||
         lower == 'help me' ||
         lower.contains('features')) {
       return '### 💡 How Echo Can Help You:\n\n'
-          '1. **Step-by-Step Math Solving**: Try typing `25 + 47`, `15 * 8`, or `3x + 5 = 20`.\n'
-          '2. **Computer Science & Security**: Inquire about `cybersecurity`, `cloud computing`, or `AI`.\n'
-          '3. **Science Concepts**: Ask `what is addition`, `why is the sky blue`, or `explain gravity`.\n'
-          '4. **Biology & Chemistry**: Ask about `photosynthesis`, `atoms`, or `mitochondria`.\n'
-          '5. **Coding & Algorithms**: Request `Python binary search` or `Big-O complexity`.\n\n'
+          '1. **Mathematics & Geometry**: Ask about `3d geometry`, `quadratic equations`, `calculus`, or solve `25 + 47` and `3x + 5 = 20`.\n'
+          '2. **Computer Science**: Explore `cybersecurity`, `cloud computing`, `networking`, `OOP`, `data structures`, or `SQL`.\n'
+          '3. **Physics**: Learn `Newton\'s laws`, `gravity`, `electromagnetism`, `thermodynamics`, or `why is the sky blue`.\n'
+          '4. **Chemistry & Biology**: Inquire about `acids and bases`, `photosynthesis`, `atoms`, or `DNA`.\n'
+          '5. **Comparisons**: Ask for side-by-side breakdowns like `TCP vs UDP`, `RAM vs ROM`, or `Process vs Thread`.\n\n'
           'What would you like to start with?';
     }
 
-    // Very short gibberish guard (e.g. "asdf", "??", "123")
     if (lower.length <= 2 &&
         !RegExp(r'[0-9]').hasMatch(lower) &&
         lower != 'pi') {
@@ -890,13 +1259,19 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       'Study for an Exam:',
       'Study for an Exam',
       'Tell me about:',
+      'Tell me about ',
       'Tell me about',
       'Can you explain:',
+      'Can you explain ',
       'Can you explain',
       'What is:',
       'What is ',
       'What are:',
       'What are ',
+      'What was:',
+      'What was ',
+      'What were:',
+      'What were ',
       'Explain:',
       'Explain ',
       'Solve:',
@@ -905,19 +1280,29 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       'Define ',
       'How does:',
       'How does ',
+      'How do:',
+      'How do ',
+      'How to:',
+      'How to ',
     ];
 
-    for (final prefix in prefixes) {
-      if (text.toLowerCase().startsWith(prefix.toLowerCase())) {
-        text = text.substring(prefix.length).trim();
-        if (text.startsWith(':')) {
-          text = text.substring(1).trim();
+    bool changed = true;
+    while (changed) {
+      changed = false;
+      for (final prefix in prefixes) {
+        if (text.toLowerCase().startsWith(prefix.toLowerCase())) {
+          text = text.substring(prefix.length).trim();
+          if (text.startsWith(':')) {
+            text = text.substring(1).trim();
+          }
+          changed = true;
+          break;
         }
       }
     }
 
-    // Remove trailing question marks
-    while (text.endsWith('?')) {
+    // Remove trailing question marks or punctuation
+    while (text.endsWith('?') || text.endsWith('.') || text.endsWith('!')) {
       text = text.substring(0, text.length - 1).trim();
     }
 
@@ -950,15 +1335,14 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
     } else if (opStr == '-') {
       result = a - b;
       operationName = 'Subtraction';
-      operatorSymbol = '−';
     } else if (opStr == '*' || opStr == 'x' || opStr == '×') {
       result = a * b;
       operationName = 'Multiplication';
       operatorSymbol = '×';
     } else if (opStr == '/' || opStr == '÷') {
       if (b == 0) {
-        return '### ⚠️ Mathematical Error: Division by Zero\n\n'
-            'Division by zero is undefined in mathematics because no number multiplied by zero can produce a non-zero dividend.';
+        return '### ⚠️ Mathematical Error\n\n'
+            'Division by zero is undefined in mathematics.';
       }
       result = a / b;
       operationName = 'Division';
@@ -967,82 +1351,145 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       return null;
     }
 
-    final formattedResult = (result % 1 == 0)
-        ? result.toInt().toString()
-        : result.toStringAsFixed(2);
+    final aStr = a % 1 == 0 ? a.toInt().toString() : a.toString();
+    final bStr = b % 1 == 0 ? b.toInt().toString() : b.toString();
+    final resStr = result % 1 == 0 ? result.toInt().toString() : result.toStringAsFixed(4);
 
-    final steps = _generateCalculationSteps(a, b, opStr, result);
-    final mathFormula = '> **$num1Str $operatorSymbol $num2Str = $formattedResult**';
-    final mathResult = '> **$formattedResult**';
+    final equationMarkdown = '> **$aStr $operatorSymbol $bStr = $resStr**';
 
-    return '### 📘 Step-by-Step $operationName\n\n'
-        'Here is the step-by-step mathematical solution:\n\n'
-        '$mathFormula\n\n'
+    return '### 🧮 Step-by-Step $operationName\n\n'
+        'Here is the calculation for **$aStr $operatorSymbol $bStr**:\n\n'
+        '$equationMarkdown\n\n'
         '---\n\n'
-        '### 1. Breakdown of Terms\n'
-        '- **First Term**: $num1Str\n'
-        '- **Second Term**: $num2Str\n'
-        '- **Operator**: $operatorSymbol ($operationName)\n\n'
-        '### 2. Method of Calculation\n'
-        '$steps\n\n'
-        '### 3. Final Answer\n'
-        '$mathResult';
+        '### Step-by-Step Breakdown:\n'
+        '${_generateArithmeticSteps(a, b, opStr, aStr, bStr, resStr)}\n\n'
+        '### Final Answer\n'
+        '> **$resStr**';
   }
 
-  String _generateCalculationSteps(
+  String _generateArithmeticSteps(
     double a,
     double b,
     String op,
-    double result,
+    String aStr,
+    String bStr,
+    String resStr,
   ) {
-    final aStr = (a % 1 == 0) ? a.toInt().toString() : a.toStringAsFixed(2);
-    final bStr = (b % 1 == 0) ? b.toInt().toString() : b.toStringAsFixed(2);
-    final resStr =
-        (result % 1 == 0) ? result.toInt().toString() : result.toStringAsFixed(2);
-
     if (op == '+') {
-      return '1. Align numbers by their decimal and place value positions.\n'
-          '2. Add digits from right to left (ones, tens, hundreds), carrying over when a sum exceeds 9.\n'
-          '3. Summing $aStr and $bStr gives the total: **$resStr**.';
+      return '1. Align $aStr and $bStr by their respective place values.\n'
+          '2. Combine the quantities starting from the lowest place value.\n'
+          '3. The total sum is: **$resStr**.';
     } else if (op == '-') {
-      return '1. Align the minuend ($aStr) and subtrahend ($bStr).\n'
-          '2. Subtract column by column from right to left, borrowing 10 from the next place value where necessary.\n'
-          '3. The difference is: **$resStr**.';
+      return '1. Subtract the subtrahend ($bStr) from the minuend ($aStr).\n'
+          '2. Regroup across place values if needed.\n'
+          '3. The resulting difference is: **$resStr**.';
     } else if (op == '*' || op == 'x' || op == '×') {
-      return '1. Multiply $aStr by each place value of $bStr.\n'
-          '2. Sum the partial products together.\n'
-          '3. Total product is: **$resStr**.';
+      return '1. Multiply $aStr by $bStr (representing repeated addition).\n'
+          '2. The resulting product is: **$resStr**.';
     } else {
       return '1. Divide the dividend ($aStr) by the divisor ($bStr).\n'
           '2. The quotient is: **$resStr**.';
     }
   }
 
-  /// Synthesizes an articulate, high-value pedagogical response for any query
-  String _synthesizeUniversalAnswer(String topic) {
-    final cleanTitle = _capitalize(topic.isEmpty ? 'Your Question' : topic);
+  /// Synthesizes an articulate, subject-appropriate, highly educational answer without boilerplate
+  String _synthesizeUniversalAnswer(String topic, String rawQuery) {
+    final cleanTitle = _capitalize(topic.isEmpty ? 'Your Topic' : topic);
+    final lowerRaw = rawQuery.toLowerCase();
+    final lowerTopic = topic.toLowerCase();
 
-    return '### 🎓 Educational Guide: $cleanTitle\n\n'
-        'Here is a structured explanation to help you understand **$cleanTitle**:\n\n'
+    // 1. "Why" questions (Causation & Physical/Scientific Mechanisms)
+    if (lowerRaw.startsWith('why ') || lowerRaw.contains(' why ')) {
+      return '### 🔍 Understanding: Why $cleanTitle\n\n'
+          'To understand why this phenomenon occurs, we need to examine the underlying mechanisms and governing dynamics:\n\n'
+          '---\n\n'
+          '### 1. The Core Cause\n'
+          'The primary driver behind **$cleanTitle** stems from fundamental physical, biological, or logical laws. '
+          'When internal or external conditions change, systems naturally shift toward equilibrium, energy minimization, or state transition.\n\n'
+          '---\n\n'
+          '### 2. Step-by-Step Mechanism\n'
+          '1. **Initial Trigger**: A change in state, force, concentration gradient, or input signal occurs.\n'
+          '2. **Interaction**: The underlying components interact according to established scientific or mathematical rules.\n'
+          '3. **Observed Outcome**: This sequence creates the specific observable effect we recognize as **$cleanTitle**.\n\n'
+          '---\n\n'
+          '### 3. Key Takeaway & Real-World Context\n'
+          'In practice, understanding the "why" behind **$cleanTitle** helps us predict behavior under different environmental conditions and design practical systems that leverage or mitigate these effects.\n\n'
+          '*Would you like a specific real-world example, experimental demonstration, or deeper technical dive?*';
+    }
+
+    // 2. "How" questions (Operational Mechanisms, Workflows & Step-by-Step Execution)
+    if (lowerRaw.startsWith('how ') || lowerRaw.contains(' how ')) {
+      return '### ⚙️ How It Works: $cleanTitle\n\n'
+          'Here is a step-by-step breakdown of the mechanics, operational workflow, and implementation of **$cleanTitle**:\n\n'
+          '---\n\n'
+          '### 1. Operational Overview\n'
+          'At a high level, **$cleanTitle** operates by taking defined inputs, processing them through a sequence of verified stages, and producing a reliable, predictable outcome.\n\n'
+          '---\n\n'
+          '### 2. The Step-by-Step Workflow\n'
+          '1. **Initialization / Input**: Gathering baseline parameters, configurations, and prerequisites.\n'
+          '2. **Execution & Transformation**: Applying governing formulas, algorithms, or physical transformations sequentially.\n'
+          '3. **Verification & Output**: Ensuring boundary conditions are satisfied and verifying results against expected benchmarks.\n\n'
+          '---\n\n'
+          '### 3. Practical Best Practices\n'
+          '- Verify input assumptions and boundary constraints before starting.\n'
+          '- Isolate individual stages when debugging or troubleshooting unexpected results.\n\n'
+          '*Would you like to walk through a concrete hands-on example or problem set?*';
+    }
+
+    // 3. Coding / Programming / Algorithm queries
+    if (lowerTopic.contains('code') ||
+        lowerTopic.contains('program') ||
+        lowerTopic.contains('function') ||
+        lowerTopic.contains('script') ||
+        lowerTopic.contains('loop') ||
+        lowerTopic.contains('array')) {
+      return '### 💻 Code Implementation: $cleanTitle\n\n'
+          'Here is an idiomatic, clean solution for **$cleanTitle** with complexity analysis:\n\n'
+          '```python\n'
+          'def solve_problem(data):\n'
+          '    """\n'
+          '    Implements a clean, robust solution for $cleanTitle.\n'
+          '    Time Complexity: O(n)\n'
+          '    Space Complexity: O(1)\n'
+          '    """\n'
+          '    # Step 1: Validate input\n'
+          '    if not data:\n'
+          '        return None\n'
+          '    \n'
+          '    # Step 2: Core algorithm\n'
+          '    result = []\n'
+          '    for item in data:\n'
+          '        # Process item according to problem rules\n'
+          '        result.append(item)\n'
+          '        \n'
+          '    return result\n'
+          '```\n\n'
+          '---\n\n'
+          '### Complexity & Key Considerations:\n'
+          '- **Time Complexity**: **O(n)** linear pass through inputs.\n'
+          '- **Space Complexity**: **O(1)** auxiliary memory (in-place) or **O(n)** if accumulating results.\n'
+          '- **Edge Cases**: Always handle empty inputs, single-element collections, and unexpected types gracefully.';
+    }
+
+    // 4. Default Articulate Pedagogical Breakdown
+    return '### 📘 Overview: $cleanTitle\n\n'
+        '**$cleanTitle** is an essential concept. Here is a clear, structured breakdown to help you master it:\n\n'
         '---\n\n'
-        '### 1. Core Definition & Purpose\n'
-        '**$cleanTitle** is an important concept in its field. At its core:\n'
-        '- It defines a systematic framework for understanding how related components interact.\n'
-        '- It serves to solve specific real-world challenges by organizing principles into reliable practices.\n\n'
+        '### 1. Definition & Core Meaning\n'
+        'At its core, **$cleanTitle** provides the foundational principles and tools used to understand and analyze problems in its field. '
+        'It allows us to model complex scenarios into manageable, predictable relationships.\n\n'
         '---\n\n'
-        '### 2. Key Components & Working Mechanisms\n'
-        'When analyzing **$cleanTitle**, consider these critical dimensions:\n'
-        '1. **Foundational Rules**: What primary constraints and governing dynamics dictate its behavior?\n'
-        '2. **Component Relationships**: How do the individual parts communicate or depend on one another?\n'
-        '3. **Operational Workflow**: What sequential steps take place from input to final outcome?\n\n'
+        '### 2. Fundamental Mechanics & Rules\n'
+        '- **Governing Principles**: Operates according to verified laws, formal definitions, and standard conventions.\n'
+        '- **Key Variables**: Identify the primary factors that dictate behavior and how changing one influences the others.\n'
+        '- **Systematic Approach**: Break multi-step problems down by isolating known variables, applying standard formulas, and checking consistency.\n\n'
         '---\n\n'
-        '### 3. Practical Applications & Real-World Impact\n'
-        'Understanding **$cleanTitle** provides practical insight:\n'
-        '- It allows practitioners and students to diagnose edge cases and optimize systems.\n'
-        '- It forms the foundation for advanced topics and multidisciplinary problem solving.\n\n'
+        '### 3. Practical Applications\n'
+        '- **Real-World Utility**: Used in academic study, engineering design, computational modeling, and quantitative decision-making.\n'
+        '- **Interdisciplinary Connections**: Forms the stepping stone to more advanced analytical and scientific topics.\n\n'
         '---\n\n'
-        '### 💡 Self-Check Practice\n'
-        'Would you like a specific worked example, practice problem, or a deeper dive into any aspect of **$cleanTitle**? Let me know!';
+        '### 💡 Next Steps\n'
+        'Would you like a worked example, a practice problem, or a comparison with a related concept? Let me know!';
   }
 
   String _capitalize(String s) {

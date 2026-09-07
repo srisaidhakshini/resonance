@@ -19,7 +19,6 @@ Consider 72 - 38:
 Check by addition: 34 + 38 = 72$''';
 
     final result = MathFormatter.format(raw);
-    print('FORMATTED RESULT:\n$result');
     expect(result.contains(r'\mathbf'), isFalse);
     expect(result.contains(r'$'), isFalse);
   });
