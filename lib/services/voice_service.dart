@@ -175,9 +175,44 @@ class VoiceService {
     currentlySpeakingIdNotifier.value = messageId;
 
     try {
+      await _tts.setPitch(1.0);
       await _tts.speak(cleanText);
     } catch (e) {
       if (kDebugMode) print('🔊 [TTS] Speak error: $e');
+      _isSpeaking = false;
+      _currentlySpeakingMessageId = null;
+      isSpeakingNotifier.value = false;
+      currentlySpeakingIdNotifier.value = null;
+    }
+  }
+
+  /// Speaks a podcast host turn with distinct audio persona pitches
+  Future<void> speakHostTurn({
+    required String text,
+    required bool isHostA,
+    String? messageId,
+    double rate = 0.5,
+  }) async {
+    if (!_isTtsInitialized) {
+      await _initTts();
+    }
+    await stopSpeaking();
+
+    final cleanText = _cleanTextForSpeech(text);
+    if (cleanText.isEmpty) return;
+
+    _currentlySpeakingMessageId = messageId;
+    currentlySpeakingIdNotifier.value = messageId;
+
+    try {
+      // Alex (Host A): 0.85 deeper pitch
+      // Jamie (Host B): 1.20 brighter curious pitch
+      final pitch = isHostA ? 0.85 : 1.22;
+      await _tts.setPitch(pitch);
+      await _tts.setSpeechRate(rate);
+      await _tts.speak(cleanText);
+    } catch (e) {
+      if (kDebugMode) print('🔊 [TTS] Host speak error: $e');
       _isSpeaking = false;
       _currentlySpeakingMessageId = null;
       isSpeakingNotifier.value = false;

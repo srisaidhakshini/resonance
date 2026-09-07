@@ -18,4 +18,7 @@ class ChatMessage extends HiveObject {
     required this.content,
     required this.timestamp,
   });
+
+  String get sender => role;
+  String get text => content;
 }

@@ -47,6 +47,7 @@ dependencies:
   file_picker: ^8.1.4
   syncfusion_flutter_pdf: ^27.2.5   # PDF text-layer extraction (offline, no OCR)
   google_mlkit_text_recognition: ^0.13.1  # On-device OCR (Android/iOS only)
+  image_picker: ^1.2.3
 
 dev_dependencies:
   flutter_test:

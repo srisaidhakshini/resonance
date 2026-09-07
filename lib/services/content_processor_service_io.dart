@@ -71,4 +71,9 @@ class ContentProcessorService {
       await recognizer.close();
     }
   }
+
+  Future<String> extractTextFromImagePath(String path) async {
+    if (!supportsOcr || path.isEmpty) return '';
+    return _extractImageText(path);
+  }
 }

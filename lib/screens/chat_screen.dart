@@ -11,6 +11,15 @@ import '../providers/ui_provider.dart';
 import '../services/voice_service.dart';
 import '../widgets/app_drawer.dart';
 import '../theme/app_theme.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:image_picker/image_picker.dart';
+import '../models/chat_message.dart';
+import '../services/chat_to_studio_generator.dart';
+import 'mind_map_screen.dart';
+import 'flashcards_screen.dart';
+import 'slide_deck_screen.dart';
+import 'quiz_screen.dart';
+import 'audio_overview_screen.dart';
 import 'profile_setup_screen.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
@@ -68,6 +77,317 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
       );
     }
+  }
+
+  Future<void> _captureFromCamera() async {
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+      if (pickedFile == null) return;
+
+      setState(() => _isIngestingFile = true);
+
+      final processor = ref.read(contentProcessorServiceProvider);
+      String recognizedText = '';
+
+      if (processor.supportsOcr && pickedFile.path.isNotEmpty) {
+        recognizedText = await processor.extractTextFromImagePath(pickedFile.path);
+      }
+
+      if (!mounted) return;
+      setState(() => _isIngestingFile = false);
+
+      if (recognizedText.trim().isNotEmpty) {
+        final cleanText = recognizedText.trim();
+        final current = _textController.text.trim();
+        if (current.isEmpty) {
+          _textController.text = 'Here are my notes captured with the camera:\n\n$cleanText\n\nCould you please explain this concept and solve any problems in it?';
+        } else {
+          _textController.text = '$current\n\n[Captured Notes]:\n$cleanText';
+        }
+        _textController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _textController.text.length),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('📸 Notes extracted via OCR and inserted into chat!'),
+            backgroundColor: AppColors.lightTeal,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        final bytes = await pickedFile.readAsBytes();
+        final pFile = PlatformFile(
+          name: pickedFile.name,
+          size: bytes.length,
+          bytes: bytes,
+          path: kIsWeb ? null : pickedFile.path,
+        );
+        final content = await ref.read(contentNotifierProvider.notifier).ingestFile(pFile);
+        if (!mounted) return;
+        ref.read(currentContentIdProvider.notifier).state = content.id;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Photo attached as "${content.title}". Echo will use it for answers.'),
+            backgroundColor: AppColors.lightTeal,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isIngestingFile = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Camera capture: ${e.toString().replaceFirst("Exception: ", "")}'),
+          backgroundColor: AppColors.lightDestructive,
+        ),
+      );
+    }
+  }
+
+  void _showStudioGenerationSheet(BuildContext context, List messages) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final chatMessages = messages.cast<ChatMessage>();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF142225) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.lightTeal.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.auto_awesome_mosaic_rounded,
+                      color: AppColors.lightTeal,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Echo Studio • Convert Chat',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : AppColors.lightForeground,
+                          ),
+                        ),
+                        Text(
+                          'Transform active discussion into interactive study artifacts',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white60 : AppColors.lightMutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // 1. 2D Visual Mind Map
+              _buildStudioOptionTile(
+                icon: Icons.hub_rounded,
+                iconColor: const Color(0xFF14B8A6),
+                title: '2D Visual Mind Map',
+                description: 'Canvas graph with organic Bezier curves & drill-down nodes',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  final deck = ChatToStudioGenerator.generateMindMap(chatMessages);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MindMapScreen(initialDeck: deck)),
+                  );
+                },
+                isDark: isDark,
+              ),
+
+              // 2. Flashcards
+              _buildStudioOptionTile(
+                icon: Icons.style_rounded,
+                iconColor: const Color(0xFF8B5CF6),
+                title: 'Active-Recall Flashcards',
+                description: '3D flipping cards, hints & spaced retention scoring',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  final deck = ChatToStudioGenerator.generateFlashcards(chatMessages);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => FlashcardsScreen(initialDeck: deck)),
+                  );
+                },
+                isDark: isDark,
+              ),
+
+              // 3. Slide Deck
+              _buildStudioOptionTile(
+                icon: Icons.slideshow_rounded,
+                iconColor: const Color(0xFFF97316),
+                title: 'Executive Slide Deck',
+                description: 'Presentation slides with formulas, axioms & takeaways',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  final deck = ChatToStudioGenerator.generateSlideDeck(chatMessages);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => SlideDeckScreen(initialDeck: deck)),
+                  );
+                },
+                isDark: isDark,
+              ),
+
+              // 4. Practice Quiz
+              _buildStudioOptionTile(
+                icon: Icons.quiz_rounded,
+                iconColor: const Color(0xFF10B981),
+                title: 'Practice Quiz & Assessment',
+                description: 'Multiple-choice test with immediate feedback & answers',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  final deck = ChatToStudioGenerator.generateQuiz(chatMessages);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => QuizScreen(initialDeck: deck)),
+                  );
+                },
+                isDark: isDark,
+              ),
+
+              // 5. Audio Overview Podcast
+              _buildStudioOptionTile(
+                icon: Icons.podcasts_rounded,
+                iconColor: const Color(0xFF6366F1),
+                title: 'Audio Overview Podcast',
+                description: 'Two-host back-and-forth deep dive conversational show',
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  final track = ChatToStudioGenerator.generatePodcast(chatMessages);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => AudioOverviewScreen(initialTrack: track)),
+                  );
+                },
+                isDark: isDark,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStudioOptionTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String description,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF1B2C30) : const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isDark ? const Color(0xFF263D42) : const Color(0xFFE2E8F0),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : AppColors.lightForeground,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        description,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w400,
+                          color: isDark ? Colors.white60 : AppColors.lightMutedForeground,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: isDark ? Colors.white38 : Colors.black26,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -251,6 +571,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ),
         actions: [
           IconButton(
+            onPressed: () => _showStudioGenerationSheet(context, messages),
+            icon: Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                borderRadius: AppRadii.smRadius,
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 1,
+                ),
+              ),
+              child: const Icon(
+                Icons.auto_awesome_mosaic_rounded,
+                color: AppColors.lightTeal,
+                size: 18,
+              ),
+            ),
+            tooltip: 'Echo Studio (Convert Chat)',
+          ),
+          IconButton(
             onPressed: () {
               ref.read(chatProvider.notifier).startNewChat();
             },
@@ -374,7 +714,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             _buildMessageBubble(context, message.content, isUser, isDark, messageId),
             if (isLastAiMessage) ...[
               const SizedBox(height: 8),
-              _buildEducationalActionChips(context, isDark),
+              _buildEducationalActionChips(context, isDark, messages),
               const SizedBox(height: 12),
             ],
           ],
@@ -696,8 +1036,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
-  Widget _buildEducationalActionChips(BuildContext context, bool isDark) {
+  Widget _buildEducationalActionChips(BuildContext context, bool isDark, List messages) {
     final actions = [
+      '✨ Convert to Studio Artifacts',
       'Try a similar problem',
       'Explain it simpler',
       'Give me a quiz',
@@ -711,18 +1052,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         spacing: 8,
         runSpacing: 6,
         children: actions.map((action) {
+          final isStudioAction = action.contains('Studio Artifacts');
           return ActionChip(
             label: Text(
               action,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                color: isStudioAction
+                    ? AppColors.lightTeal
+                    : (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
               ),
             ),
-            backgroundColor: isDark ? AppColors.darkCard : AppColors.lightSecondary,
+            backgroundColor: isStudioAction
+                ? AppColors.lightTeal.withValues(alpha: isDark ? 0.18 : 0.12)
+                : (isDark ? AppColors.darkCard : AppColors.lightSecondary),
             side: BorderSide(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              color: isStudioAction
+                  ? AppColors.lightTeal
+                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
               width: 1,
             ),
             shape: RoundedRectangleBorder(
@@ -730,7 +1078,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             onPressed: () {
-              _handleSubmitted(action);
+              if (isStudioAction) {
+                _showStudioGenerationSheet(context, messages);
+              } else {
+                _handleSubmitted(action);
+              }
             },
           );
         }).toList(),
@@ -837,6 +1189,19 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 padding: const EdgeInsets.all(4),
                 constraints: const BoxConstraints(),
               ),
+            const SizedBox(width: 2),
+            // Camera OCR Button
+            IconButton(
+              tooltip: 'Scan Notes / Textbook with Camera (OCR)',
+              icon: Icon(
+                Icons.camera_alt_outlined,
+                size: 20,
+                color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+              ),
+              onPressed: _captureFromCamera,
+              padding: const EdgeInsets.all(4),
+              constraints: const BoxConstraints(),
+            ),
             const SizedBox(width: 4),
             Expanded(
               child: TextField(

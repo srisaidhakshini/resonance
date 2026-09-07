@@ -53,4 +53,8 @@ class ContentProcessorService {
       document.dispose();
     }
   }
+
+  Future<String> extractTextFromImagePath(String path) async {
+    return '';
+  }
 }

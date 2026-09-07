@@ -6,6 +6,11 @@ import '../providers/chat_provider.dart';
 import '../providers/progress_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
+import 'slide_deck_screen.dart';
+import 'flashcards_screen.dart';
+import 'audio_overview_screen.dart';
+import 'quiz_screen.dart';
+import 'mind_map_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final Function(String prompt)? onNavigateToChatWithPrompt;
@@ -158,8 +163,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     const SizedBox(height: 24),
 
-                    // 5. QUICK ACTIONS
-                    _buildSectionHeader(context, 'QUICK STUDY ACTIONS', isDark),
+                    // 5. NOTEBOOKLM STUDIO & QUICK ACTIONS
+                    _buildSectionHeader(context, 'STUDIO & QUICK STUDY ACTIONS', isDark),
                     const SizedBox(height: 12),
                     _buildQuickActionsGrid(context, isDark),
 
@@ -438,28 +443,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildQuickActionsGrid(BuildContext context, bool isDark) {
     final actions = [
       {
-        'icon': Icons.school_outlined,
-        'title': 'Homework Help',
-        'desc': 'Step-by-step guidance',
-        'prompt': 'Help with Homework: ',
+        'icon': Icons.slideshow_rounded,
+        'title': 'Slide Decks',
+        'desc': 'Interactive STEM slides',
+        'tag': 'STUDIO',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const SlideDeckScreen()),
+        ),
       },
       {
-        'icon': Icons.lightbulb_outline_rounded,
-        'title': 'Explain Concept',
-        'desc': 'Clear mental models',
-        'prompt': 'Explain a Concept: ',
+        'icon': Icons.style_outlined,
+        'title': 'Flashcards',
+        'desc': '3D flip & spaced repetition',
+        'tag': 'STUDIO',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const FlashcardsScreen()),
+        ),
+      },
+      {
+        'icon': Icons.podcasts_rounded,
+        'title': 'Audio Overview',
+        'desc': '2-Host conversational podcast',
+        'tag': 'AI AUDIO',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const AudioOverviewScreen()),
+        ),
       },
       {
         'icon': Icons.quiz_outlined,
         'title': 'Take a Quiz',
-        'desc': 'Active recall test',
-        'prompt': 'Give me a 5-question active recall multiple choice quiz on my study subjects.',
+        'desc': 'Active recall & explanations',
+        'tag': 'STUDIO',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const QuizScreen()),
+        ),
       },
       {
-        'icon': Icons.auto_stories_outlined,
-        'title': 'Summarize',
-        'desc': 'High-yield takeaways',
-        'prompt': 'Summarize the core takeaways for: ',
+        'icon': Icons.account_tree_outlined,
+        'title': 'Mind Map',
+        'desc': 'Concept tree & hierarchy',
+        'tag': 'GRAPH',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const MindMapScreen()),
+        ),
+      },
+      {
+        'icon': Icons.description_outlined,
+        'title': 'Study Report',
+        'desc': 'Executive brief & takeaways',
+        'tag': 'SUMMARY',
+        'onTap': () => _triggerPrompt('Generate a comprehensive study report and structured briefing on: '),
       },
     ];
 
@@ -470,7 +508,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
-        childAspectRatio: 1.3,
+        childAspectRatio: 1.22,
       ),
       itemCount: actions.length,
       itemBuilder: (context, index) {
@@ -481,7 +519,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           icon: a['icon'] as IconData,
           title: a['title'] as String,
           desc: a['desc'] as String,
-          onTap: () => _triggerPrompt(a['prompt'] as String),
+          tag: a['tag'] as String?,
+          onTap: a['onTap'] as VoidCallback,
         );
       },
     );
@@ -493,6 +532,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required IconData icon,
     required String title,
     required String desc,
+    String? tag,
     required VoidCallback onTap,
   }) {
     return Material(
@@ -501,7 +541,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         borderRadius: AppRadii.cardRadius,
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(13),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkCard : AppColors.lightCard,
             borderRadius: AppRadii.cardRadius,
@@ -515,13 +555,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-                  borderRadius: AppRadii.smRadius,
-                ),
-                child: Icon(icon, size: 18, color: AppColors.lightTeal),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                      borderRadius: AppRadii.smRadius,
+                    ),
+                    child: Icon(icon, size: 18, color: AppColors.lightTeal),
+                  ),
+                  if (tag != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.lightTeal.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        tag,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.lightTeal,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                ],
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -538,7 +600,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Text(
                     desc,
                     style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11,
+                      fontSize: 10.5,
                       color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                     ),
                     maxLines: 1,
