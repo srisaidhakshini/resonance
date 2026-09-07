@@ -10,6 +10,7 @@ class ModelConfig {
   final int nGpuLayers;
   final int batchSize;
   final bool enableSmartContext;
+  final String hardwareSpecificInstructions;
   final String systemPrompt;
 
   const ModelConfig({
@@ -21,8 +22,9 @@ class ModelConfig {
     this.nGpuLayers = 0,
     this.batchSize = 512,
     this.enableSmartContext = true,
-    required this.systemPrompt,
-  });
+    required this.hardwareSpecificInstructions,
+    String? systemPrompt,
+  }) : systemPrompt = systemPrompt ?? hardwareSpecificInstructions;
 
   ModelConfig copyWith({
     String? tierName,
@@ -33,6 +35,7 @@ class ModelConfig {
     int? nGpuLayers,
     int? batchSize,
     bool? enableSmartContext,
+    String? hardwareSpecificInstructions,
     String? systemPrompt,
   }) {
     return ModelConfig(
@@ -44,43 +47,50 @@ class ModelConfig {
       nGpuLayers: nGpuLayers ?? this.nGpuLayers,
       batchSize: batchSize ?? this.batchSize,
       enableSmartContext: enableSmartContext ?? this.enableSmartContext,
+      hardwareSpecificInstructions:
+          hardwareSpecificInstructions ?? this.hardwareSpecificInstructions,
       systemPrompt: systemPrompt ?? this.systemPrompt,
     );
   }
 
   factory ModelConfig.lowSpec() {
+    const hw = 'Keep responses concise. Use bullet points and clear formatting.';
     return const ModelConfig(
       tierName: 'Efficiency Mode',
       contextSize: 2048,
       historyLimit: 3,
       maxTokens: 256,
       threads: 4,
-      systemPrompt:
-          'You are Echo, a patient, knowledgeable, and encouraging offline AI tutor.',
+      hardwareSpecificInstructions: hw,
+      systemPrompt: hw,
     );
   }
 
   factory ModelConfig.midSpec() {
+    const hw =
+        'Explain concepts clearly using simple language. Use bullet points for steps.';
     return const ModelConfig(
       tierName: 'Balanced Mode',
       contextSize: 2048,
       historyLimit: 5,
       maxTokens: 384,
       threads: 4,
-      systemPrompt:
-          'You are Echo, a patient, knowledgeable, and encouraging offline AI tutor.',
+      hardwareSpecificInstructions: hw,
+      systemPrompt: hw,
     );
   }
 
   factory ModelConfig.highSpec() {
+    const hw =
+        'Provide comprehensive, high-quality, step-by-step explanations with headers and math formulas.';
     return const ModelConfig(
       tierName: 'Performance Mode',
       contextSize: 4096,
       historyLimit: 10,
       maxTokens: 512,
       threads: 4,
-      systemPrompt:
-          'You are Echo, a patient, knowledgeable, and encouraging offline AI tutor.',
+      hardwareSpecificInstructions: hw,
+      systemPrompt: hw,
     );
   }
 }

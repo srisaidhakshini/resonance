@@ -4,12 +4,14 @@ import 'package:flutter/foundation.dart';
 import 'package:llama_cpp_dart/llama_cpp_dart.dart';
 import 'model_download_service.dart';
 import 'device_config_service.dart';
+import 'personalization_service.dart';
+import 'prompt_builder.dart';
 
 class LLMService {
   final ModelDownloadService _downloadService;
   late ModelConfig _config;
 
-  // System prompt is now dynamic - loaded from _config.systemPrompt
+  // System prompt is dynamically generated via PromptBuilder
 
   LlamaParent? _llamaParent;
   StreamSubscription? _streamSubscription;
@@ -97,11 +99,17 @@ class LLMService {
           format: ChatMLFormat(),
         );
 
+        final profile = await PersonalizationService.instance.getUserProfile();
+        final systemPrompt = PromptBuilder.buildSystemPrompt(
+          profile: profile,
+          hardwareInstructions: _config.hardwareSpecificInstructions,
+        );
+
         _chatFormat = ChatMLFormat();
         _chatHistory = ChatHistory(keepRecentPairs: _config.historyLimit);
         _chatHistory!.addMessage(
           role: Role.system,
-          content: _config.systemPrompt,
+          content: systemPrompt,
         );
 
         _llamaParent = LlamaParent(loadCommand);
@@ -214,10 +222,16 @@ class LLMService {
 
     if (_chatHistory != null) {
       _log('🔄 [CONTEXT] Resetting chat history...');
+      final profile = await PersonalizationService.instance.getUserProfile();
+      final systemPrompt = PromptBuilder.buildSystemPrompt(
+        profile: profile,
+        hardwareInstructions: _config.hardwareSpecificInstructions,
+      );
+
       _chatHistory = ChatHistory(keepRecentPairs: _config.historyLimit);
       _chatHistory!.addMessage(
         role: Role.system,
-        content: _config.systemPrompt,
+        content: systemPrompt,
       );
 
       // Force reload for full reset (new chat)
@@ -497,27 +511,26 @@ class LLMService {
       '📜 [CONTEXT] History: ${_chatHistory!.messages.length} msgs (Pruning: ${_config.historyLimit} pairs)',
     );
 
-    // Build prompt manually
-    String formattedPrompt =
-        '<|im_start|>system\n${_config.systemPrompt}<|im_end|>\n';
-
+    // Build personalized prompt using PromptBuilder
+    final profile = await PersonalizationService.instance.getUserProfile();
+    final historyForPrompt = <PromptMessage>[];
     for (int i = 0; i < _chatHistory!.messages.length - 1; i++) {
       final msg = _chatHistory!.messages[i];
-
-      // SAFETY CHECK: Skip empty messages
-      if (msg.content.trim().isEmpty) {
-        _log('⚠️ [PROMPT] Skipping empty ${msg.role.name} message at index $i');
-        continue;
-      }
-
-      if (msg.role != Role.system) {
-        formattedPrompt +=
-            '<|im_start|>${msg.role.name}\n${msg.content}\n<|im_end|>\n';
+      if (msg.content.trim().isNotEmpty && msg.role != Role.system) {
+        historyForPrompt.add(PromptMessage(
+          role: msg.role.name,
+          content: msg.content,
+        ));
       }
     }
 
-    formattedPrompt += '<|im_start|>user\n$effectivePrompt\n<|im_end|>\n';
-    formattedPrompt += '<|im_start|>assistant\n';
+    final formattedPrompt = PromptBuilder.buildChatMLPrompt(
+      profile: profile,
+      hardwareInstructions: _config.hardwareSpecificInstructions,
+      history: historyForPrompt,
+      currentMessage: effectivePrompt,
+      includeFewShot: true,
+    );
 
     _log('🔍 PROMPT:');
     _log(formattedPrompt);

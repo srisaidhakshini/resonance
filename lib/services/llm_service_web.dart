@@ -2,6 +2,10 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'model_download_service.dart';
+import 'personalization_service.dart';
+import 'prompt_builder.dart';
+
+import '../models/user_profile.dart';
 
 class LLMService {
   final ModelDownloadService? downloadService;
@@ -70,8 +74,10 @@ class LLMService {
       return;
     }
 
-    // 2. Fall back to high-intelligence built-in pedagogical reasoning engine
-    final response = _generateSmartEducationalResponse(message);
+    // 2. Fall back to high-intelligence built-in pedagogical reasoning engine with active profile styling
+    final profile = await PersonalizationService.instance.getUserProfile();
+    final rawResponse = _generateSmartEducationalResponse(message);
+    final response = _personalizeWebResponse(rawResponse, profile);
     final words = response.split(' ');
 
     for (int i = 0; i < words.length; i++) {
@@ -85,13 +91,44 @@ class LLMService {
     _isGenerating = false;
   }
 
+  /// Wraps web preview answers with active pedagogical style cues
+  String _personalizeWebResponse(String text, UserProfile profile) {
+    final prefix = StringBuffer();
+    prefix.writeln('> 👤 **Personalized for ${profile.userName}** | Class ${profile.grade} | ${profile.teachingStyle.displayName}\n');
+
+    switch (profile.teachingStyle) {
+      case TeachingStyle.socratic:
+        prefix.writeln('🤔 **Socratic Checkpoint:**');
+        prefix.writeln('*Before reading the full breakdown below, what core principle or intuition comes to your mind for this problem? How would you take the very first step?*\n');
+        prefix.writeln('---\n');
+        break;
+      case TeachingStyle.storytelling:
+        prefix.writeln('📖 **Intuitive Storytelling Perspective:**');
+        prefix.writeln('*Let\'s connect this concept to everyday objects and stories so it clicks intuitively!*\n');
+        prefix.writeln('---\n');
+        break;
+      case TeachingStyle.direct:
+        prefix.writeln('⚡ **Direct Structured Reference:**\n');
+        break;
+    }
+
+    return '$prefix$text';
+  }
+
   /// Tries streaming from a local Ollama daemon (e.g. running on port 11434)
   Stream<String> _tryStreamFromLocalOllama(String prompt, int genId) async* {
+    final profile = await PersonalizationService.instance.getUserProfile();
+    final systemPrompt = PromptBuilder.buildSystemPrompt(
+      profile: profile,
+      hardwareInstructions: 'Provide clear, well-formatted educational answers.',
+    );
+
     final response = await _dio.post(
       'http://127.0.0.1:11434/api/generate',
       data: {
         'model': 'qwen2.5:0.5b',
         'prompt': prompt,
+        'system': systemPrompt,
         'stream': false,
       },
     );

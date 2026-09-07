@@ -224,55 +224,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                title: Text(
-                  'What should we call you?',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: Colors.grey[500],
-                  ),
-                ),
-                subtitle: FutureBuilder<SharedPreferences>(
-                  future: SharedPreferences.getInstance(),
-                  builder: (context, snapshot) {
-                    final name =
-                        snapshot.data?.getString('user_name') ?? 'Student';
-                    return Text(
-                      name,
+              child: FutureBuilder<SharedPreferences>(
+                future: SharedPreferences.getInstance(),
+                builder: (context, snapshot) {
+                  final name =
+                      snapshot.data?.getString('user_name') ?? 'Student';
+                  final grade = snapshot.data?.getString('user_grade') ?? '8';
+                  final styleRaw =
+                      snapshot.data?.getString('user_teaching_style') ??
+                          'socratic';
+                  final pacingRaw =
+                      snapshot.data?.getString('user_pacing_level') ??
+                          'stepByStep';
+
+                  final styleDisplay = styleRaw == 'socratic'
+                      ? 'Socratic'
+                      : (styleRaw == 'direct' ? 'Direct' : 'Stories');
+                  final pacingDisplay = pacingRaw == 'stepByStep'
+                      ? 'Step-by-step'
+                      : 'High-level';
+
+                  return ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    title: Text(
+                      '$name • Class $grade',
                       style: GoogleFonts.outfit(
                         fontSize: 18,
                         color: const Color(0xFF1A1A1A),
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
-                ),
-                trailing: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF3E8FF),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.edit,
-                    size: 18,
-                    color: Color(0xFF8B7FD6),
-                  ),
-                ),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const ProfileSetupScreen(isEditMode: true),
                     ),
-                  ).then((_) {
-                    // Force rebuild if needed
-                  });
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'Style: $styleDisplay • Pacing: $pacingDisplay',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: const Color(0xFF8B7FD6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF3E8FF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.edit,
+                        size: 18,
+                        color: Color(0xFF8B7FD6),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const ProfileSetupScreen(isEditMode: true),
+                        ),
+                      ).then((_) {
+                        setState(() {});
+                      });
+                    },
+                  );
                 },
               ),
             ),
