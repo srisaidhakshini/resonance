@@ -1,0 +1,43 @@
+Photosynthesis: How Plants Make Their Own Food
+
+Photosynthesis is the process by which green plants, algae, and some bacteria convert light energy, usually from the sun, into chemical energy stored in glucose. This process is essential to almost all life on Earth, because it is the primary way that energy from the sun enters the food chain, and it also produces the oxygen that most living things need to breathe.
+
+Where Photosynthesis Happens
+
+Photosynthesis takes place mainly in the leaves of plants, inside specialized cell structures called chloroplasts. Chloroplasts contain a green pigment called chlorophyll, which gives plants their green color and is responsible for absorbing light energy, particularly in the red and blue wavelengths of the visible spectrum. Chlorophyll reflects green light, which is why most plants appear green to our eyes.
+
+The Raw Materials
+
+Photosynthesis requires three main inputs: carbon dioxide, water, and light energy. Plants absorb carbon dioxide from the air through tiny pores on the underside of their leaves called stomata. Water is absorbed from the soil by the roots and transported up through the stem to the leaves via a tissue called xylem. Light energy is captured by chlorophyll molecules in the chloroplasts.
+
+The Overall Chemical Equation
+
+The overall process of photosynthesis can be summarized by this balanced chemical equation:
+
+6 CO2 + 6 H2O + light energy -> C6H12O6 + 6 O2
+
+In words: six molecules of carbon dioxide combine with six molecules of water, using light energy, to produce one molecule of glucose (a sugar) and six molecules of oxygen gas. The oxygen is released back into the atmosphere as a byproduct, while the glucose is used by the plant for energy and growth, or stored for later use.
+
+The Two Main Stages
+
+Photosynthesis actually happens in two connected stages: the light-dependent reactions and the light-independent reactions (also called the Calvin cycle).
+
+1. Light-dependent reactions: These take place in the thylakoid membranes inside the chloroplast. Here, light energy is absorbed by chlorophyll and used to split water molecules into oxygen, hydrogen ions, and electrons. This process, called photolysis, releases oxygen as a waste product. The energy captured is stored temporarily in two energy-carrying molecules called ATP and NADPH.
+
+2. Light-independent reactions (Calvin cycle): These take place in the stroma, the fluid-filled space surrounding the thylakoids. The ATP and NADPH produced in the first stage are used to convert carbon dioxide into glucose through a series of enzyme-driven steps. This stage does not directly require light, which is why it is sometimes called the "dark reactions," although it typically occurs during the day when the products of the light-dependent reactions are available.
+
+Why Photosynthesis Matters
+
+Photosynthesis is the foundation of nearly every food chain on Earth. Plants are called producers because they can make their own food using photosynthesis, and nearly all other organisms, including animals and humans, depend directly or indirectly on plants for energy. Additionally, the oxygen released during photosynthesis is essential for the survival of most living organisms, which need oxygen for cellular respiration. Photosynthesis also plays a key role in regulating the amount of carbon dioxide in Earth's atmosphere, helping to moderate the greenhouse effect and climate.
+
+Factors That Affect the Rate of Photosynthesis
+
+Several environmental factors can speed up or slow down the rate of photosynthesis:
+- Light intensity: More light generally increases the rate of photosynthesis, up to a point, after which the rate levels off because other factors become limiting.
+- Carbon dioxide concentration: Higher CO2 levels can increase the rate of photosynthesis, up to a saturation point.
+- Temperature: Photosynthesis relies on enzymes, which work best within a certain temperature range. Too cold, and reactions slow down; too hot, and the enzymes can be damaged.
+- Water availability: Since water is a raw material for photosynthesis, a lack of water can reduce the rate of the process.
+
+Quick Summary
+
+Photosynthesis converts light energy into chemical energy stored in glucose, using carbon dioxide and water as raw materials, and releasing oxygen as a byproduct. It occurs in the chloroplasts of plant cells in two stages: the light-dependent reactions, which capture energy from sunlight, and the Calvin cycle, which uses that energy to build glucose. This process sustains almost all life on Earth by providing both food energy and breathable oxygen.

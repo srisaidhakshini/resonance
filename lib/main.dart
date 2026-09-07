@@ -7,11 +7,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'models/chat_message.dart';
 import 'models/chat_session.dart';
+import 'models/content_chunk.dart';
+import 'models/study_content.dart';
 import 'providers/chat_provider.dart';
 import 'providers/download_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/chat_screen.dart';
+import 'screens/content_library_screen.dart';
 import 'screens/model_download_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'services/native_loader.dart';
@@ -31,7 +34,11 @@ void main() {
       await Hive.initFlutter();
       Hive.registerAdapter(ChatMessageAdapter());
       Hive.registerAdapter(ChatSessionAdapter());
+      Hive.registerAdapter(ContentChunkAdapter());
+      Hive.registerAdapter(StudyContentAdapter());
+      Hive.registerAdapter(ContentSourceTypeAdapter());
       final chatBox = await Hive.openBox<ChatSession>('chat_sessions');
+      final contentBox = await Hive.openBox<StudyContent>('study_content');
 
       // ✅ STEP 4: Set up global error handlers
       FlutterError.onError = (details) {
@@ -48,7 +55,10 @@ void main() {
       // ✅ STEP 5: Run app (now in same zone as binding initialization)
       runApp(
         ProviderScope(
-          overrides: [chatBoxProvider.overrideWithValue(chatBox)],
+          overrides: [
+            chatBoxProvider.overrideWithValue(chatBox),
+            contentBoxProvider.overrideWithValue(contentBox),
+          ],
           child: const MyApp(),
         ),
       );
@@ -194,7 +204,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
           // Helper to check state
           Future<String> checkInitialRoute() async {
-            final isDownloaded = await downloadService.isModelDownloaded();
+            final isDownloaded = await downloadService.isReady();
             if (!isDownloaded) return '/onboarding';
 
             final prefs = await SharedPreferences.getInstance();
@@ -231,6 +241,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         '/chat': (context) => const ChatScreen(),
         '/download': (context) => const ModelDownloadScreen(),
         '/profile_setup': (context) => const ProfileSetupScreen(),
+        '/library': (context) => const ContentLibraryScreen(),
       },
     );
   }

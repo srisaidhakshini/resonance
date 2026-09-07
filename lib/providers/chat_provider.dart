@@ -5,7 +5,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../models/chat_message.dart';
 import '../models/chat_session.dart';
+import '../models/study_content.dart';
 import '../services/llm_service.dart';
+import '../services/embedding_service.dart';
+import '../services/retrieval_service.dart';
 import '../utils/math_formatter.dart';
 import 'download_provider.dart';
 
@@ -13,36 +16,61 @@ final chatBoxProvider = Provider<Box<ChatSession>>((ref) {
   throw UnimplementedError('chatBoxProvider not initialized');
 });
 
+final contentBoxProvider = Provider<Box<StudyContent>>((ref) {
+  throw UnimplementedError('contentBoxProvider not initialized');
+});
+
 final llmServiceProvider = Provider<LLMService>((ref) {
   final downloadService = ref.watch(modelDownloadServiceProvider);
   return LLMService(downloadService);
 });
 
+final embeddingServiceProvider = Provider<EmbeddingService>((ref) {
+  final downloadService = ref.watch(modelDownloadServiceProvider);
+  return EmbeddingService(downloadService);
+});
+
+final retrievalServiceProvider = Provider<RetrievalService>((ref) {
+  final embeddingService = ref.watch(embeddingServiceProvider);
+  return RetrievalService(embeddingService);
+});
+
 final currentSessionIdProvider = StateProvider<String?>((ref) => null);
 final currentChatSubjectProvider = StateProvider<String?>((ref) => null);
+// Id of the StudyContent chapter grounding the current/next chat, if any.
+final currentContentIdProvider = StateProvider<String?>((ref) => null);
 
 // Track if LLM is currently generating a response
 final isGeneratingProvider = StateProvider<bool>((ref) => false);
 
 class ChatNotifier extends StateNotifier<List<ChatMessage>> {
   final Box<ChatSession> _box;
+  final Box<StudyContent> _contentBox;
   final LLMService _llmService;
+  final RetrievalService _retrievalService;
   final Ref _ref;
   StreamSubscription<String>? _currentInferenceSubscription;
   DateTime? _lastUIUpdate; // For UI throttling
   DateTime? _lastCancelTime; // For cancel debouncing
 
-  ChatNotifier(this._box, this._llmService, this._ref) : super([]);
+  ChatNotifier(
+    this._box,
+    this._contentBox,
+    this._llmService,
+    this._retrievalService,
+    this._ref,
+  ) : super([]);
 
   Future<void> loadSession(String sessionId) async {
     final session = _box.get(sessionId);
     if (session != null) {
       state = session.messages;
       _ref.read(currentSessionIdProvider.notifier).state = sessionId;
+      _ref.read(currentContentIdProvider.notifier).state = session.contentId;
     }
   }
 
-  Future<void> startNewChat({String? subject}) async {
+  Future<void> startNewChat({String? subject, String? contentId}) async {
     if (kDebugMode) print('🆕 [PROVIDER] Starting new chat...');
 
     // Cancel any ongoing generation first
@@ -59,6 +87,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
     state = [];
     _ref.read(currentSessionIdProvider.notifier).state = null;
     _ref.read(currentChatSubjectProvider.notifier).state = subject;
+    _ref.read(currentContentIdProvider.notifier).state = contentId;
     _ref.read(isGeneratingProvider.notifier).state = false;
 
     // Reset LLM context for new chat
@@ -125,9 +154,15 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
       // Set generating state to true
       _ref.read(isGeneratingProvider.notifier).state = true;
 
+      // Retrieve grounding context from the active chapter, if any.
+      final groundingContext = await _buildGroundingContext(content);
+
       // Listen to the stream from managed isolate (non-blocking!)
       if (kDebugMode) print('📡 [PROVIDER] Starting stream for: "$content"');
-      final stream = _llmService.streamResponse(content);
+      final stream = _llmService.streamResponse(
+        content,
+        groundingContext: groundingContext,
+      );
       _currentInferenceSubscription = stream.listen(
         (token) {
           fullResponse += token;
@@ -253,6 +288,28 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
     if (kDebugMode) print('✅ [PROVIDER] Generation canceled successfully');
   }
 
+  /// Retrieves the top relevant chunks from the active chapter (if any) and
+  /// joins them into a single grounding string for this turn's prompt.
+  Future<String?> _buildGroundingContext(String question) async {
+    final contentId = _ref.read(currentContentIdProvider);
+    if (contentId == null) return null;
+
+    final content = _contentBox.get(contentId);
+    if (content == null || content.chunks.isEmpty) return null;
+
+    try {
+      final topChunks = await _retrievalService.retrieve(
+        query: question,
+        chunks: content.chunks,
+      );
+      if (topChunks.isEmpty) return null;
+      return topChunks.join('\n\n---\n\n');
+    } catch (e) {
+      if (kDebugMode) print('⚠️ [PROVIDER] Retrieval failed: $e');
+      return null;
+    }
+  }
+
   String _generateSmartTitle(String message) {
     // Remove common question words and extract key content
     String cleaned = message.toLowerCase();
@@ -348,6 +405,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
         messages: state,
         lastUpdated: DateTime.now(),
         subject: _ref.read(currentChatSubjectProvider),
+        contentId: _ref.read(currentContentIdProvider),
       );
       await _box.put(newId, newSession);
       _ref.read(currentSessionIdProvider.notifier).state = newId;
@@ -362,6 +420,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
           messages: state,
           lastUpdated: DateTime.now(),
           subject: session.subject, // Keep existing subject
+          contentId: session.contentId, // Keep existing active chapter
         );
         await _box.put(sessionId, updatedSession);
       }
@@ -373,8 +432,10 @@ final chatProvider = StateNotifierProvider<ChatNotifier, List<ChatMessage>>((
   ref,
 ) {
   final box = ref.watch(chatBoxProvider);
+  final contentBox = ref.watch(contentBoxProvider);
   final llmService = ref.watch(llmServiceProvider);
-  return ChatNotifier(box, llmService, ref);
+  final retrievalService = ref.watch(retrievalServiceProvider);
+  return ChatNotifier(box, contentBox, llmService, retrievalService, ref);
 });
 
 // This provider watches the box and updates when it changes

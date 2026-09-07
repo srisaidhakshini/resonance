@@ -43,6 +43,11 @@ dependencies:
   speech_to_text: ^7.4.0
   flutter_tts: ^4.2.5
 
+  # Content ingestion (PDF/text/photo -> grounded Q&A)
+  file_picker: ^8.1.4
+  syncfusion_flutter_pdf: ^27.2.5   # PDF text-layer extraction (offline, no OCR)
+  google_mlkit_text_recognition: ^0.13.1  # On-device OCR (Android/iOS only)
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -59,3 +64,5 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/sample_content/

@@ -51,15 +51,24 @@ class LLMService {
     _isGenerating = false;
   }
 
-  Stream<String> streamResponse(String message) async* {
+  /// [groundingContext], when provided (retrieved chunks from an active
+  /// study chapter, via keyword scoring on web - see RetrievalService),
+  /// is prepended for this turn's prompt only.
+  Stream<String> streamResponse(String message, {String? groundingContext}) async* {
     _currentGenerationId++;
     final myGenId = _currentGenerationId;
     _isGenerating = true;
 
+    final hasGrounding =
+        groundingContext != null && groundingContext.trim().isNotEmpty;
+    final effectiveMessage = hasGrounding
+        ? 'Context from the loaded chapter:\n$groundingContext\n\nQuestion: $message'
+        : message;
+
     // 1. Attempt connection to local Ollama if available on user machine
     bool localLlmSucceeded = false;
     try {
-      final ollamaStream = _tryStreamFromLocalOllama(message, myGenId);
+      final ollamaStream = _tryStreamFromLocalOllama(effectiveMessage, myGenId);
       await for (final token in ollamaStream) {
         if (!_isGenerating || myGenId != _currentGenerationId) return;
         localLlmSucceeded = true;
@@ -74,9 +83,15 @@ class LLMService {
       return;
     }
 
-    // 2. Fall back to high-intelligence built-in pedagogical reasoning engine with active profile styling
+    // 2. Fall back to high-intelligence built-in pedagogical reasoning engine
+    // with active profile styling. The rule-based engine pattern-matches
+    // topics rather than reasoning over arbitrary text, so grounding here is
+    // extractive (show the most relevant passage) instead of claiming full
+    // synthesis - honest about what this fallback tier can actually do.
     final profile = await PersonalizationService.instance.getUserProfile();
-    final rawResponse = _generateSmartEducationalResponse(message);
+    final rawResponse = hasGrounding
+        ? _generateGroundedFallback(message, groundingContext)
+        : _generateSmartEducationalResponse(message);
     final response = _personalizeWebResponse(rawResponse, profile);
     final words = response.split(' ');
 
@@ -144,6 +159,17 @@ class LLMService {
         }
       }
     }
+  }
+
+  /// Extractive grounded fallback: shows the most relevant passage from the
+  /// loaded chapter rather than pretending the rule-based engine can reason
+  /// over arbitrary text.
+  String _generateGroundedFallback(String question, String context) {
+    return '### 📖 From Your Loaded Chapter\n\n'
+        'Here is the most relevant passage I found for **"$question"**:\n\n'
+        '> ${context.trim()}\n\n'
+        '_(Running in the lightweight web fallback engine — for full reasoning '
+        "over this passage, use the mobile app.)_";
   }
 
   /// Core smart pedagogical response generator

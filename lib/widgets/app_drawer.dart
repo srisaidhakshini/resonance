@@ -138,6 +138,37 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
+
+                // Study Materials Item
+                ListTile(
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF9F9F9),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.menu_book_outlined,
+                      color: Color(0xFF8B7FD6),
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    'Study Materials',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/library');
+                  },
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ],
             ),
           ),

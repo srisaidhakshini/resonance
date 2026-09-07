@@ -12,6 +12,9 @@ final totalBytesProvider = StateProvider<int>((ref) => 0);
 final downloadSpeedProvider = StateProvider<String>(
   (ref) => "0.0 MB/s",
 ); // New provider
+final downloadPhaseLabelProvider = StateProvider<String>(
+  (ref) => "Tutor model",
+);
 
 class DownloadNotifier extends StateNotifier<void> {
   final ModelDownloadService _service;
@@ -22,13 +25,13 @@ class DownloadNotifier extends StateNotifier<void> {
   }
 
   Future<void> checkModelStatus() async {
-    final exists = await _service.isModelDownloaded();
+    final exists = await _service.isReady();
     _ref.read(isModelReadyProvider.notifier).state = exists;
   }
 
   Future<void> startDownload() async {
     // Check if already downloaded
-    if (await _service.isModelDownloaded()) {
+    if (await _service.isReady()) {
       _ref.read(isModelReadyProvider.notifier).state = true;
       return;
     }
@@ -36,40 +39,18 @@ class DownloadNotifier extends StateNotifier<void> {
     try {
       _ref.read(isDownloadingProvider.notifier).state = true;
       _ref.read(downloadErrorProvider.notifier).state = null;
-      _ref.read(downloadProgressProvider.notifier).state = 0.0;
-      _ref.read(downloadSpeedProvider.notifier).state = "0.0 MB/s";
-      _ref.read(downloadedBytesProvider.notifier).state = 0;
-      _ref.read(totalBytesProvider.notifier).state = 0;
 
-      int lastReceived = 0;
-      DateTime lastTime = DateTime.now();
+      if (!await _service.isModelDownloaded()) {
+        _ref.read(downloadPhaseLabelProvider.notifier).state = "Tutor model";
+        await _runPhase((onProgress) => _service.downloadModel(onProgress: onProgress));
+      }
 
-      await _service.downloadModel(
-        onProgress: (received, total) {
-          if (total != -1) {
-            final progress = received / total;
-            _ref.read(downloadProgressProvider.notifier).state = progress;
-            _ref.read(downloadedBytesProvider.notifier).state = received;
-            _ref.read(totalBytesProvider.notifier).state = total;
-
-            // Calculate Speed
-            final now = DateTime.now();
-            final difference = now.difference(lastTime).inMilliseconds;
-            if (difference > 500) {
-              // Update every 500ms
-              final bytesDelta = received - lastReceived;
-              final speedBytesPerSec = (bytesDelta * 1000) / difference;
-              final speedMbPerSec = speedBytesPerSec / (1024 * 1024);
-
-              _ref.read(downloadSpeedProvider.notifier).state =
-                  "${speedMbPerSec.toStringAsFixed(1)} MB/s";
-
-              lastReceived = received;
-              lastTime = now;
-            }
-          }
-        },
-      );
+      if (!await _service.isEmbeddingModelDownloaded()) {
+        _ref.read(downloadPhaseLabelProvider.notifier).state = "Retrieval model";
+        await _runPhase(
+          (onProgress) => _service.downloadEmbeddingModel(onProgress: onProgress),
+        );
+      }
 
       _ref.read(isModelReadyProvider.notifier).state = true;
     } catch (e) {
@@ -77,6 +58,45 @@ class DownloadNotifier extends StateNotifier<void> {
     } finally {
       _ref.read(isDownloadingProvider.notifier).state = false;
     }
+  }
+
+  /// Runs one download phase, resetting the progress UI at its start so
+  /// each phase (chat model, then embedding model) shows its own 0-100%.
+  Future<void> _runPhase(
+    Future<void> Function(void Function(int received, int total) onProgress) download,
+  ) async {
+    _ref.read(downloadProgressProvider.notifier).state = 0.0;
+    _ref.read(downloadSpeedProvider.notifier).state = "0.0 MB/s";
+    _ref.read(downloadedBytesProvider.notifier).state = 0;
+    _ref.read(totalBytesProvider.notifier).state = 0;
+
+    int lastReceived = 0;
+    DateTime lastTime = DateTime.now();
+
+    await download((received, total) {
+      if (total != -1) {
+        final progress = received / total;
+        _ref.read(downloadProgressProvider.notifier).state = progress;
+        _ref.read(downloadedBytesProvider.notifier).state = received;
+        _ref.read(totalBytesProvider.notifier).state = total;
+
+        // Calculate Speed
+        final now = DateTime.now();
+        final difference = now.difference(lastTime).inMilliseconds;
+        if (difference > 500) {
+          // Update every 500ms
+          final bytesDelta = received - lastReceived;
+          final speedBytesPerSec = (bytesDelta * 1000) / difference;
+          final speedMbPerSec = speedBytesPerSec / (1024 * 1024);
+
+          _ref.read(downloadSpeedProvider.notifier).state =
+              "${speedMbPerSec.toStringAsFixed(1)} MB/s";
+
+          lastReceived = received;
+          lastTime = now;
+        }
+      }
+    });
   }
 
   void cancelDownload() {
