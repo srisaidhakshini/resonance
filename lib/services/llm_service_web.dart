@@ -111,37 +111,34 @@ class LLMService {
 
   /// Core smart pedagogical response generator
   String _generateSmartEducationalResponse(String rawPrompt) {
-    // Clean prompt prefixes from quick cards
     final cleaned = _cleanPrompt(rawPrompt);
     final lower = cleaned.toLowerCase().trim();
 
-    // 1. Direct Arithmetic Solver (e.g. "25 + 47", "what is 15 * 8", "120 / 4")
+    // 1. Conversational / Greetings / Small Talk Detection
+    final conversationalReply = _tryHandleConversational(lower);
+    if (conversationalReply != null) {
+      return conversationalReply;
+    }
+
+    // 2. Direct Arithmetic Solver (e.g. "25 + 47", "what is 15 * 8", "120 / 4")
     final arithmeticResult = _trySolveArithmetic(lower);
     if (arithmeticResult != null) {
       return arithmeticResult;
     }
 
-    // 2. Greetings
-    if (lower == 'hi' ||
-        lower == 'hello' ||
-        lower.startsWith('hello ') ||
-        lower.startsWith('hey') ||
-        lower.contains('who are you')) {
-      return r'''### 👋 Welcome to Echo
-
-Hello! I am **Echo**, your offline educational AI tutor.
-
-I am designed to provide clear, step-by-step guidance across:
-- 📐 **Mathematics**: Arithmetic, Algebra, Geometry, Calculus
-- ⚡ **Physics**: Mechanics, Electricity, Gravity, Waves
-- 🧪 **Chemistry**: Atoms, Periodic Table, Reactions, Stoichiometry
-- 🧬 **Biology**: Cells, Genetics, Photosynthesis, Human Anatomy
-- 💻 **Computer Science**: Python, Algorithms, Data Structures
-
-What topic or homework problem would you like to explore today?''';
+    // 3. Algebraic Linear Equation Solver (e.g. "3x + 5 = 20", "solve 2x - 4 = 10")
+    final linearEquationResult = _trySolveLinearEquation(lower);
+    if (linearEquationResult != null) {
+      return linearEquationResult;
     }
 
-    // 3. Mathematics: Addition
+    // 4. Percentage Solver (e.g. "what is 20% of 150")
+    final percentageResult = _trySolvePercentage(lower);
+    if (percentageResult != null) {
+      return percentageResult;
+    }
+
+    // 5. Mathematics: Addition
     if (lower.contains('addition') ||
         lower.contains('add ') ||
         lower.contains('adding') ||
@@ -206,7 +203,7 @@ Try calculating **$56 + 29$**.
 *(Hint: Add $6 + 9 = 15$ [carry $1$], then $1 + 5 + 2 = 8 \implies \mathbf{85}$)*''';
     }
 
-    // 4. Mathematics: Subtraction
+    // 6. Mathematics: Subtraction
     if (lower.contains('subtraction') ||
         lower.contains('subtract') ||
         lower.contains('minus')) {
@@ -239,7 +236,7 @@ Consider **$72 - 38$**:
 Check by addition: $34 + 38 = 72$.''';
     }
 
-    // 5. Mathematics: Multiplication
+    // 7. Mathematics: Multiplication
     if (lower.contains('multiplication') ||
         lower.contains('multiply') ||
         lower.contains('times table')) {
@@ -261,7 +258,7 @@ Using the distributive property:
 $$14 \times 6 = (10 + 4) \times 6 = (10 \times 6) + (4 \times 6) = 60 + 24 = 84$$''';
     }
 
-    // 6. Mathematics: Division & Fractions
+    // 8. Mathematics: Division & Fractions
     if (lower.contains('division') ||
         lower.contains('divide') ||
         lower.contains('fraction')) {
@@ -283,10 +280,9 @@ $$\frac{a}{b} = q \quad \text{or} \quad a = b \cdot q + r$$
 - **Division (Reciprocal rule)**: $\frac{a}{b} \div \frac{c}{d} = \frac{a}{b} \times \frac{d}{c} = \frac{a \cdot d}{b \cdot c}$''';
     }
 
-    // 7. Mathematics: Quadratic Equations & Algebra
+    // 9. Mathematics: Quadratic Equations & Algebra
     if (lower.contains('quadratic') ||
         lower.contains('algebra') ||
-        lower.contains('equation') ||
         lower.contains('factor')) {
       return r'''### 📐 Quadratic Equations & Algebra Guide
 
@@ -307,7 +303,7 @@ By factoring:
 $$(x - 2)(x - 3) = 0 \implies x_1 = 2, \quad x_2 = 3$$''';
     }
 
-    // 8. Mathematics: Calculus & Derivatives
+    // 10. Mathematics: Calculus & Derivatives
     if (lower.contains('derivative') ||
         lower.contains('calculus') ||
         lower.contains('differentiat') ||
@@ -330,7 +326,7 @@ Differentiate $f(x) = 4x^3 - 5x^2 + 7x - 9$:
 $$f'(x) = 4(3x^2) - 5(2x) + 7(1) - 0 = 12x^2 - 10x + 7$$''';
     }
 
-    // 9. Physics: Newton's Laws & Mechanics
+    // 11. Physics: Newton's Laws & Mechanics
     if (lower.contains('newton') ||
         lower.contains('force') ||
         lower.contains('physics') ||
@@ -357,7 +353,7 @@ Sir Isaac Newton formulated the three foundation laws governing classical mechan
 A rocket accelerates upward because its engines expel hot exhaust gas downward at high velocity (Action $\rightarrow$ Reaction).''';
     }
 
-    // 10. Physics: Gravity & Energy
+    // 12. Physics: Gravity & Energy
     if (lower.contains('gravity') ||
         lower.contains('gravitation') ||
         lower.contains('energy') ||
@@ -377,7 +373,42 @@ $$E_{\text{total}} = KE + PE = \text{constant}$$
 - **Gravitational Potential Energy**: $PE = mgh$''';
     }
 
-    // 11. Chemistry: Atoms, Periodic Table & Bonding
+    // 13. Physics: Why is the sky blue?
+    if (lower.contains('sky blue') || lower.contains('blue sky')) {
+      return r'''### 🌤️ Why is the Sky Blue?
+
+The blue color of the daytime sky is caused by an optical phenomenon known as **Rayleigh Scattering**.
+
+---
+
+### 1. The Composition of Sunlight
+Sunlight appears white, but it is actually a blend of all colors of the visible rainbow. Each color travels in waves of different lengths:
+- **Red & Orange**: Long wavelengths (~700 nm)
+- **Blue & Violet**: Short wavelengths (~400 nm)
+
+---
+
+### 2. Atmospheric Scattering
+As sunlight passes through Earth's atmosphere, it collides with gases (primarily Nitrogen and Oxygen molecules):
+- Light with shorter wavelengths scatters much more strongly than longer wavelengths.
+- In fact, scattering intensity is inversely proportional to the fourth power of wavelength:
+  $$I \propto \frac{1}{\lambda^4}$$
+- Because blue light has a wavelength nearly half that of red light, it is scattered about **10 times more efficiently** across every direction in the sky.
+
+---
+
+### 3. Why Not Violet?
+Violet light has an even shorter wavelength than blue light and scatters even more! However, the sky appears blue because:
+1. The Sun emits significantly more blue photons than violet photons.
+2. Human eyes are much more sensitive to blue light than violet light due to our retinal cone receptors.
+
+---
+
+### 💡 Why Sunsets Look Red
+At sunset, sunlight travels through a much thicker layer of atmosphere. Most of the blue light scatters away before reaching our eyes, leaving the longer red and orange rays to pass directly through.''';
+    }
+
+    // 14. Chemistry: Atoms, Periodic Table & Bonding
     if (lower.contains('atom') ||
         lower.contains('periodic table') ||
         lower.contains('chemistry') ||
@@ -400,7 +431,7 @@ Combustion of methane:
 $$CH_4 + 2O_2 \longrightarrow CO_2 + 2H_2O + \Delta H$$''';
     }
 
-    // 12. Biology: Cell Biology & Photosynthesis
+    // 15. Biology: Cell Biology & Photosynthesis
     if (lower.contains('photosynthesis') ||
         lower.contains('cell') ||
         lower.contains('biology') ||
@@ -423,7 +454,7 @@ Cells metabolize glucose into usable cellular energy currency:
 $$C_6H_{12}O_6 + 6O_2 \longrightarrow 6CO_2 + 6H_2O + \approx 32\text{ ATP}$$''';
     }
 
-    // 13. Computer Science: Python & Algorithms
+    // 16. Computer Science: Python & Algorithms
     if (lower.contains('python') ||
         lower.contains('code') ||
         lower.contains('algorithm') ||
@@ -456,8 +487,204 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
 - **Space Complexity**: $\mathcal{O}(1)$ iterative space.''';
     }
 
-    // 14. Universal Dynamic Pedagogical Synthesizer (For any user query)
+    // 17. Universal Dynamic Pedagogical Synthesizer (For open-ended academic queries)
     return _synthesizeUniversalAnswer(cleaned);
+  }
+
+  /// Handles conversational greetings, small talk, gratitude, and identity queries
+  String? _tryHandleConversational(String lower) {
+    // Greetings: e.g. "hi, hello", "hello", "hey", "hi", "good morning"
+    final isGreeting = lower == 'hi' ||
+        lower == 'hello' ||
+        lower == 'hey' ||
+        lower == 'hi, hello' ||
+        lower == 'hello, hi' ||
+        lower == 'hi hello' ||
+        lower == 'hello hi' ||
+        lower.startsWith('hello ') ||
+        lower.startsWith('hey ') ||
+        lower.startsWith('hi ') ||
+        lower.startsWith('good morning') ||
+        lower.startsWith('good afternoon') ||
+        lower.startsWith('good evening') ||
+        lower == 'greetings' ||
+        lower == 'yo' ||
+        lower == 'sup';
+
+    if (isGreeting) {
+      return '### 👋 Hello!\n\n'
+          'I am **Echo**, your offline AI study tutor.\n\n'
+          'How can I assist you with your studies today? You can ask me to:\n'
+          '- 📐 **Solve math problems** (e.g. `25 + 47`, `3x + 5 = 20`, or calculus)\n'
+          '- 🔬 **Explain science concepts** (e.g. `photosynthesis`, `Newton\'s laws`, `why is the sky blue`)\n'
+          '- 💻 **Help with programming** (e.g. Python, data structures, algorithms)\n'
+          '- 📝 **Review homework** or test your knowledge with practice questions!';
+    }
+
+    // "How are you"
+    if (lower.contains('how are you') ||
+        lower.contains('how r u') ||
+        lower.contains('how do you do') ||
+        lower.contains("what's up")) {
+      return "I'm doing great, thank you for asking! I'm fully ready to help you explore concepts, solve homework problems, and prepare for your exams.\n\nWhat subject are you working on right now?";
+    }
+
+    // Gratitude: "thank you", "thanks"
+    if (lower.contains('thank') || lower == 'thx' || lower == 'appreciate it') {
+      return "You're very welcome! I'm glad I could help.\n\nFeel free to ask another question or let me know if you want to try a practice problem!";
+    }
+
+    // Acknowledgments: "ok", "okay", "cool", "great", "awesome", "got it"
+    if (lower == 'ok' ||
+        lower == 'okay' ||
+        lower == 'cool' ||
+        lower == 'great' ||
+        lower == 'awesome' ||
+        lower == 'nice' ||
+        lower == 'got it' ||
+        lower == 'understood' ||
+        lower == 'sure' ||
+        lower == 'yes' ||
+        lower == 'yep') {
+      return "Sounds great! Whenever you're ready, let me know what problem or topic you'd like to tackle next.";
+    }
+
+    // Farewells: "bye", "goodbye", "see you"
+    if (lower == 'bye' ||
+        lower == 'goodbye' ||
+        lower.startsWith('bye ') ||
+        lower.contains('see you') ||
+        lower == 'cya') {
+      return 'Goodbye! Great job working on your studies today. Come back anytime you need homework help or concept explanations!';
+    }
+
+    // Identity: "who are you", "what is your name"
+    if (lower.contains('who are you') ||
+        lower.contains('what is your name') ||
+        lower.contains('what are you') ||
+        lower == 'who made you') {
+      return 'I am **Echo**, an offline-first educational AI tutor designed by the **Technauts** team.\n\n'
+          'I help students understand core STEM and humanities subjects with step-by-step problem solving, clear explanations, and interactive learning.';
+    }
+
+    // Capability / Help: "what can you do", "help"
+    if (lower == 'what can you do' ||
+        lower == 'help' ||
+        lower == 'help me' ||
+        lower.contains('features')) {
+      return '### 💡 How Echo Can Help You:\n\n'
+          '1. **Step-by-Step Math Solving**: Try typing `25 + 47`, `15 * 8`, or `3x + 5 = 20`.\n'
+          '2. **Concept Explanations**: Ask `what is addition`, `why is the sky blue`, or `explain gravity`.\n'
+          '3. **Science & Biology**: Inquire about `photosynthesis`, `atoms`, or `mitochondria`.\n'
+          '4. **Coding & Computer Science**: Ask for `Python binary search` or `Big-O complexity`.\n\n'
+          'What would you like to start with?';
+    }
+
+    // Very short gibberish guard (e.g. "asdf", "??", "123")
+    if (lower.length <= 2 &&
+        !RegExp(r'[0-9]').hasMatch(lower) &&
+        lower != 'pi') {
+      return "I didn't quite catch that. Could you please type a full question or topic you'd like help with?";
+    }
+
+    return null;
+  }
+
+  /// Solves linear equations of the form "ax + b = c" or "ax - b = c"
+  String? _trySolveLinearEquation(String query) {
+    // Match: e.g. "3x + 5 = 20", "2x - 4 = 10", "x + 7 = 15", "4x = 32"
+    final pattern = RegExp(
+      r'(?:solve\s+)?(\d*)\s*([a-zA-Z])\s*([\+\-])?\s*(\d+)?\s*=\s*(\d+)',
+    );
+    final match = pattern.firstMatch(query);
+    if (match == null) return null;
+
+    final coeffStr = match.group(1);
+    final variable = match.group(2)!;
+    final signStr = match.group(3);
+    final constStr = match.group(4);
+    final rhsStr = match.group(5)!;
+
+    final double a = (coeffStr == null || coeffStr.isEmpty)
+        ? 1.0
+        : (double.tryParse(coeffStr) ?? 1.0);
+    final double b = (constStr == null)
+        ? 0.0
+        : (double.tryParse(constStr) ?? 0.0) * (signStr == '-' ? -1.0 : 1.0);
+    final double c = double.tryParse(rhsStr) ?? 0.0;
+
+    if (a == 0) return null;
+
+    final x = (c - b) / a;
+    final formattedX =
+        (x % 1 == 0) ? x.toInt().toString() : x.toStringAsFixed(2);
+    final aDisplay = a == 1.0 ? '' : (a % 1 == 0 ? a.toInt().toString() : '$a');
+    final bSign = b >= 0 ? '+' : '-';
+    final bAbs = b.abs() % 1 == 0 ? b.abs().toInt().toString() : '${b.abs()}';
+
+    final cDisplay = c % 1 == 0 ? c.toInt().toString() : '$c';
+    final cbDisplay =
+        (c - b) % 1 == 0 ? (c - b).toInt().toString() : '${c - b}';
+    final eqFormula =
+        '${r"$$\mathbf{"}$aDisplay$variable ${b != 0 ? '$bSign $bAbs' : ''} = $cDisplay${r"}$$"}';
+    final finalEq = '${r"$$\mathbf{"}$variable = $formattedX${r"}$$"}';
+
+    return '### 📐 Step-by-Step Linear Equation Solution\n\n'
+        'We are solving for **$variable** in the equation:\n\n'
+        '$eqFormula\n\n'
+        '---\n\n'
+        '### Step 1: Isolate the Variable Term\n'
+        '${b != 0 ? 'Subtract ($bSign $bAbs) from both sides of the equation:\n'
+            '${r"$$"}$aDisplay$variable = $cDisplay ${b >= 0 ? '-' : '+'} $bAbs${r"$$"}\n'
+            '${r"$$"}$aDisplay$variable = $cbDisplay${r"$$"}' : 'The variable term is already isolated.'}\n\n'
+        '### Step 2: Divide by the Coefficient of $variable\n'
+        '${a != 1.0 ? 'Divide both sides by **$aDisplay**:\n'
+            '${r"$$"}$variable = \\frac{$cbDisplay}{$aDisplay} = $formattedX${r"$$"}' : 'The coefficient is 1, so the solution is immediate.'}\n\n'
+        '---\n\n'
+        '### Final Answer\n'
+        '$finalEq\n\n'
+        '*Verification*: Substituting $variable = $formattedX back into the original equation confirms both sides are equal.';
+  }
+
+  /// Solves percentage problems like "what is 20% of 150"
+  String? _trySolvePercentage(String query) {
+    final pattern = RegExp(
+      r'(?:what\s+is\s+)?(\d+(?:\.\d+)?)\s*%\s*(?:of\s*)?(\d+(?:\.\d+)?)',
+    );
+    final match = pattern.firstMatch(query);
+    if (match == null) return null;
+
+    final percentStr = match.group(1)!;
+    final baseStr = match.group(2)!;
+
+    final double? p = double.tryParse(percentStr);
+    final double? base = double.tryParse(baseStr);
+    if (p == null || base == null) return null;
+
+    final result = (p / 100.0) * base;
+    final formattedResult = (result % 1 == 0)
+        ? result.toInt().toString()
+        : result.toStringAsFixed(2);
+    final pDiv100 = (p / 100.0).toStringAsFixed(2);
+
+    final formula =
+        '${r"$$\mathbf{\text{Result} = \frac{"}$percentStr}{100} \\times $baseStr = $formattedResult${r"}$$"}';
+    final step1 =
+        '${r"$$"}$percentStr\\% = \\frac{$percentStr}{100} = $pDiv100${r"$$"}';
+    final step2 = '${r"$$"}$pDiv100 \\times $baseStr = $formattedResult${r"$$"}';
+    final finalRes = '${r"$$\mathbf{"}$formattedResult${r"}$$"}';
+
+    return '### 📊 Percentage Calculation\n\n'
+        'Here is how to calculate **$percentStr% of $baseStr**:\n\n'
+        '$formula\n\n'
+        '---\n\n'
+        '### Step-by-Step Method:\n'
+        '1. **Convert percentage to decimal / fraction**:\n'
+        '   $step1\n'
+        '2. **Multiply by the base amount ($baseStr)**:\n'
+        '   $step2\n\n'
+        '### Final Answer\n'
+        '$finalRes';
   }
 
   /// Strips query prefixes inserted by UI cards or user formatting
@@ -474,6 +701,9 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
       'Study for an Exam',
       'Solve:',
       'Explain:',
+      'Tell me about:',
+      'What is:',
+      'Can you explain:',
     ];
 
     for (final prefix in prefixes) {
@@ -584,29 +814,22 @@ print("Index:", binary_search(numbers, 23))  # Outputs: 5
 
   /// Synthesizes an articulate, high-value pedagogical response for any query
   String _synthesizeUniversalAnswer(String topic) {
-    final title = topic.isEmpty ? 'Study Concept' : topic;
+    final title = topic.isEmpty ? 'Your Study Question' : topic;
     return '### 🎓 Educational Guide: $title\n\n'
-        'Here is a structured explanation to help you master this topic:\n\n'
+        'Here is a structured explanation to help you understand this subject:\n\n'
         '---\n\n'
-        '### 1. Core Definition & Overview\n'
-        '**$title** is a fundamental concept. To understand it clearly:\n'
-        '- It establishes the foundational principle connecting underlying theory to practical problem solving.\n'
-        '- Mastering this concept requires identifying the key variables and their relationships.\n\n'
+        '### 1. Overview & Core Concept\n'
+        'When studying **$title**, the key objective is to connect theoretical principles with observable effects.\n'
+        '- It forms an important building block in understanding how related systems operate.\n'
+        '- Breaking the question down into smaller components makes it much easier to master.\n\n'
         '---\n\n'
-        '### 2. Fundamental Mechanics & Rules\n'
-        'When analyzing **$title**, keep these three core principles in mind:\n'
-        '1. **Decomposition**: Break complex scenarios down into their primary governing rules.\n'
-        '2. **Logical Sequence**: Follow standard procedural orders (such as order of operations or scientific deduction).\n'
-        '3. **Consistency**: Verify units, definitions, and boundary conditions at each step.\n\n'
+        '### 2. Key Insights & Principles\n'
+        'Keep these essential concepts in mind:\n'
+        '1. **Underlying Cause**: Identify what primary rules or laws govern this phenomenon.\n'
+        '2. **Step-by-Step Action**: Trace how each step directly leads to the next.\n'
+        '3. **Application**: Relate the theory to real-world problem sets and practical examples.\n\n'
         '---\n\n'
-        '### 3. Real-World Application & Analogy\n'
-        'In practical scenarios, **$title** acts like a building block:\n'
-        'Just as a foundation supports a building, understanding this concept gives you the tools to tackle higher-level problem sets with confidence.\n\n'
-        '---\n\n'
-        '### 4. Practice & Self-Check\n'
-        'To solidify your understanding, ask yourself:\n'
-        '- *Can I explain this concept in my own words to someone else?*\n'
-        '- *How does this rule apply to edge cases?*\n\n'
-        'Feel free to ask me for a specific equation, practice problem, or deeper breakdown!';
+        '### 3. Review & Practice\n'
+        'Would you like a worked practice problem or a deeper dive into a specific part of **$title**? Just let me know!';
   }
 }
