@@ -7,9 +7,13 @@ class ModelDownloadService {
   final Dio _dio = Dio();
   CancelToken? _cancelToken;
 
-  // Base Qwen model (chat)
+  // Base chat model. Qwen2.5-1.5B-Instruct (not the smaller 0.5B) - chosen
+  // to stay compatible with the planned federated LoRA fine-tuning pipeline
+  // (laptop training on the same HF base model, merge, re-quantize to GGUF)
+  // without an inference-side rewrite later, since it's still the same
+  // Qwen2 architecture/ChatML format already wired into llm_service_io.
   static const String modelUrl =
-      'https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF/resolve/main/qwen2.5-0.5b-instruct-q4_k_m.gguf';
+      'https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf';
   static const String modelFileName = 'qwen.gguf';
 
   // Small embedding model, used for local retrieval over uploaded chapters.
@@ -20,7 +24,7 @@ class ModelDownloadService {
   static const String embeddingModelFileName = 'embedding.gguf';
 
   // File size validation
-  static const int _minModelSize = 10 * 1024 * 1024; // 10MB minimum
+  static const int _minModelSize = 500 * 1024 * 1024; // 500MB minimum (real file ~1.1GB)
   static const int _minEmbeddingModelSize = 5 * 1024 * 1024; // 5MB minimum (real file ~25MB)
 
   Future<String> getModelPath() async {

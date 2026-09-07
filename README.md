@@ -200,7 +200,7 @@ You can run the web client using Flutter's development server or compile a produ
    *(Release mode is recommended for optimal inference speed and memory performance).*
 
 4. **Model Initialization on Android**:
-   - On first launch, the app prompts you to download the quantized small language model (`Qwen2.5-0.5B-Instruct-Q4_K_M.gguf`, ~350MB).
+   - On first launch, the app prompts you to download the quantized small language model (`Qwen2.5-1.5B-Instruct-Q4_K_M.gguf`, ~1.1GB) and a small embedding model (~25MB) used for local retrieval.
    - Alternatively, you can copy the `.gguf` model file directly to the device storage directory via ADB:
      ```bash
      adb push qwen.gguf /sdcard/Android/data/com.example.echo/files/model/qwen.gguf
