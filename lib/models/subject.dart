@@ -18,8 +18,19 @@ class Subject {
     required this.createdAt,
   });
 
-  // ignore: non_const_argument_for_const_parameter
-  IconData get icon => IconData(iconCodePoint, fontFamily: 'MaterialIcons');
+  IconData get icon {
+    if (iconCodePoint == Icons.calculate_outlined.codePoint) return Icons.calculate_outlined;
+    if (iconCodePoint == Icons.science_outlined.codePoint) return Icons.science_outlined;
+    if (iconCodePoint == Icons.menu_book_rounded.codePoint) return Icons.menu_book_rounded;
+    if (iconCodePoint == Icons.public_rounded.codePoint) return Icons.public_rounded;
+    if (iconCodePoint == Icons.auto_stories.codePoint) return Icons.auto_stories;
+    if (iconCodePoint == Icons.biotech.codePoint) return Icons.biotech;
+    if (iconCodePoint == Icons.computer.codePoint) return Icons.computer;
+    if (iconCodePoint == Icons.psychology.codePoint) return Icons.psychology;
+    if (iconCodePoint == Icons.history_edu.codePoint) return Icons.history_edu;
+    if (iconCodePoint == Icons.menu_book.codePoint) return Icons.menu_book;
+    return Icons.school;
+  }
   Color get color => Color(colorValue);
 
   Map<String, dynamic> toMap() {
