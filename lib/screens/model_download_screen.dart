@@ -3,65 +3,48 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/download_provider.dart';
+import '../theme/app_theme.dart';
 
 class ModelDownloadScreen extends ConsumerStatefulWidget {
   const ModelDownloadScreen({super.key});
 
   @override
-  ConsumerState<ModelDownloadScreen> createState() =>
-      _ModelDownloadScreenState();
+  ConsumerState<ModelDownloadScreen> createState() => _ModelDownloadScreenState();
 }
 
 class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
-  // Removed auto-start in initState as per new requirements (Manual Trigger)
-
-  // Helper handle exit
   Future<void> _showExitDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
         title: Text(
           'Exit Setup?',
-          style: GoogleFonts.outfit(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
           ),
         ),
         content: Text(
-          'The download is required to use the app. Are you sure you want to stop?',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            color: Colors.grey[600],
-            height: 1.5,
-          ),
+          'The AI model setup is required for 100% offline learning. Are you sure you want to stop?',
+          style: GoogleFonts.plusJakartaSans(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Stay',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF8B7FD6),
-              ),
-            ),
+            child: const Text('Stay'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop(); // Close dialog
-              SystemNavigator.pop(); // Exit app
+              Navigator.of(context).pop();
+              SystemNavigator.pop();
             },
             child: Text(
               'Exit',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(color: AppColors.lightDestructive),
             ),
           ),
         ],
@@ -79,18 +62,14 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
     final downloadedBytes = ref.watch(downloadedBytesProvider);
     final totalBytes = ref.watch(totalBytesProvider);
     final phaseLabel = ref.watch(downloadPhaseLabelProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Auto-navigate if ready (and not just starting)
-    // We check if progress > 0 to ensure we don't skip if it was already ready from before?
-    // Actually, user wants "Success Trigger... automatically navigate".
-    // If we land here and it's already ready, we should probably just navigate.
     if (isReady && !isDownloading && error == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacementNamed(context, '/profile_setup');
       });
     }
 
-    // Helper to format bytes
     String formatBytes(int bytes) {
       if (bytes <= 0) return "0 MB";
       const int mb = 1024 * 1024;
@@ -98,306 +77,234 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
     }
 
     return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Header Layout
               Align(
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  icon: const Icon(Icons.arrow_back),
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 18,
+                    color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                  ),
                   onPressed: _showExitDialog,
                 ),
               ),
               Text(
-                'SETUP',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 2.0,
-                  color: Colors.grey[500],
+                'AI MODEL SETUP',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                 ),
               ),
-              const SizedBox(height: 48),
+              const SizedBox(height: 36),
 
-              // Central Icon (Sparkle/Rocket proxy)
+              // Central Icon
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
                   Container(
-                    width: 140,
-                    height: 140,
+                    width: 120,
+                    height: 120,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF3F0FF), // Lightest violet
+                      color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF8B7FD6).withValues(alpha: 0.1),
-                          blurRadius: 30,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                        width: 2,
+                      ),
                     ),
                     child: const Icon(
-                      Icons.auto_awesome, // Sparkles
-                      size: 60,
-                      color: Color(0xFF8B7FD6),
+                      Icons.auto_awesome_rounded,
+                      size: 52,
+                      color: AppColors.lightTeal,
                     ),
                   ),
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B7FD6),
+                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 4),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                        width: 1,
+                      ),
                     ),
                     child: const Icon(
-                      Icons.rocket_launch_rounded,
-                      size: 24,
-                      color: Colors.white,
+                      Icons.cloud_off_rounded,
+                      size: 20,
+                      color: AppColors.lightTeal,
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 40),
+              const SizedBox(height: 32),
 
               Text(
-                'One Step Ahead in\nYour Learning\nJourney',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  height: 1.2,
-                  color: Theme.of(context).colorScheme.onSurface,
+                'One-Time Offline Setup',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Download your personalized learning assistant and start mastering your subjects today.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  color: Colors.grey[600],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Downloading the on-device AI model weights so Echo can tutor you 100% offline with zero latency.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                   height: 1.5,
                 ),
               ),
 
-              const Spacer(),
+              const SizedBox(height: 36),
 
-              // Logic Switch: Error vs Button vs Progress
-              if (error != null) ...[
-                Text(
-                  'Error: $error',
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      ref
-                          .read(downloadControllerProvider.notifier)
-                          .startDownload();
-                    },
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Retry Download'),
+              // Progress Section Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  borderRadius: AppRadii.cardRadius,
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 1,
                   ),
+                  boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
                 ),
-              ] else if (!isDownloading && !isReady) ...[
-                // Initial State: Show Button
-                SizedBox(
-                  width: double.infinity,
-                  child: FilledButton.icon(
-                    onPressed: () {
-                      ref
-                          .read(downloadControllerProvider.notifier)
-                          .startDownload();
-                    },
-                    icon: const Icon(Icons.download_rounded),
-                    label: const Text('Download Knowledge Base'),
-                  ),
-                ),
-              ] else ...[
-                // Progress Card
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      // Top Row: Status + Count
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF8B7FD6),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '$phaseLabel • ${(progress * 100).toInt()}%',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: const Color(0xFF8B7FD6),
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Text(
-                            '${formatBytes(downloadedBytes)}/${formatBytes(totalBytes)}',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Progress Bar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 12,
-                          backgroundColor: const Color(0xFFF3F0FF),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                            Color(0xFF8B7FD6),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isDownloading
+                              ? (phaseLabel.isNotEmpty ? 'Downloading $phaseLabel...' : 'Downloading AI Weights...')
+                              : (isReady ? 'Model Ready' : 'Ready to Download'),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 24),
-                      Divider(color: Colors.grey[200], height: 1),
-                      const SizedBox(height: 16),
-
-                      // Bottom Row: Stats
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'TOTAL SIZE',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[500],
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.sd_storage_rounded,
-                                    size: 14,
-                                    color: Color(0xFF8B7FD6),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    formatBytes(totalBytes),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                        Text(
+                          '${(progress * 100).toInt()}%',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.lightTeal,
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                'DOWNLOAD SPEED',
-                                style: GoogleFonts.inter(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[500],
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Row(
-                                children: [
-                                  Text(
-                                    speed,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSurface,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  const Icon(
-                                    Icons.speed_rounded,
-                                    size: 14,
-                                    color: Color(0xFF8B7FD6),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: LinearProgressIndicator(
+                        value: progress > 0 ? progress : null,
+                        minHeight: 6,
+                        backgroundColor: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.lightTeal),
                       ),
-                    ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${formatBytes(downloadedBytes)} / ${formatBytes(totalBytes)}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                          ),
+                        ),
+                        if (speed.isNotEmpty)
+                          Text(
+                            speed,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.lightTeal,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              if (error != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightDestructive.withValues(alpha: 0.1),
+                    borderRadius: AppRadii.cardRadius,
+                  ),
+                  child: Text(
+                    error,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      color: AppColors.lightDestructive,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],
 
-              const SizedBox(height: 24),
+              const Spacer(),
 
-              Text(
-                'YOUR OFFLINE AI TUTOR',
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 2.0,
-                  color: Colors.grey[400],
+              // Action button
+              if (!isDownloading && !isReady) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: () {
+                      ref.read(downloadControllerProvider.notifier).startDownload();
+                    },
+                    icon: const Icon(Icons.download_rounded, size: 18),
+                    label: const Text('Download Offline Model (~900MB)'),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/profile_setup');
+                  },
+                  child: Text(
+                    'Skip for now (Use Mock AI engine)',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 13,
+                      color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                    ),
+                  ),
+                ),
+              ] else if (isDownloading) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ref.read(downloadControllerProvider.notifier).cancelDownload();
+                    },
+                    icon: const Icon(Icons.close_rounded, size: 18),
+                    label: const Text('Cancel Download'),
+                  ),
+                ),
+              ],
 
-              const SizedBox(height: 8),
-              // Little bar at bottom
-              Container(
-                width: 140,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),

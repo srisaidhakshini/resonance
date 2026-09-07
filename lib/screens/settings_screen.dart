@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/chat_provider.dart';
 import '../providers/download_provider.dart';
-
-import '../providers/ui_provider.dart'; // For Text Size
+import '../providers/theme_provider.dart';
+import '../providers/ui_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/offline_badge.dart';
 import 'profile_setup_screen.dart';
 import 'benchmark_screen.dart';
 
@@ -18,10 +20,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  // Easter egg: 5-tap counter for benchmark screen
   int _tapCount = 0;
   Timer? _tapTimer;
-
   String _modelSizeDisplay = 'Calculating...';
 
   @override
@@ -73,132 +73,118 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final fontSize = ref.watch(fontSizeProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Standard background
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
         elevation: 0,
         centerTitle: true,
         title: Text(
           'Settings',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1A1A1A),
-            fontSize: 24,
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w700,
+            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+            fontSize: 18,
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A1A)),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 18,
+            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Offline Ready Card — wrapped with GestureDetector for easter egg
+            // 1. Offline Knowledge Base Card (5-tap easter egg for benchmarks)
             GestureDetector(
               onTap: _handleKnowledgeBaseTap,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF8B7FD6).withValues(alpha: 0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  borderRadius: AppRadii.featureRadius,
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 1,
+                  ),
+                  boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Color(0xFF10B981),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'OFFLINE READY',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF10B981),
-                            letterSpacing: 1.0,
-                          ),
-                        ),
+                        const OfflineBadge(isCompact: true),
                         const Spacer(),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF3E8FF),
+                            color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
-                            Icons.dns_rounded, // Database/cylinder icon
-                            color: Color(0xFF8B7FD6),
-                            size: 20,
+                            Icons.dns_rounded,
+                            color: AppColors.lightTeal,
+                            size: 18,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 14),
                     Text(
-                      'Knowledge Base',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1A1A1A),
+                      'On-Device AI Model',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    // Progress Bar
+                    const SizedBox(height: 12),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
                         value: 1.0,
-                        minHeight: 12,
-                        backgroundColor: const Color(0xFFF3F4F6),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF8B7FD6),
-                        ),
+                        minHeight: 6,
+                        backgroundColor: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                        valueColor: const AlwaysStoppedAnimation<Color>(AppColors.lightTeal),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           _modelSizeDisplay,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF8B7FD6),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.lightTeal,
                           ),
                         ),
                         Text(
-                          'Phone Storage',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey[500],
+                          'Local Device Storage',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 12,
+                            color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
                     Text(
-                      'Your AI tutor lives on your phone. It works perfectly without any internet connection.',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: Colors.grey[600],
+                      'Echo runs completely on your phone using quantized GGUF weights. No network queries are dispatched.',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                         height: 1.4,
                       ),
                     ),
@@ -207,85 +193,72 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            // 2. My Profile
-            Text(
-              'My Profile',
-              style: GoogleFonts.outfit(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 16),
+            // 2. Profile Summary
+            _buildSectionHeader('STUDENT PROFILE', isDark),
+            const SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                borderRadius: AppRadii.cardRadius,
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 1,
+                ),
+                boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
               ),
               child: FutureBuilder<SharedPreferences>(
                 future: SharedPreferences.getInstance(),
                 builder: (context, snapshot) {
-                  final name =
-                      snapshot.data?.getString('user_name') ?? 'Student';
+                  final name = snapshot.data?.getString('user_name') ?? 'Student';
                   final grade = snapshot.data?.getString('user_grade') ?? '8';
-                  final styleRaw =
-                      snapshot.data?.getString('user_teaching_style') ??
-                          'socratic';
-                  final pacingRaw =
-                      snapshot.data?.getString('user_pacing_level') ??
-                          'stepByStep';
+                  final styleRaw = snapshot.data?.getString('user_teaching_style') ?? 'socratic';
+                  final pacingRaw = snapshot.data?.getString('user_pacing_level') ?? 'stepByStep';
 
                   final styleDisplay = styleRaw == 'socratic'
                       ? 'Socratic'
                       : (styleRaw == 'direct' ? 'Direct' : 'Stories');
-                  final pacingDisplay = pacingRaw == 'stepByStep'
-                      ? 'Step-by-step'
-                      : 'High-level';
+                  final pacingDisplay = pacingRaw == 'stepByStep' ? 'Step-by-step' : 'High-level';
 
                   return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     title: Text(
                       '$name • Class $grade',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        color: const Color(0xFF1A1A1A),
-                        fontWeight: FontWeight.bold,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 15,
+                        color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
                         'Style: $styleDisplay • Pacing: $pacingDisplay',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: const Color(0xFF8B7FD6),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: AppColors.lightTeal,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                     trailing: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFF3E8FF),
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
-                        Icons.edit,
-                        size: 18,
-                        color: Color(0xFF8B7FD6),
+                        Icons.edit_rounded,
+                        size: 16,
+                        color: AppColors.lightTeal,
                       ),
                     ),
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) =>
-                              const ProfileSetupScreen(isEditMode: true),
+                          builder: (context) => const ProfileSetupScreen(isEditMode: true),
                         ),
                       ).then((_) {
                         setState(() {});
@@ -296,80 +269,95 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
             // 3. Look & Feel
-            Text(
-              'Look & Feel',
-              style: GoogleFonts.outfit(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 16),
+            _buildSectionHeader('APPEARANCE & ACCESSIBILITY', isDark),
+            const SizedBox(height: 10),
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                borderRadius: AppRadii.cardRadius,
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 1,
+                ),
+                boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
               ),
               child: Column(
                 children: [
+                  // Theme Mode Selector
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Dark Theme',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                        ),
+                      ),
+                      Switch(
+                        value: isDark,
+                        activeTrackColor: AppColors.lightTeal.withValues(alpha: 0.5),
+                        activeThumbColor: AppColors.lightTeal,
+                        onChanged: (_) {
+                          ref.read(themeProvider.notifier).toggleTheme();
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 20),
+
+                  // Text Size
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         'Text Size',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1A1A1A),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF3E8FF),
-                          borderRadius: BorderRadius.circular(8),
+                          color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                          borderRadius: AppRadii.pillRadius,
                         ),
                         child: Text(
                           _getFontSizeLabel(fontSize),
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF8B7FD6),
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Text(
                         'Aa',
-                        style: GoogleFonts.inter(
+                        style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
-                          color: Colors.grey[400],
+                          color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                         ),
                       ),
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: const Color(0xFFD8D0F2),
-                            inactiveTrackColor: const Color(0xFFF3F4F6),
-                            thumbColor: const Color(0xFF8B7FD6),
-                            overlayColor: const Color(
-                              0xFF8B7FD6,
-                            ).withValues(alpha: 0.1),
-                            trackHeight: 6.0,
-                            thumbShape: const RoundSliderThumbShape(
-                              enabledThumbRadius: 10.0,
-                            ),
+                            activeTrackColor: AppColors.lightTeal,
+                            inactiveTrackColor: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                            thumbColor: AppColors.lightTeal,
+                            trackHeight: 4.0,
+                            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8.0),
                           ),
                           child: Slider(
                             value: fontSize,
@@ -377,18 +365,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             max: 1.2,
                             divisions: 2,
                             onChanged: (value) {
-                              ref
-                                  .read(fontSizeProvider.notifier)
-                                  .setFontSize(value);
+                              ref.read(fontSizeProvider.notifier).setFontSize(value);
                             },
                           ),
                         ),
                       ),
                       Text(
                         'Aa',
-                        style: GoogleFonts.inter(
-                          fontSize: 20,
-                          color: const Color(0xFF1A1A1A),
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -398,41 +384,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
             ),
 
-            const SizedBox(height: 48),
+            const SizedBox(height: 32),
 
             // 4. Destructive Action
             SizedBox(
               width: double.infinity,
-              height: 56,
               child: OutlinedButton.icon(
-                onPressed: () => _showClearDataDialog(context, ref),
+                onPressed: () => _showClearDataDialog(context, ref, isDark),
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                    color: Color(0xFFFFE4E4),
-                    width: 1.5,
-                  ), // Light Red Border
-                  backgroundColor: const Color(0xFFFFF1F2), // Very Light Red
-                  foregroundColor: const Color(0xFFE11D48), // Deep Red Text
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: AppColors.lightDestructive.withValues(alpha: 0.3),
+                    width: 1,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  foregroundColor: AppColors.lightDestructive,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
-                icon: const Icon(Icons.history_toggle_off),
+                icon: const Icon(Icons.delete_outline_rounded, size: 18),
                 label: const Text('Clear Chat History'),
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Center(
               child: Text(
-                'Echo',
-                style: GoogleFonts.inter(fontSize: 12, color: Colors.grey[400]),
+                'Pocket Tutor (Echo) • Offline Edition',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, bool isDark) {
+    return Text(
+      title,
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 11,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 1.1,
+        color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
       ),
     );
   }
@@ -443,13 +439,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return 'Medium';
   }
 
-  void _showClearDataDialog(BuildContext context, WidgetRef ref) {
+  void _showClearDataDialog(BuildContext context, WidgetRef ref, bool isDark) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear Chat History?'),
-        content: const Text(
-          'This will permanently delete all your conversation history. Your Knowledge Base (900MB) will NOT be deleted.',
+        backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
+        title: Text(
+          'Clear Chat History?',
+          style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'This will permanently delete all your conversation history from local storage. Your AI models and learning profile will NOT be deleted.',
+          style: GoogleFonts.plusJakartaSans(fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -462,13 +464,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               if (context.mounted) {
                 Navigator.of(context).pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Chat history cleared')),
+                  const SnackBar(
+                    content: Text('Chat history cleared'),
+                    backgroundColor: AppColors.lightTeal,
+                  ),
                 );
               }
             },
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              backgroundColor: AppColors.lightDestructive,
             ),
             child: const Text('Clear History'),
           ),
