@@ -138,7 +138,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
             ),
             title: Row(
               children: [
-                const Icon(Icons.science, color: Color(0xFF8B7FD6)),
+                const Icon(Icons.science, color: Color(0xFF159A8C)),
                 const SizedBox(width: 8),
                 Text(
                   'Run Benchmark?',
@@ -169,7 +169,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
               FilledButton(
                 onPressed: () => Navigator.pop(ctx, true),
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF8B7FD6),
+                  backgroundColor: const Color(0xFF159A8C),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -300,14 +300,14 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF8B7FD6), Color(0xFF6C5CE7)],
+          colors: [Color(0xFF159A8C), Color(0xFF123B46)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF8B7FD6).withValues(alpha: 0.3),
+            color: const Color(0xFF159A8C).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -402,7 +402,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
       child: FilledButton.icon(
         onPressed: _startBenchmark,
         style: FilledButton.styleFrom(
-          backgroundColor: const Color(0xFF8B7FD6),
+          backgroundColor: const Color(0xFF159A8C),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -468,7 +468,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
               minHeight: 10,
               backgroundColor: const Color(0xFFF3F4F6),
               valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF8B7FD6),
+                Color(0xFF159A8C),
               ),
             ),
           ),
@@ -656,14 +656,14 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
         _highlightRow(
           'Model Footprint (mmap)',
           '${r.modelFootprintMb} MB',
-          const Color(0xFF8B7FD6),
+          const Color(0xFF159A8C),
         ),
         const Divider(height: 20),
         _metricRow('Peak Inference RAM Delta', '${r.peakRamMb} MB'),
         _highlightRow(
           'Inference KV Cache Overhead',
           '${r.inferenceOverheadMb} MB',
-          const Color(0xFF6C5CE7),
+          const Color(0xFF123B46),
         ),
       ],
     );
@@ -695,7 +695,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
           child: FilledButton.icon(
             onPressed: _shareReport,
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFF8B7FD6),
+              backgroundColor: const Color(0xFF159A8C),
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
@@ -724,12 +724,12 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            icon: const Icon(Icons.refresh, size: 20, color: Color(0xFF8B7FD6)),
+            icon: const Icon(Icons.refresh, size: 20, color: Color(0xFF159A8C)),
             label: Text(
               'Run Again',
               style: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF8B7FD6),
+                color: const Color(0xFF159A8C),
               ),
             ),
           ),
@@ -770,10 +770,10 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFF3E8FF),
+                  color: Color(0xFFE6F3F0),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: const Color(0xFF8B7FD6), size: 18),
+                child: Icon(icon, color: const Color(0xFF159A8C), size: 18),
               ),
               const SizedBox(width: 10),
               Column(
@@ -781,7 +781,7 @@ class _BenchmarkScreenState extends ConsumerState<BenchmarkScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.outfit(
+                    style: GoogleFonts.plusJakartaSans(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF1A1A1A),

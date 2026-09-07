@@ -74,16 +74,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: const Color(0xFFE6F3F0),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: const Color(0xFFF3E8FF)),
+                          border: Border.all(color: const Color(0xFFDCE5E3)),
                         ),
                         child: Row(
                           children: [
                             const Icon(
                               Icons.cloud_off_outlined,
                               size: 16,
-                              color: Color(0xFF8B7FD6),
+                              color: Color(0xFF159A8C),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -91,7 +91,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF8B7FD6),
+                                color: const Color(0xFF159A8C),
                               ),
                             ),
                           ],
@@ -132,7 +132,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: const BorderSide(
-                          color: Color(0xFF8B7FD6),
+                          color: Color(0xFF159A8C),
                           width: 1,
                         ),
                       ),
@@ -198,7 +198,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           ref.read(chatProvider.notifier).startNewChat();
           Navigator.of(context).pushNamed('/chat');
         },
-        backgroundColor: const Color(0xFF8B7FD6),
+        backgroundColor: const Color(0xFF159A8C),
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white, size: 32),
       ),
@@ -342,15 +342,15 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       case 'social studies':
         return _SubjectStyle(
           icon: Icons.menu_book_rounded,
-          color: Colors.purple,
-          bgColor: Colors.purple.withValues(alpha: 0.1),
+          color: const Color(0xFFE47763),
+          bgColor: const Color(0xFFE47763).withValues(alpha: 0.1),
         );
       default:
         // Default style for unknown or general chats
         return _SubjectStyle(
           icon: Icons.auto_awesome,
-          color: const Color(0xFF8B7FD6),
-          bgColor: const Color(0xFFF3F0FF),
+          color: const Color(0xFF159A8C),
+          bgColor: const Color(0xFFE6F3F0),
         );
     }
   }

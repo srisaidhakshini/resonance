@@ -20,28 +20,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'Your personal tutor that works entirely offline. No internet? No problem.',
       // Key 'type': 'offline' triggers the custom illustration
       'type': 'offline',
-      'color': Color(0xFF8B7FD6),
+      'color': Color(0xFF159A8C),
     },
     {
       'title': 'Structure Your\nLearning Journey',
       'body':
           'Organize your study materials and keep track of your progress effortlessly.',
       'type': 'structure', // Updated type
-      'color': Color(0xFF8B7FD6),
+      'color': Color(0xFF159A8C),
     },
     {
       'title': 'Interactive\nStudy Assistance',
       'body':
           'Get instant answers and explanations to your questions without waiting.',
       'type': 'interactive', // Updated type
-      'color': Color(0xFF8B7FD6),
+      'color': Color(0xFF159A8C),
     },
     {
       'title': 'Your Private\nAI Tutor',
       'body':
           'Always ready to help with your studies, providing personalized guidance just for you.',
       'type': 'tutor',
-      'color': Color(0xFF8B7FD6),
+      'color': Color(0xFF159A8C),
     },
   ];
 
@@ -244,12 +244,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF8B7FD6).withValues(alpha: 0.1),
+                      color: const Color(0xFF159A8C).withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.support_agent_rounded,
-                      color: Color(0xFF8B7FD6),
+                      color: Color(0xFF159A8C),
                       size: 28,
                     ),
                   ),
@@ -479,7 +479,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
                 child: const Icon(
                   Icons.wifi_off_rounded,
-                  color: Color(0xFF8B7FD6),
+                  color: Color(0xFF159A8C),
                   size: 32,
                 ),
               ),
@@ -504,7 +504,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       height: 12,
                       width: 12,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF8B7FD6),
+                        color: const Color(0xFF159A8C),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -524,11 +524,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF8B7FD6),
+              color: const Color(0xFF159A8C),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8B7FD6).withValues(alpha: 0.4),
+                  color: const Color(0xFF159A8C).withValues(alpha: 0.4),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -630,7 +630,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   width: 60,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF8B7FD6),
+                    color: const Color(0xFF159A8C),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -642,11 +642,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Column(
                     children: [
-                      _buildFileRow(Colors.orange[100]!, "Mathematics"),
-                      const SizedBox(height: 6), // Reduced to 6 for safety
-                      _buildFileRow(Colors.blue[100]!, "Physics"),
-                      const SizedBox(height: 6), // Reduced to 6 for safety
-                      _buildFileRow(Colors.purple[100]!, "History"),
+                      _buildFileRow(const Color(0xFFF2B35D).withValues(alpha: 0.2), "Mathematics"),
+                      const SizedBox(height: 6),
+                      _buildFileRow(const Color(0xFF4DB6AC).withValues(alpha: 0.2), "Physics"),
+                      const SizedBox(height: 6),
+                      _buildFileRow(const Color(0xFF159A8C).withValues(alpha: 0.2), "History"),
                     ],
                   ),
                 ),
@@ -705,7 +705,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           right: 60,
           child: CircleAvatar(
             radius: 6,
-            backgroundColor: const Color(0xFF8B7FD6).withValues(alpha: 0.4),
+            backgroundColor: const Color(0xFF159A8C).withValues(alpha: 0.4),
           ),
         ),
         Positioned(
@@ -713,7 +713,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           left: 60,
           child: CircleAvatar(
             radius: 4,
-            backgroundColor: const Color(0xFF8B7FD6).withValues(alpha: 0.4),
+            backgroundColor: const Color(0xFF159A8C).withValues(alpha: 0.4),
           ),
         ),
 
@@ -752,7 +752,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     const Icon(
                       Icons.help_outline,
                       size: 20,
-                      color: Color(0xFF8B7FD6),
+                      color: Color(0xFF159A8C),
                     ),
                     const SizedBox(width: 8),
                     Container(
@@ -777,7 +777,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF8B7FD6),
+                  color: const Color(0xFF159A8C),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
@@ -786,7 +786,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF8B7FD6).withValues(alpha: 0.3),
+                      color: const Color(0xFF159A8C).withValues(alpha: 0.3),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -857,7 +857,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF8B7FD6).withValues(alpha: 0.15),
+                color: const Color(0xFF159A8C).withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(10, 10),
               ),
@@ -865,7 +865,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ),
           child: Stack(
             children: [
-              // Purple Spine
+              // Teal Spine
               Positioned(
                 left: 0,
                 top: 0,
@@ -873,7 +873,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: Container(
                   width: 8,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFD0C9FF),
+                    color: const Color(0xFFD8F0EB),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(4),
                       bottomLeft: Radius.circular(4),
@@ -892,13 +892,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     Container(
                       width: 80,
                       height: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF3F0FF),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE6F3F0),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.psychology,
-                        color: Color(0xFF8B7FD6),
+                        color: Color(0xFF159A8C),
                         size: 40,
                       ),
                     ),
@@ -908,7 +908,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       height: 8,
                       width: 120,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F0FF),
+                        color: const Color(0xFFE6F3F0),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -917,7 +917,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       height: 8,
                       width: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F0FF),
+                        color: const Color(0xFFE6F3F0),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -971,7 +971,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              color: const Color(0xFF8B7FD6).withValues(alpha: 0.1),
+              color: const Color(0xFF159A8C).withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
           ),
@@ -983,7 +983,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             width: 150,
             height: 150,
             decoration: BoxDecoration(
-              color: const Color(0xFF8B7FD6).withValues(alpha: 0.05),
+              color: const Color(0xFF159A8C).withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
           ),
@@ -1009,7 +1009,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
     final styleHighlight = GoogleFonts.inter(
       fontSize: 16,
-      color: const Color(0xFF8B7FD6),
+      color: const Color(0xFF159A8C),
       fontWeight: FontWeight.w600,
       height: 1.5,
     );
