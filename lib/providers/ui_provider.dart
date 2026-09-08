@@ -1,6 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Holds a topic that should be turned into a Practice quiz as soon as the
+// Practice tab is shown (set by quick-action cards on Home/Learn/Progress).
+final pendingQuizTopicProvider = StateProvider<String?>((ref) => null);
+
 // Font Size Provider: 0.8 (Small), 1.0 (Medium), 1.2 (Large)
 final fontSizeProvider = StateNotifierProvider<FontSizeNotifier, double>((ref) {
   return FontSizeNotifier();

@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/studio_items.dart';
+import '../providers/ui_provider.dart';
+import '../widgets/app_drawer.dart';
+import '../widgets/mascot_widget.dart';
 
-class QuizScreen extends StatefulWidget {
+class QuizScreen extends ConsumerStatefulWidget {
   final QuizDeck? initialDeck;
+  /// True when hosted as a persistent bottom-nav tab (shows a menu/drawer
+  /// icon and reacts to [pendingQuizTopicProvider]) instead of a pushed
+  /// route (which shows a back button).
+  final bool isTab;
 
-  const QuizScreen({super.key, this.initialDeck});
+  const QuizScreen({super.key, this.initialDeck, this.isTab = false});
 
   @override
-  State<QuizScreen> createState() => _QuizScreenState();
+  ConsumerState<QuizScreen> createState() => _QuizScreenState();
 }
 
-class _QuizScreenState extends State<QuizScreen> {
+class _QuizScreenState extends ConsumerState<QuizScreen> {
   late List<QuizDeck> _allDecks;
   late QuizDeck _currentDeck;
   int _currentIndex = 0;
@@ -19,6 +27,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _hasSubmitted = false;
   int _score = 0;
   String _selectedGrade = 'All';
+  MascotState _mascotState = MascotState.idle;
 
   @override
   void initState() {
@@ -261,12 +270,16 @@ class _QuizScreenState extends State<QuizScreen> {
       _selectedOptionIndex = null;
       _hasSubmitted = false;
       _score = 0;
+      _mascotState = MascotState.idle;
     });
   }
 
   void _selectOption(int index) {
     if (_hasSubmitted) return;
-    setState(() => _selectedOptionIndex = index);
+    setState(() {
+      _selectedOptionIndex = index;
+      _mascotState = MascotState.thinking;
+    });
   }
 
   void _submitAnswer() {
@@ -278,6 +291,7 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _hasSubmitted = true;
       if (isCorrect) _score++;
+      _mascotState = isCorrect ? MascotState.correct : MascotState.wrong;
     });
   }
 
@@ -287,6 +301,7 @@ class _QuizScreenState extends State<QuizScreen> {
         _currentIndex++;
         _selectedOptionIndex = null;
         _hasSubmitted = false;
+        _mascotState = MascotState.idle;
       });
     } else {
       _showResultDialog();
@@ -339,6 +354,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 _selectedOptionIndex = null;
                 _hasSubmitted = false;
                 _score = 0;
+                _mascotState = MascotState.idle;
               });
             },
             child: Text(
@@ -352,14 +368,14 @@ class _QuizScreenState extends State<QuizScreen> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              Navigator.pop(context);
+              if (!widget.isTab) Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _currentDeck.theme.accent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text('Back to Home'),
+            child: Text(widget.isTab ? 'Done' : 'Back to Home'),
           ),
         ],
       ),
@@ -368,6 +384,16 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isTab) {
+      ref.listen<String?>(pendingQuizTopicProvider, (previous, topic) {
+        if (topic != null && topic.trim().isNotEmpty) {
+          ref.read(pendingQuizTopicProvider.notifier).state = null;
+          final cleanTopic = topic.replaceAll(RegExp(r'[:\s]+$'), '').trim();
+          _generateAndLoadQuiz(cleanTopic, _selectedGrade == 'All' ? 'Class 10' : _selectedGrade);
+        }
+      });
+    }
+
     final theme = _currentDeck.theme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final question = _currentDeck.questions[_currentIndex];
@@ -375,18 +401,29 @@ class _QuizScreenState extends State<QuizScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0F1A1C) : theme.background,
+      drawer: widget.isTab ? const AppDrawer() : null,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: isDark ? Colors.white : theme.primaryText,
-            size: 20,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: widget.isTab
+            ? Builder(
+                builder: (context) => IconButton(
+                  icon: Icon(
+                    Icons.menu_rounded,
+                    color: isDark ? Colors.white : theme.primaryText,
+                  ),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              )
+            : IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: isDark ? Colors.white : theme.primaryText,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -597,6 +634,55 @@ class _QuizScreenState extends State<QuizScreen> {
                   },
                 ),
               ),
+            // Mascot Reaction Panel
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+              child: Row(
+                children: [
+                  MascotWidget(
+                    key: ValueKey('${_currentDeck.id}_$_currentIndex'),
+                    state: _mascotState,
+                    size: 92,
+                    onReactionComplete: () {
+                      // Hold the final correct/wrong pose until the user moves on.
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      child: Container(
+                        key: ValueKey(_mascotState),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: (_mascotState == MascotState.correct
+                                  ? const Color(0xFF4CAF50)
+                                  : _mascotState == MascotState.wrong
+                                      ? const Color(0xFFEF5350)
+                                      : theme.accent)
+                              .withValues(alpha: isDark ? 0.18 : 0.1),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          switch (_mascotState) {
+                            MascotState.idle => "I'll be here — take your time!",
+                            MascotState.thinking => "Hmm, are you sure about that?",
+                            MascotState.correct => "Yes! Nailed it! 🎉",
+                            MascotState.wrong => "Oops, not quite — check the explanation!",
+                          },
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white : theme.primaryText,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
             // Question Progress Bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),

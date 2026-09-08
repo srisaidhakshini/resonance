@@ -10,6 +10,7 @@ import '../providers/content_provider.dart';
 import '../providers/ui_provider.dart';
 import '../services/voice_service.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/mascot_widget.dart';
 import '../theme/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
@@ -38,6 +39,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _isModelLoading = true;
   bool _hasError = false;
   bool _isIngestingFile = false;
+  bool _showCelebration = false;
+  Timer? _celebrationTimer;
 
   Future<void> _pickAndAttachFile() async {
     final processor = ref.read(contentProcessorServiceProvider);
@@ -411,6 +414,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _voiceService.stopListening();
     _textController.dispose();
     _scrollController.dispose();
+    _celebrationTimer?.cancel();
     super.dispose();
   }
 
@@ -527,6 +531,18 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final messages = ref.watch(chatProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Pulse a happy mascot reaction for a moment whenever a response
+    // finishes streaming in, then let it settle back to idle.
+    ref.listen<bool>(isGeneratingProvider, (previous, isGenerating) {
+      if (previous == true && isGenerating == false) {
+        _celebrationTimer?.cancel();
+        setState(() => _showCelebration = true);
+        _celebrationTimer = Timer(const Duration(milliseconds: 1800), () {
+          if (mounted) setState(() => _showCelebration = false);
+        });
+      }
+    });
+
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       appBar: AppBar(
@@ -552,11 +568,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
                 borderRadius: AppRadii.smRadius,
               ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                color: AppColors.lightTeal,
-                size: 16,
-              ),
+              clipBehavior: Clip.antiAlias,
+              padding: const EdgeInsets.all(3),
+              child: Image.asset('assets/mascot/idle/frame_000.png', fit: BoxFit.contain),
             ),
             const SizedBox(width: 8),
             Text(
@@ -634,13 +648,40 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ],
       ),
       drawer: const AppDrawer(),
-      body: Column(
+      body: Stack(
         children: [
-          _buildGroundingBanner(isDark),
-          Expanded(
-            child: messages.isEmpty ? _buildEmptyState(isDark) : _buildMessageList(messages, isDark),
+          Column(
+            children: [
+              _buildGroundingBanner(isDark),
+              Expanded(
+                child: messages.isEmpty ? _buildEmptyState(isDark) : _buildMessageList(messages, isDark),
+              ),
+              _buildInputArea(context, isDark),
+            ],
           ),
-          _buildInputArea(context, isDark),
+          if (_showCelebration)
+            Positioned(
+              right: 12,
+              bottom: 84,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _showCelebration ? 1 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      ),
+                      boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
+                    ),
+                    child: const MascotWidget(state: MascotState.correct, size: 56),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -724,32 +765,54 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Widget _buildThinkingIndicator(BuildContext context, bool isDark) {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(AppRadii.card),
-            topRight: Radius.circular(AppRadii.card),
-            bottomRight: Radius.circular(AppRadii.card),
-          ),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: const [
-            _ProgressiveThinkingIndicator(
-              color: AppColors.lightTeal,
-              textColor: AppColors.lightTeal,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2, right: 10),
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                width: 1,
+              ),
             ),
-          ],
-        ),
+            clipBehavior: Clip.antiAlias,
+            child: const MascotWidget(state: MascotState.thinking, size: 32),
+          ),
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : AppColors.lightCard,
+                borderRadius: BorderRadius.only(
+                  topLeft: const Radius.circular(4),
+                  topRight: Radius.circular(AppRadii.card),
+                  bottomLeft: Radius.circular(AppRadii.card),
+                  bottomRight: Radius.circular(AppRadii.card),
+                ),
+                border: Border.all(
+                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                  width: 1,
+                ),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _ProgressiveThinkingIndicator(
+                    color: AppColors.lightTeal,
+                    textColor: AppColors.lightTeal,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -759,26 +822,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       padding: const EdgeInsets.all(24.0),
       child: Column(
         children: [
-          const SizedBox(height: 16),
-          // Subtle Teal AI Motif
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                width: 1.5,
-              ),
-            ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              size: 32,
-              color: AppColors.lightTeal,
-            ),
-          ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 4),
+          const MascotWidget(state: MascotState.idle, size: 120),
+          const SizedBox(height: 12),
 
           // Greeting
           FutureBuilder<SharedPreferences>(
@@ -941,7 +987,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // AI Avatar Motif
+            // Sprite Avatar Motif
             Container(
               margin: const EdgeInsets.only(top: 2, right: 10),
               width: 28,
@@ -954,11 +1000,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   width: 1,
                 ),
               ),
-              child: const Icon(
-                Icons.auto_awesome_rounded,
-                size: 15,
-                color: AppColors.lightTeal,
-              ),
+              clipBehavior: Clip.antiAlias,
+              padding: const EdgeInsets.all(2),
+              child: Image.asset('assets/mascot/idle/frame_000.png', fit: BoxFit.contain),
             ),
 
             // Bubble
