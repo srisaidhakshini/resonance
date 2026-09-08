@@ -11,22 +11,35 @@ class RetrievalService {
 
   RetrievalService(this._embeddingService);
 
+  /// Below this cosine similarity a chunk is considered unrelated to the
+  /// query rather than just "the best of a bad lot". all-MiniLM-L6-v2
+  /// cosine scores for genuinely relevant passages typically land 0.4+;
+  /// unrelated text usually sits under 0.3. 0.35 filters clear mismatches
+  /// while still tolerating loosely-phrased questions.
+  static const double defaultMinSimilarity = 0.35;
+
   Future<List<String>> retrieve({
     required String query,
     required List<ContentChunk> chunks,
     int topK = 4,
     int maxContextChars = 1500,
+    double minSimilarity = defaultMinSimilarity,
   }) async {
     if (chunks.isEmpty) return [];
 
     final queryEmbedding = await _embeddingService.embedQuery(query);
     if (queryEmbedding.isEmpty) return [];
 
-    final scored = chunks
-        .where((c) => c.embedding != null && c.embedding!.isNotEmpty)
-        .map((c) => MapEntry(c, _cosineSimilarity(queryEmbedding, c.embedding!)))
-        .toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final scored =
+        chunks
+            .where((c) => c.embedding != null && c.embedding!.isNotEmpty)
+            .map(
+              (c) =>
+                  MapEntry(c, _cosineSimilarity(queryEmbedding, c.embedding!)),
+            )
+            .where((e) => e.value >= minSimilarity)
+            .toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
 
     return _withinBudget(
       scored.take(topK).map((e) => e.key.text),

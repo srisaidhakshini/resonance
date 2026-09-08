@@ -15,12 +15,28 @@ class PromptMessage {
 /// 3. Pedagogical style guidelines & few-shot examples (TeachingStyleTemplate)
 /// 4. Conversation history & latest query
 class PromptBuilder {
+  /// Neutralizes ChatML control-token markers inside untrusted text (user
+  /// messages, replayed history, and especially RAG-retrieved document
+  /// content) before it's concatenated into the ChatML buffer below.
+  ///
+  /// llama_cpp_dart tokenizes prompts with `parse_special=true`, so a
+  /// literal `<|im_start|>`/`<|im_end|>` substring anywhere in that text
+  /// would be parsed as a real control token - letting injected text (e.g.
+  /// from an uploaded PDF) forge a fake system/assistant turn and hijack
+  /// the conversation. Breaking the `<|`/`|>` delimiter defeats every
+  /// current and future special token generically, without enumerating them.
+  static String sanitizeForPrompt(String text) {
+    return text.replaceAll('<|', '‹|').replaceAll('|>', '|›');
+  }
+
   /// Builds the personalized system prompt block.
   static String buildSystemPrompt({
     required UserProfile profile,
     required String hardwareInstructions,
   }) {
-    final styleTemplate = TeachingStyleTemplate.fromStyle(profile.teachingStyle);
+    final styleTemplate = TeachingStyleTemplate.fromStyle(
+      profile.teachingStyle,
+    );
 
     final pacingInstruction = profile.pacingLevel == PacingLevel.stepByStep
         ? '- **Pacing:** Break concepts and calculations down step-by-step into digestible, bite-sized components.'
@@ -60,21 +76,28 @@ $hardwareInstructions''';
     // 2. Few-shot Style Examples (Conditioning for small SLMs)
     // Only inject if conversation is fresh (e.g. history is empty or short) to save context budget
     if (includeFewShot && history.length <= 2) {
-      final styleTemplate =
-          TeachingStyleTemplate.fromStyle(profile.teachingStyle);
+      final styleTemplate = TeachingStyleTemplate.fromStyle(
+        profile.teachingStyle,
+      );
       for (final example in styleTemplate.fewShotExamples.take(1)) {
-        buffer.write('<|im_start|>${example.role}\n${example.content}<|im_end|>\n');
+        buffer.write(
+          '<|im_start|>${example.role}\n${example.content}<|im_end|>\n',
+        );
       }
     }
 
     // 3. Prior Chat History Turns
     for (final msg in history) {
       if (msg.content.trim().isEmpty || msg.role == 'system') continue;
-      buffer.write('<|im_start|>${msg.role}\n${msg.content}<|im_end|>\n');
+      buffer.write(
+        '<|im_start|>${msg.role}\n${sanitizeForPrompt(msg.content)}<|im_end|>\n',
+      );
     }
 
     // 4. Current User Turn & Assistant Trigger
-    buffer.write('<|im_start|>user\n$currentMessage<|im_end|>\n');
+    buffer.write(
+      '<|im_start|>user\n${sanitizeForPrompt(currentMessage)}<|im_end|>\n',
+    );
     buffer.write('<|im_start|>assistant\n');
 
     return buffer.toString();
