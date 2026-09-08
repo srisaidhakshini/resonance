@@ -42,6 +42,8 @@ dependencies:
   wakelock_plus: ^1.3.4 # Keep screen on during benchmark
   speech_to_text: ^7.4.0
   flutter_tts: ^4.2.5
+  audioplayers: ^6.1.0   # Plays ElevenLabs TTS audio bytes on native platforms
+  url_launcher: ^6.3.0   # Opens external links (ElevenLabs web agent) on native platforms
 
   # Content ingestion (PDF/text/photo -> grounded Q&A)
   file_picker: ^8.1.4

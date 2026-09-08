@@ -752,6 +752,111 @@ class LLMService {
     }
   }
 
+  /// One-shot, stateless generation for non-conversational tasks (e.g.
+  /// turning study material into a structured video script) that must NOT
+  /// go through [streamResponse]: that method (a) always wraps
+  /// `groundingContext` as "answer this question using the reference
+  /// material", which fights a task that isn't a question, (b) always
+  /// injects the tutor system prompt and a teaching-style few-shot example
+  /// via [PromptBuilder], biasing the model toward conversational replies
+  /// instead of a strict output format, and (c) permanently writes both the
+  /// request and the model's reply into [_chatHistory], silently corrupting
+  /// the user's real tutoring conversation with unrelated turns. This
+  /// method builds its own minimal system+user ChatML prompt, never touches
+  /// [_chatHistory], and uses a more patient trailing-silence timeout
+  /// suited to longer structured output instead of [streamResponse]'s
+  /// aggressive "looks like a finished sentence" cutoff.
+  Future<String> generateStructuredContent(
+    String systemPrompt,
+    String userPrompt, {
+    Duration silenceTimeout = const Duration(seconds: 6),
+    Duration warmupTimeout = const Duration(seconds: 45),
+  }) async {
+    if (_isReloadingContext) {
+      int reloadWait = 0;
+      while (_isReloadingContext) {
+        await Future.delayed(const Duration(milliseconds: 100));
+        reloadWait++;
+        if (reloadWait > 100) {
+          throw Exception('Model is restarting. Please try again in a moment.');
+        }
+      }
+    }
+
+    if (!_isInitialized || _llamaParent == null) {
+      throw Exception('Model not loaded.');
+    }
+
+    int waitCount = 0;
+    while (_isGenerating) {
+      waitCount++;
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (waitCount > 30) break;
+    }
+
+    if (_needsContextReload) {
+      await reloadLlamaContext();
+    }
+
+    _currentGenerationId++;
+    final myGenerationId = _currentGenerationId;
+    _activeGenerationId = myGenerationId;
+    _isGenerating = true;
+
+    final formattedPrompt =
+        '<|im_start|>system\n${PromptBuilder.sanitizeForPrompt(systemPrompt)}<|im_end|>\n'
+        '<|im_start|>user\n${PromptBuilder.sanitizeForPrompt(userPrompt)}<|im_end|>\n'
+        '<|im_start|>assistant\n';
+
+    if (_currentResponseController != null) {
+      await _currentResponseController!.close();
+    }
+    _currentResponseController = StreamController<String>();
+
+    _llamaParent!.sendPrompt(formattedPrompt);
+
+    String fullResponse = '';
+    Timer? timeoutTimer;
+    bool hasReceivedFirstToken = false;
+
+    void resetTimeout() {
+      timeoutTimer?.cancel();
+      final duration = hasReceivedFirstToken ? silenceTimeout : warmupTimeout;
+      timeoutTimer = Timer(duration, () {
+        if (!hasReceivedFirstToken) _needsContextReload = true;
+        _currentResponseController?.close();
+      });
+    }
+
+    resetTimeout();
+
+    try {
+      await for (final token in _currentResponseController!.stream) {
+        if (!_isGenerating || _activeGenerationId != myGenerationId) break;
+        if (token.isEmpty) continue;
+
+        final eosEnd = '<' '|im_end|' '>';
+        final eosText = '<' '|endoftext|' '>';
+        final eosSlash = '<' '/s' '>';
+        if (token.contains(eosEnd) || token.contains(eosText) || token.contains(eosSlash)) {
+          fullResponse += token.replaceAll(eosEnd, '').replaceAll(eosText, '').replaceAll(eosSlash, '');
+          break;
+        }
+
+        hasReceivedFirstToken = true;
+        fullResponse += token;
+        resetTimeout();
+      }
+    } finally {
+      timeoutTimer?.cancel();
+      _isGenerating = false;
+    }
+
+    final result = fullResponse.trim();
+    _log('📝 [STRUCTURED] Generated ${result.length} chars: "${result.length > 200 ? '${result.substring(0, 200)}...' : result}"');
+    return result;
+  }
+
   // 🛡️ RESOURCE MANAGEMENT: Unload model on app pause/exit
   Future<void> unloadModel() async {
     if (!_isInitialized) return;

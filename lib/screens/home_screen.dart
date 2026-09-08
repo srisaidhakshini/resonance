@@ -12,6 +12,7 @@ import 'flashcards_screen.dart';
 import 'audio_overview_screen.dart';
 import 'quiz_screen.dart';
 import 'mind_map_screen.dart';
+import 'video_overview_screen.dart';
 import '../widgets/call_launch_sheet.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -640,6 +641,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'onTap': () => Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const QuizScreen()),
+        ),
+      },
+      {
+        'icon': Icons.movie_filter_outlined,
+        'title': 'Video Overview',
+        'desc': 'Kinetic typography recap, narrated',
+        'tag': 'AI VIDEO',
+        'onTap': () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const VideoOverviewScreen()),
         ),
       },
       {
