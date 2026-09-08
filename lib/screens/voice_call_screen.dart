@@ -41,12 +41,14 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> with TickerProviderSt
   bool _isStudentSpeaking = false;
   bool _showTextPad = false;
   String _callStatus = 'Connecting...';
+  String _agentId = '';
 
   final List<CallTurn> _turns = [];
 
   @override
   void initState() {
     super.initState();
+    _loadAgentInfo();
 
     _pulseAnimCtrl = AnimationController(
       vsync: this,
@@ -62,6 +64,15 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> with TickerProviderSt
 
     // Start Call Flow
     _startCallFlow();
+  }
+
+  Future<void> _loadAgentInfo() async {
+    final creds = await _callService.loadCredentials();
+    if (mounted) {
+      setState(() {
+        _agentId = creds['elevenLabsAgentId'] ?? '';
+      });
+    }
   }
 
   @override
@@ -409,9 +420,14 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> with TickerProviderSt
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
               child: InkWell(
-                onTap: () => openExternalUrl(
-                  'https://elevenlabs.io/app/talk-to?agent_id=agent_2001m1z227myfw4s8197yntgxggf',
-                ),
+                onTap: () {
+                  final aid = _agentId.trim();
+                  openExternalUrl(
+                    aid.isNotEmpty
+                        ? 'https://elevenlabs.io/app/talk-to?agent_id=$aid'
+                        : 'https://elevenlabs.io/app/conversational-ai',
+                  );
+                },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),

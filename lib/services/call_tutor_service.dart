@@ -18,19 +18,11 @@ class CallTutorService {
   static const String keyElevenLabsVoiceId = 'elevenlabs_voice_id';
   static const String keyStudentPhone = 'student_phone_number';
 
-  // Default ElevenLabs Voice IDs
+  // Default ElevenLabs Voice IDs (premade voices supported on free & paid tiers)
+  static const String defaultVoiceAlice = 'Xb7hH8MSUJpSbSDYk0k2';  // Alice (Clear, Engaging Educator)
   static const String defaultVoiceRachel = '21m00Tcm4TlvDq8ikWAM'; // Rachel (Calm & Clear)
   static const String defaultVoiceAdam = 'pNInz6obpgDQGcFmaJgB';   // Adam (Friendly & Dynamic)
   static const String defaultVoiceJosh = 'TxGEqnHWrfWFTfGW9XjX';   // Josh (Energetic)
-
-  // Default Fallbacks
-  static const String defaultTwilioSid = 'AC86a315e8d751d9ab63d45bc379543378';
-  static const String defaultTwilioAuth = 'b15efb7ecedf832c0527098a300b2dd6';
-  static const String defaultTwilioFromNumber = '+19362336439';
-  static const String defaultElevenLabsKey = 'sk_a539eb0eaf846b3908028bf1c8a99ba865f874da8319ecca';
-  static const String defaultElevenLabsAgentId = 'agent_2001m1z227myfw4s8197yntgxggf';
-  static const String defaultElevenLabsVoiceId = 'TmPeb2hSxdVrThJLywkg';
-  static const String defaultStudentPhone = '+918248059760';
 
   final Dio _dio = Dio(
     BaseOptions(
@@ -39,7 +31,7 @@ class CallTutorService {
     ),
   );
 
-  /// Load persisted credentials (prefers SharedPreferences, falls back to environment variables or defaults)
+  /// Load persisted credentials (prefers SharedPreferences, falls back to server .env / environment variables)
   Future<Map<String, String>> loadCredentials() async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -51,28 +43,47 @@ class CallTutorService {
     const envElevenLabsVoiceId = String.fromEnvironment('ELEVENLABS_VOICE_ID');
     const envStudentPhone = String.fromEnvironment('STUDENT_PHONE_NUMBER');
 
-    final sid = prefs.getString(keyTwilioSid);
-    final auth = prefs.getString(keyTwilioAuth);
-    final fromNumber = prefs.getString(keyTwilioFromNumber);
-    final key = prefs.getString(keyElevenLabsKey);
-    final agentId = prefs.getString(keyElevenLabsAgentId);
-    final voiceId = prefs.getString(keyElevenLabsVoiceId);
-    final phone = prefs.getString(keyStudentPhone);
+    String? sid = prefs.getString(keyTwilioSid);
+    String? auth = prefs.getString(keyTwilioAuth);
+    String? fromNumber = prefs.getString(keyTwilioFromNumber);
+    String? key = prefs.getString(keyElevenLabsKey);
+    String? agentId = prefs.getString(keyElevenLabsAgentId);
+    String? voiceId = prefs.getString(keyElevenLabsVoiceId);
+    String? phone = prefs.getString(keyStudentPhone);
+
+    // If running in web and values are empty, fetch live configuration from server's .env via /api/config
+    if (kIsWeb && (sid == null || sid.isEmpty || key == null || key.isEmpty)) {
+      try {
+        final resp = await _dio.get('/api/config');
+        if (resp.statusCode == 200 && resp.data is Map) {
+          final m = resp.data as Map<String, dynamic>;
+          sid = (sid != null && sid.isNotEmpty) ? sid : m['twilioSid']?.toString();
+          auth = (auth != null && auth.isNotEmpty) ? auth : m['twilioAuth']?.toString();
+          fromNumber = (fromNumber != null && fromNumber.isNotEmpty) ? fromNumber : m['twilioFromNumber']?.toString();
+          key = (key != null && key.isNotEmpty) ? key : m['elevenLabsKey']?.toString();
+          agentId = (agentId != null && agentId.isNotEmpty) ? agentId : m['elevenLabsAgentId']?.toString();
+          voiceId = (voiceId != null && voiceId.isNotEmpty) ? voiceId : m['elevenLabsVoiceId']?.toString();
+          phone = (phone != null && phone.isNotEmpty) ? phone : m['studentPhone']?.toString();
+        }
+      } catch (_) {
+        // Fallback gracefully if server is offline
+      }
+    }
 
     return {
-      'twilioSid': (sid != null && sid.isNotEmpty) ? sid : (envTwilioSid.isNotEmpty ? envTwilioSid : defaultTwilioSid),
-      'twilioAuth': (auth != null && auth.isNotEmpty) ? auth : (envTwilioAuth.isNotEmpty ? envTwilioAuth : defaultTwilioAuth),
-      'twilioFromNumber': (fromNumber != null && fromNumber.isNotEmpty) ? fromNumber : (envTwilioFrom.isNotEmpty ? envTwilioFrom : defaultTwilioFromNumber),
-      'elevenLabsKey': (key != null && key.isNotEmpty) ? key : (envElevenLabsKey.isNotEmpty ? envElevenLabsKey : defaultElevenLabsKey),
-      'elevenLabsAgentId': (agentId != null && agentId.isNotEmpty) ? agentId : (envElevenLabsAgentId.isNotEmpty ? envElevenLabsAgentId : defaultElevenLabsAgentId),
+      'twilioSid': (sid != null && sid.isNotEmpty) ? sid : envTwilioSid,
+      'twilioAuth': (auth != null && auth.isNotEmpty) ? auth : envTwilioAuth,
+      'twilioFromNumber': (fromNumber != null && fromNumber.isNotEmpty) ? fromNumber : envTwilioFrom,
+      'elevenLabsKey': (key != null && key.isNotEmpty) ? key : envElevenLabsKey,
+      'elevenLabsAgentId': (agentId != null && agentId.isNotEmpty) ? agentId : envElevenLabsAgentId,
       'elevenLabsVoiceId': (voiceId != null && voiceId.isNotEmpty)
           ? voiceId
-          : (envElevenLabsVoiceId.isNotEmpty ? envElevenLabsVoiceId : defaultElevenLabsVoiceId),
-      'studentPhone': (phone != null && phone.isNotEmpty) ? phone : (envStudentPhone.isNotEmpty ? envStudentPhone : defaultStudentPhone),
+          : (envElevenLabsVoiceId.isNotEmpty ? envElevenLabsVoiceId : defaultVoiceAlice),
+      'studentPhone': (phone != null && phone.isNotEmpty) ? phone : envStudentPhone,
     };
   }
 
-  /// Save credentials
+  /// Save credentials (persists to local SharedPreferences and updates server .env on web)
   Future<void> saveCredentials({
     required String twilioSid,
     required String twilioAuth,
@@ -90,6 +101,23 @@ class CallTutorService {
     await prefs.setString(keyElevenLabsAgentId, elevenLabsAgentId.trim());
     await prefs.setString(keyElevenLabsVoiceId, elevenLabsVoiceId.trim());
     await prefs.setString(keyStudentPhone, studentPhone.trim());
+
+    if (kIsWeb) {
+      try {
+        await _dio.post(
+          '/api/config',
+          data: {
+            'twilioSid': twilioSid.trim(),
+            'twilioAuth': twilioAuth.trim(),
+            'twilioFromNumber': twilioFromNumber.trim(),
+            'elevenLabsKey': elevenLabsKey.trim(),
+            'elevenLabsAgentId': elevenLabsAgentId.trim(),
+            'elevenLabsVoiceId': elevenLabsVoiceId.trim(),
+            'studentPhone': studentPhone.trim(),
+          },
+        );
+      } catch (_) {}
+    }
   }
 
   /// Triggers an actual cellular phone call to the student's number using Twilio + ElevenLabs
@@ -196,6 +224,7 @@ class CallTutorService {
         success: true,
         callSid: 'SIM_TWILIO_${DateTime.now().millisecondsSinceEpoch}',
         message: 'Twilio configuration active. Ringing $toNumber...',
+        isSimulation: true,
       );
     }
   }

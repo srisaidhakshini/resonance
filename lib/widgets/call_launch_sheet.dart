@@ -637,8 +637,11 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                     ),
                   ),
                   onPressed: () {
+                    final aid = _agentIdCtrl.text.trim();
                     openExternalUrl(
-                      'https://elevenlabs.io/app/talk-to?agent_id=agent_2001m1z227myfw4s8197yntgxggf',
+                      aid.isNotEmpty
+                          ? 'https://elevenlabs.io/app/talk-to?agent_id=$aid'
+                          : 'https://elevenlabs.io/app/conversational-ai',
                     );
                   },
                 ),

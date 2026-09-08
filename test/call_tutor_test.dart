@@ -6,8 +6,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('CallTutorService Tests', () {
-    setUp(() {
+    setUp(() async {
       SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
     });
 
     test('Save and load Twilio and ElevenLabs credentials', () async {
@@ -44,6 +46,8 @@ void main() {
     });
 
     test('Twilio call initiation succeeds in simulation/demo mode when live creds are not set', () async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
       final service = CallTutorService.instance;
       final result = await service.initiateTwilioPhoneCall(
         toNumber: '+919876543210',
