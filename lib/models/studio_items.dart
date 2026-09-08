@@ -234,7 +234,45 @@ class AudioOverviewTrack {
 }
 
 // ---------------------------------------------------------------------------
-// 5. MIND MAP GRAPH MODELS
+// 5. KINETIC TYPOGRAPHY VIDEO OVERVIEW MODELS
+// ---------------------------------------------------------------------------
+
+class VideoSegment {
+  final int segmentNumber;
+  final String title;
+  final List<String> bulletPoints;
+  final String narration;
+
+  const VideoSegment({
+    required this.segmentNumber,
+    required this.title,
+    required this.bulletPoints,
+    required this.narration,
+  });
+}
+
+class KineticVideoScript {
+  final String id;
+  final String title;
+  final String topic;
+  final String gradeLevel;
+  final int themeIndex;
+  final List<VideoSegment> segments;
+
+  const KineticVideoScript({
+    required this.id,
+    required this.title,
+    required this.topic,
+    this.gradeLevel = 'Class 12',
+    this.themeIndex = 0,
+    required this.segments,
+  });
+
+  StudioTheme get theme => StudioPalettes.all[themeIndex % StudioPalettes.all.length];
+}
+
+// ---------------------------------------------------------------------------
+// 6. MIND MAP GRAPH MODELS
 // ---------------------------------------------------------------------------
 
 class MindMapNode {
@@ -272,7 +310,7 @@ class MindMapDeck {
 }
 
 // ---------------------------------------------------------------------------
-// 6. PRE-BUILT TEMPLATES DATA (CLASS 9, 10, 11, 12)
+// 7. PRE-BUILT TEMPLATES DATA (CLASS 9, 10, 11, 12)
 // ---------------------------------------------------------------------------
 
 class StudioPreTemplates {
@@ -3742,6 +3780,140 @@ class StudioPreTemplates {
             speakerName: 'Jamie',
             isHostA: false,
             dialogue: 'Once the bonds are broken and all ice becomes liquid, only then does additional heat begin raising the temperature toward boiling point!',
+          ),
+        ],
+      ),
+    ];
+  }
+
+  // -------------------------------------------------------------------------
+  // KINETIC TYPOGRAPHY VIDEO OVERVIEWS (sample scripts for browse mode)
+  // -------------------------------------------------------------------------
+  static List<KineticVideoScript> getSampleVideoScripts() {
+    return [
+      const KineticVideoScript(
+        id: 'video_newtons_laws',
+        title: "Newton's Laws in 90 Seconds",
+        topic: 'Physics & Mechanics',
+        gradeLevel: 'Class 9',
+        themeIndex: 0, // Teal
+        segments: [
+          VideoSegment(
+            segmentNumber: 1,
+            title: 'The Law of Inertia',
+            bulletPoints: [
+              'Objects resist changes to motion',
+              'A body at rest stays at rest',
+              'A body in motion stays in motion',
+            ],
+            narration:
+                'Every object resists a change in its state of motion. A body at rest stays at rest, and a body in motion keeps moving in a straight line, unless an unbalanced force acts on it.',
+          ),
+          VideoSegment(
+            segmentNumber: 2,
+            title: 'Force Equals Mass Times Acceleration',
+            bulletPoints: [
+              'F = m × a',
+              'Bigger mass needs bigger force',
+              'Acceleration points with the force',
+            ],
+            narration:
+                'The second law quantifies motion: force equals mass times acceleration. The heavier the object, the more force you need to accelerate it at the same rate.',
+          ),
+          VideoSegment(
+            segmentNumber: 3,
+            title: 'Action and Reaction',
+            bulletPoints: [
+              'Every action has an equal, opposite reaction',
+              'Forces always come in pairs',
+              'Seen in rockets, swimming, walking',
+            ],
+            narration:
+                'For every action, there is an equal and opposite reaction. Forces always occur in pairs acting on two different bodies, which is exactly how rockets launch and how we walk.',
+          ),
+        ],
+      ),
+      const KineticVideoScript(
+        id: 'video_cell_structure',
+        title: 'Inside a Living Cell',
+        topic: 'Biology & Cell Structure',
+        gradeLevel: 'Class 8',
+        themeIndex: 2, // Sage
+        segments: [
+          VideoSegment(
+            segmentNumber: 1,
+            title: 'The Basic Unit of Life',
+            bulletPoints: [
+              'Every living thing is made of cells',
+              'Cells can be single or multi-cellular',
+              'Discovered by Robert Hooke in 1665',
+            ],
+            narration:
+                'Every living organism is built from cells, the fundamental unit of life. Some organisms are just a single cell, while others are made of trillions working together.',
+          ),
+          VideoSegment(
+            segmentNumber: 2,
+            title: 'The Nucleus: Control Center',
+            bulletPoints: [
+              'Houses the genetic material, DNA',
+              'Directs all cell activity',
+              'Surrounded by a nuclear membrane',
+            ],
+            narration:
+                'The nucleus acts as the control center, housing DNA and directing every activity the cell performs, from growth to repair to reproduction.',
+          ),
+          VideoSegment(
+            segmentNumber: 3,
+            title: 'The Powerhouse: Mitochondria',
+            bulletPoints: [
+              'Converts food into usable energy',
+              'Produces ATP through respiration',
+              'More mitochondria in active cells',
+            ],
+            narration:
+                'Mitochondria convert nutrients into usable energy through cellular respiration, producing the ATP that powers everything the cell does.',
+          ),
+        ],
+      ),
+      const KineticVideoScript(
+        id: 'video_quadratic_equations',
+        title: 'Cracking Quadratic Equations',
+        topic: 'Mathematics & Algebra',
+        gradeLevel: 'Class 10',
+        themeIndex: 1, // Lavender
+        segments: [
+          VideoSegment(
+            segmentNumber: 1,
+            title: 'What Makes It Quadratic',
+            bulletPoints: [
+              'Highest power of x is 2',
+              'Standard form: ax² + bx + c = 0',
+              'Graphs as a parabola',
+            ],
+            narration:
+                'A quadratic equation has its highest power of x equal to two, written in standard form as a x squared plus b x plus c equals zero, and it always graphs as a parabola.',
+          ),
+          VideoSegment(
+            segmentNumber: 2,
+            title: 'The Quadratic Formula',
+            bulletPoints: [
+              'x = (−b ± √(b² − 4ac)) / 2a',
+              'Works for every quadratic equation',
+              'The discriminant reveals root type',
+            ],
+            narration:
+                'The quadratic formula solves any quadratic equation directly. The discriminant, b squared minus four a c, tells you whether the roots are real, equal, or complex.',
+          ),
+          VideoSegment(
+            segmentNumber: 3,
+            title: 'Reading the Roots',
+            bulletPoints: [
+              'Positive discriminant: two real roots',
+              'Zero discriminant: one repeated root',
+              'Negative discriminant: no real roots',
+            ],
+            narration:
+                'When the discriminant is positive you get two distinct real roots, zero gives one repeated root, and a negative discriminant means the roots are not real numbers.',
           ),
         ],
       ),

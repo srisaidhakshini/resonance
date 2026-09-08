@@ -5,6 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/study_content.dart';
 import '../providers/chat_provider.dart';
 import '../providers/content_provider.dart';
+import '../services/video_script_generator.dart';
+import '../widgets/mascot_widget.dart';
+import 'video_overview_screen.dart';
 
 const _kSamples = [
   ('assets/sample_content/photosynthesis.txt', 'Photosynthesis'),
@@ -72,6 +75,46 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
   void _activateAndOpenChat(StudyContent content) {
     ref.read(chatProvider.notifier).startNewChat(contentId: content.id);
     Navigator.pushReplacementNamed(context, '/chat');
+  }
+
+  /// Generates a kinetic-typography video overview of an ingested chapter
+  /// via the on-device LLM (real content generation, unlike the template
+  /// generators the rest of the Studio suite uses), showing a mascot
+  /// loading state while it runs.
+  Future<void> _generateVideoOverview(StudyContent content) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const MascotWidget(state: MascotState.thinking, size: 96),
+              const SizedBox(height: 12),
+              Text(
+                'Generating your video overview...',
+                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF6B7280)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final script = await VideoScriptGenerator.generateFromStudyContent(
+      content,
+      ref.read(llmServiceProvider),
+    );
+
+    if (!mounted) return;
+    Navigator.pop(context); // dismiss loading dialog
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => VideoOverviewScreen(initialScript: script)),
+    );
   }
 
   Future<void> _deleteContent(StudyContent content) async {
@@ -305,6 +348,11 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
             subtitle: Text(
               '${content.chunks.length} sections',
               style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF9CA3AF)),
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.movie_filter_outlined, color: Color(0xFF8B7FD6)),
+              tooltip: 'Generate video overview',
+              onPressed: () => _generateVideoOverview(content),
             ),
             onTap: () => _activateAndOpenChat(content),
           ),
