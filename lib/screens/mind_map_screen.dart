@@ -56,10 +56,30 @@ class _MindMapScreenState extends State<MindMapScreen> {
     _expandDefaultNodes();
     _selectedNode = _currentDeck.rootNode;
 
-    // Center canvas initially after frame renders
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _centerOnRoot();
-    });
+    _initUserClass();
+  }
+
+  Future<void> _initUserClass() async {
+    if (widget.initialDeck != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _centerOnRoot());
+      return;
+    }
+    final userGrade = await StudioPreTemplates.getUserGradeFormatted();
+    if (mounted) {
+      setState(() {
+        if (StudioPreTemplates.allGrades.contains(userGrade)) {
+          _selectedGrade = userGrade;
+          final matching = _allDecks.where((d) => d.gradeLevel == userGrade).toList();
+          if (matching.isNotEmpty) {
+            _currentDeck = matching.first;
+            _themeIndex = _currentDeck.themeIndex;
+            _expandDefaultNodes();
+            _selectedNode = _currentDeck.rootNode;
+          }
+        }
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) => _centerOnRoot());
+    }
   }
 
   void _expandDefaultNodes() {
@@ -71,10 +91,18 @@ class _MindMapScreenState extends State<MindMapScreen> {
   }
 
   void _centerOnRoot() {
+    if (!mounted) return;
     final size = MediaQuery.of(context).size;
-    final initialScale = size.width < 600 ? 0.75 : 0.95;
+    // On mobile (< 600px width), fit the root node + radiating L1 branches nicely
+    final double initialScale = size.width < 600
+        ? (size.width / 920).clamp(0.42, 0.65)
+        : (size.width / 1400).clamp(0.65, 1.0);
+
     final dx = (size.width / 2) - (_centerX * initialScale);
-    final dy = (size.height / 2) - (_centerY * initialScale);
+    final topOffset = _filteredDecks.length > 1 ? 90.0 : 48.0;
+    final bottomOffset = _selectedNode != null ? 140.0 : 40.0;
+    final availableHeight = size.height - topOffset - bottomOffset;
+    final dy = topOffset + (availableHeight / 2) - (_centerY * initialScale);
 
     // ignore: deprecated_member_use
     _transformController.value = Matrix4.identity()
@@ -1037,6 +1065,15 @@ class _MindMapCurvesPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final conn in connections) {
+      // Subtle glow underlay
+      final glowPaint = Paint()
+        ..color = conn.color.withValues(alpha: 0.22)
+        ..strokeWidth = conn.strokeWidth + 3.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..isAntiAlias = true;
+
+      // Solid branch curve
       final paint = Paint()
         ..color = conn.color
         ..strokeWidth = conn.strokeWidth
@@ -1062,13 +1099,19 @@ class _MindMapCurvesPainter extends CustomPainter {
         conn.endY,
       );
 
+      canvas.drawPath(path, glowPaint);
       canvas.drawPath(path, paint);
 
       // Draw anchor dot at the destination node
       final dotPaint = Paint()
         ..color = conn.color
         ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(conn.endX, conn.endY), 3.0, dotPaint);
+      canvas.drawCircle(Offset(conn.endX, conn.endY), conn.strokeWidth + 1.5, dotPaint);
+
+      final whiteDot = Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(conn.endX, conn.endY), 1.5, whiteDot);
     }
   }
 

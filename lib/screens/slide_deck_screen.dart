@@ -23,6 +23,24 @@ class _SlideDeckScreenState extends State<SlideDeckScreen> {
     super.initState();
     _decks = StudioPreTemplates.getSampleDecks();
     _currentDeck = widget.initialDeck ?? _decks.first;
+    _initUserClass();
+  }
+
+  Future<void> _initUserClass() async {
+    if (widget.initialDeck != null) return;
+    final userGrade = await StudioPreTemplates.getUserGradeFormatted();
+    if (mounted) {
+      setState(() {
+        if (StudioPreTemplates.allGrades.contains(userGrade)) {
+          _selectedGrade = userGrade;
+          final matching = _decks.where((d) => d.gradeLevel == userGrade).toList();
+          if (matching.isNotEmpty) {
+            _currentDeck = matching.first;
+            _currentPage = 0;
+          }
+        }
+      });
+    }
   }
 
   @override

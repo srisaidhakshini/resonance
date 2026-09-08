@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/chat_provider.dart';
 import '../providers/progress_provider.dart';
+import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
 import 'slide_deck_screen.dart';
@@ -11,6 +12,7 @@ import 'flashcards_screen.dart';
 import 'audio_overview_screen.dart';
 import 'quiz_screen.dart';
 import 'mind_map_screen.dart';
+import '../widgets/call_launch_sheet.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   final Function(String prompt)? onNavigateToChatWithPrompt;
@@ -92,19 +94,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ],
                   ),
 
-                  // Profile Avatar
-                  IconButton(
-                    onPressed: () => Navigator.pushNamed(context, '/profile_setup'),
-                    icon: CircleAvatar(
-                      radius: 16,
-                      backgroundColor: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
-                      child: Icon(
-                        Icons.person_rounded,
-                        color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                        size: 18,
+                  // Theme Mode Toggle (Light/Dark) & Profile Avatar
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () => ref.read(themeProvider.notifier).toggleTheme(),
+                        icon: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                            color: isDark ? const Color(0xFFFBBF24) : AppColors.lightPrimary,
+                            size: 18,
+                          ),
+                        ),
+                        tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
                       ),
-                    ),
-                    tooltip: 'Profile',
+                      IconButton(
+                        onPressed: () => Navigator.pushNamed(context, '/profile_setup'),
+                        icon: CircleAvatar(
+                          radius: 16,
+                          backgroundColor: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                            size: 18,
+                          ),
+                        ),
+                        tooltip: 'Profile',
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -154,6 +177,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // 3. ASK ECHO PROMINENT AI CARD
                     _buildAskEchoCard(context, isDark),
 
+                    const SizedBox(height: 16),
+
+                    // 3.5 ELEVENLABS & TWILIO VOICE CALL BANNER
+                    _buildElevenLabsVoiceCallBanner(context, isDark),
+
                     const SizedBox(height: 24),
 
                     // 4. CONTINUE LEARNING
@@ -168,7 +196,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 12),
                     _buildQuickActionsGrid(context, isDark),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 48),
                   ],
                 ),
               ),
@@ -440,8 +468,140 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildElevenLabsVoiceCallBanner(BuildContext context, bool isDark) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => CallLaunchSheet.show(context),
+        borderRadius: AppRadii.cardRadius,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF132B30), const Color(0xFF0F1E22)]
+                  : [const Color(0xFFE6F7F5), const Color(0xFFF0FDFB)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: AppRadii.cardRadius,
+            border: Border.all(
+              color: const Color(0xFF14B8A6).withValues(alpha: isDark ? 0.35 : 0.45),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF14B8A6).withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D9488).withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.phone_in_talk_rounded,
+                  color: Color(0xFF0D9488),
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      runSpacing: 2,
+                      children: [
+                        Text(
+                          'Live Voice Call Tutor',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0D9488).withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'ELEVENLABS',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFF0D9488),
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Solve doubts back-and-forth via live call or Twilio dial',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 11.5,
+                        color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D9488),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.call_rounded, size: 13, color: Colors.white),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Call',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildQuickActionsGrid(BuildContext context, bool isDark) {
     final actions = [
+      {
+        'icon': Icons.phone_in_talk_rounded,
+        'title': 'Voice Call',
+        'desc': 'ElevenLabs + Twilio doubts',
+        'tag': 'AI CALL',
+        'onTap': () => CallLaunchSheet.show(context),
+      },
       {
         'icon': Icons.slideshow_rounded,
         'title': 'Slide Decks',

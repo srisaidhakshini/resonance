@@ -47,6 +47,26 @@ class _AudioOverviewScreenState extends State<AudioOverviewScreen> with TickerPr
       vsync: this,
       duration: const Duration(milliseconds: 850),
     )..repeat(reverse: true);
+
+    _initUserClass();
+  }
+
+  Future<void> _initUserClass() async {
+    if (widget.initialTrack != null) return;
+    final userGrade = await StudioPreTemplates.getUserGradeFormatted();
+    if (mounted) {
+      setState(() {
+        if (StudioPreTemplates.allGrades.contains(userGrade)) {
+          _selectedGrade = userGrade;
+          final matching = _tracks.where((d) => d.gradeLevel == userGrade).toList();
+          if (matching.isNotEmpty) {
+            _currentTrack = matching.first;
+            _activeTurnIndex = 0;
+            _isPlaying = false;
+          }
+        }
+      });
+    }
   }
 
   @override

@@ -68,7 +68,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
               blurRadius: 10,
               offset: const Offset(0, -2),
             ),
@@ -81,36 +81,32 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
               _currentIndex = index;
             });
           },
-          backgroundColor: isDark ? AppColors.darkCard : AppColors.lightCard,
-          indicatorColor: isDark
-              ? AppColors.darkAccent
-              : AppColors.lightSecondary,
-          height: 64,
+          height: 60,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: [
+          destinations: const [
             NavigationDestination(
-              icon: const Icon(Icons.home_outlined, size: 22),
-              selectedIcon: const Icon(Icons.home_rounded, color: AppColors.lightTeal, size: 22),
+              icon: Icon(Icons.home_outlined, size: 20),
+              selectedIcon: Icon(Icons.home_rounded, color: AppColors.lightTeal, size: 20),
               label: 'Home',
             ),
             NavigationDestination(
-              icon: const Icon(Icons.menu_book_outlined, size: 22),
-              selectedIcon: const Icon(Icons.menu_book_rounded, color: AppColors.lightTeal, size: 22),
+              icon: Icon(Icons.menu_book_outlined, size: 20),
+              selectedIcon: Icon(Icons.menu_book_rounded, color: AppColors.lightTeal, size: 20),
               label: 'Learn',
             ),
             NavigationDestination(
-              icon: const Icon(Icons.auto_awesome_outlined, size: 22),
-              selectedIcon: const Icon(Icons.auto_awesome_rounded, color: AppColors.lightTeal, size: 22),
+              icon: Icon(Icons.auto_awesome_outlined, size: 20),
+              selectedIcon: Icon(Icons.auto_awesome_rounded, color: AppColors.lightTeal, size: 20),
               label: 'Ask',
             ),
             NavigationDestination(
-              icon: const Icon(Icons.insights_outlined, size: 22),
-              selectedIcon: const Icon(Icons.insights_rounded, color: AppColors.lightTeal, size: 22),
+              icon: Icon(Icons.insights_outlined, size: 20),
+              selectedIcon: Icon(Icons.insights_rounded, color: AppColors.lightTeal, size: 20),
               label: 'Progress',
             ),
             NavigationDestination(
-              icon: const Icon(Icons.person_outline_rounded, size: 22),
-              selectedIcon: const Icon(Icons.person_rounded, color: AppColors.lightTeal, size: 22),
+              icon: Icon(Icons.person_outline_rounded, size: 20),
+              selectedIcon: Icon(Icons.person_rounded, color: AppColors.lightTeal, size: 20),
               label: 'Profile',
             ),
           ],

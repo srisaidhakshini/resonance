@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../providers/chat_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/chat_session.dart';
 import '../theme/app_theme.dart';
 import '../screens/settings_screen.dart';
@@ -277,6 +278,17 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                         ],
                       ),
                     ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                      color: isDark ? const Color(0xFFFBBF24) : AppColors.lightMutedForeground,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      ref.read(themeProvider.notifier).toggleTheme();
+                    },
+                    tooltip: isDark ? 'Light Mode' : 'Dark Mode',
                   ),
                   IconButton(
                     icon: Icon(

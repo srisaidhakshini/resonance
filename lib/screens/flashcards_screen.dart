@@ -37,6 +37,26 @@ class _FlashcardsScreenState extends State<FlashcardsScreen> with SingleTickerPr
     _flipAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _flipController, curve: Curves.easeInOut),
     );
+
+    _initUserClass();
+  }
+
+  Future<void> _initUserClass() async {
+    if (widget.initialDeck != null) return;
+    final userGrade = await StudioPreTemplates.getUserGradeFormatted();
+    if (mounted) {
+      setState(() {
+        if (StudioPreTemplates.allGrades.contains(userGrade)) {
+          _selectedGrade = userGrade;
+          final matching = _decks.where((d) => d.gradeLevel == userGrade).toList();
+          if (matching.isNotEmpty) {
+            _currentDeck = matching.first;
+            _currentIndex = 0;
+            _showBack = false;
+          }
+        }
+      });
+    }
   }
 
   @override

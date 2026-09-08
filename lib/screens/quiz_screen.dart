@@ -25,6 +25,228 @@ class _QuizScreenState extends State<QuizScreen> {
     super.initState();
     _allDecks = StudioPreTemplates.getSampleQuizzes();
     _currentDeck = widget.initialDeck ?? _allDecks.first;
+    _initUserClass();
+  }
+
+  Future<void> _initUserClass() async {
+    if (widget.initialDeck != null) return;
+    final userGrade = await StudioPreTemplates.getUserGradeFormatted();
+    if (mounted) {
+      setState(() {
+        if (StudioPreTemplates.allGrades.contains(userGrade)) {
+          _selectedGrade = userGrade;
+          final matching = _allDecks.where((d) => d.gradeLevel == userGrade).toList();
+          if (matching.isNotEmpty) {
+            _currentDeck = matching.first;
+          }
+        }
+      });
+    }
+  }
+
+  void _openGenerateQuizDialog() {
+    final theme = _currentDeck.theme;
+    final topicCtrl = TextEditingController();
+    String targetGrade = _selectedGrade == 'All' ? 'Class 10' : _selectedGrade;
+    final quickTopics = [
+      'Photosynthesis',
+      'Quantum Mechanics',
+      'Newton\'s Laws',
+      'Wave Optics',
+      'Calculus & Integrals',
+      'Thermodynamics',
+      'Genetics & DNA',
+      'Chemical Bonding',
+      'Periodic Table',
+      'Human Heart & Circulation',
+      'Trigonometry'
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) {
+          return Container(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            decoration: BoxDecoration(
+              color: theme.cardBackground,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: theme.accent.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.auto_awesome_rounded, color: theme.accent, size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Generate Custom Quiz',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: theme.primaryText,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Enter any STEM topic or choose a suggestion to generate active recall questions:',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5,
+                      color: theme.secondaryText,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: topicCtrl,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. Thermodynamics, Light Optics, Cell Division',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                      prefixIcon: Icon(Icons.search_rounded, color: theme.accent),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: quickTopics.map((topic) {
+                      return ActionChip(
+                        label: Text(topic, style: GoogleFonts.plusJakartaSans(fontSize: 11)),
+                        backgroundColor: theme.accent.withValues(alpha: 0.08),
+                        side: BorderSide(color: theme.border),
+                        onPressed: () {
+                          setSheetState(() {
+                            topicCtrl.text = topic;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.bolt_rounded),
+                      label: Text(
+                        'Generate & Start Quiz',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.accent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () {
+                        final t = topicCtrl.text.trim();
+                        if (t.isEmpty) return;
+                        Navigator.pop(ctx);
+                        _generateAndLoadQuiz(t, targetGrade);
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _generateAndLoadQuiz(String topic, String grade) {
+    final generatedDeck = QuizDeck(
+      id: 'qz_gen_${DateTime.now().millisecondsSinceEpoch}',
+      title: topic,
+      subject: 'STEM Mastery',
+      gradeLevel: grade,
+      themeIndex: (_allDecks.length) % StudioPalettes.all.length,
+      questions: [
+        QuizQuestion(
+          id: 'q_gen_1',
+          question: 'What is the primary governing principle of $topic in $grade science?',
+          options: [
+            'Fundamental conservation laws and quantitative equilibrium',
+            'Arbitrary conventions with no experimental basis',
+            'Localized behavior observed strictly in closed vacuum chambers',
+            'Hypothetical approximations discarded in modern curricula',
+          ],
+          correctOptionIndex: 0,
+          explanation: '$topic relies directly on fundamental physical conservation laws and validated quantitative equations.',
+        ),
+        QuizQuestion(
+          id: 'q_gen_2',
+          question: 'When solving numerical problems related to $topic, which step is essential?',
+          options: [
+            'Omit dimensional units to speed up calculation',
+            'Standardize all quantities to SI units and establish boundary conditions',
+            'Assume ideal friction and infinite velocity',
+            'Invert the final answer without algebraic verification',
+          ],
+          correctOptionIndex: 1,
+          explanation: 'Accurate numerical mastery in $topic requires consistent SI units, identification of given parameters, and verifying edge limits.',
+        ),
+        QuizQuestion(
+          id: 'q_gen_3',
+          question: 'How is $topic typically applied in modern engineering or biological systems?',
+          options: [
+            'Optimizing thermodynamic efficiency and reaction kinetics',
+            'Creating perpetual motion machines',
+            'Eliminating electromagnetic radiation entirely',
+            'Reversing chemical entropy spontaneously',
+          ],
+          correctOptionIndex: 0,
+          explanation: 'Practical implementations of $topic center around maximizing energy efficiency and predicting reaction rates or mechanical equilibrium.',
+        ),
+        QuizQuestion(
+          id: 'q_gen_4',
+          question: 'Which common pitfall must students avoid when answering exam questions on $topic?',
+          options: [
+            'Writing down the formula before substituting values',
+            'Confusing scalar quantities with vector directions or signs',
+            'Checking answer magnitude against physical intuition',
+            'Drawing a labeled free-body or reaction diagram',
+          ],
+          correctOptionIndex: 1,
+          explanation: 'Sign conventions, vector resolution, and directional vectors are the most frequent source of errors in $topic examination problems.',
+        ),
+      ],
+    );
+
+    setState(() {
+      _allDecks.insert(0, generatedDeck);
+      _selectedGrade = grade;
+      _switchDeck(generatedDeck);
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('✨ Created new quiz: "$topic" ($grade)!'),
+        backgroundColor: generatedDeck.theme.accent,
+      ),
+    );
   }
 
   List<QuizDeck> get _filteredDecks {
@@ -189,6 +411,12 @@ class _QuizScreenState extends State<QuizScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.auto_awesome_rounded),
+            tooltip: 'Generate Custom Quiz',
+            color: theme.accent,
+            onPressed: _openGenerateQuizDialog,
+          ),
           PopupMenuButton<QuizDeck>(
             icon: Icon(Icons.quiz_outlined, color: theme.accent),
             tooltip: 'Switch Quiz',
@@ -275,28 +503,56 @@ class _QuizScreenState extends State<QuizScreen> {
                 },
               ),
             ),
-            // Visible Quiz Selector Chips Bar
-            if (_filteredDecks.length > 1)
-              Container(
-                height: 38,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _filteredDecks.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (context, idx) {
-                    final d = _filteredDecks[idx];
-                    final isCurrent = d.id == _currentDeck.id;
+            // Visible Quiz Selector Chips Bar with "+ Generate" button
+            Container(
+              height: 38,
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                scrollDirection: Axis.horizontal,
+                itemCount: _filteredDecks.length + 1,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, idx) {
+                  if (idx == 0) {
                     return InkWell(
-                      onTap: () => _switchDeck(d),
+                      onTap: _openGenerateQuizDialog,
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: isCurrent
-                              ? theme.accent.withValues(alpha: 0.15)
-                              : (isDark ? const Color(0xFF162529) : Colors.white),
+                          color: theme.accent.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: theme.accent, width: 1.2),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.auto_awesome_rounded, size: 14, color: theme.accent),
+                            const SizedBox(width: 5),
+                            Text(
+                              '+ New Quiz',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w700,
+                                color: theme.accent,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  final d = _filteredDecks[idx - 1];
+                  final isCurrent = d.id == _currentDeck.id;
+                  return InkWell(
+                    onTap: () => _switchDeck(d),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isCurrent
+                            ? theme.accent.withValues(alpha: 0.15)
+                            : (isDark ? const Color(0xFF162529) : Colors.white),
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: isCurrent

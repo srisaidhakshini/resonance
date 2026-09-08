@@ -242,6 +242,25 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 8,
       ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 62,
+        backgroundColor: AppColors.lightCard,
+        indicatorColor: AppColors.lightSecondary,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.lightTeal, size: 22);
+          }
+          return const IconThemeData(color: AppColors.lightMutedForeground, size: 22);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? AppColors.lightTeal : AppColors.lightMutedForeground,
+          );
+        }),
+      ),
     );
   }
 
@@ -350,6 +369,25 @@ class AppTheme {
         unselectedItemColor: AppColors.darkMutedForeground,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        height: 62,
+        backgroundColor: AppColors.darkCard,
+        indicatorColor: AppColors.darkAccent,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return const IconThemeData(color: AppColors.darkTeal, size: 22);
+          }
+          return const IconThemeData(color: AppColors.darkMutedForeground, size: 22);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? AppColors.darkTeal : AppColors.darkMutedForeground,
+          );
+        }),
       ),
     );
   }

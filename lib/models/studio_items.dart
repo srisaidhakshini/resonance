@@ -1,3 +1,4 @@
+import '../services/personalization_service.dart';
 import 'package:flutter/material.dart';
 
 /// Minimalist pastel palettes for Studio items
@@ -275,13 +276,171 @@ class MindMapDeck {
 // ---------------------------------------------------------------------------
 
 class StudioPreTemplates {
-  static const List<String> allGrades = ['All', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
+  static const List<String> allGrades = ['All', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'];
+
+  /// Automatically retrieves and normalizes user profile grade preference
+  static Future<String> getUserGradeFormatted() async {
+    try {
+      final profile = await PersonalizationService.instance.getUserProfile();
+      final g = profile.grade.trim();
+      if (g.startsWith('Class ')) return g;
+      if (RegExp(r'^\d+$').hasMatch(g)) return 'Class $g';
+      return g.isEmpty ? 'Class 10' : g;
+    } catch (_) {
+      return 'Class 10';
+    }
+  }
 
   // -------------------------------------------------------------------------
   // MIND MAPS (4 per class = 16 rich hierarchical mind maps)
   // -------------------------------------------------------------------------
   static List<MindMapDeck> getSampleMindMaps() {
     return [
+      // === CLASS 8 ===
+      const MindMapDeck(
+        id: 'mm_c8_microorg',
+        title: 'Microorganisms: Friend & Foe',
+        subject: 'Biology',
+        gradeLevel: 'Class 8',
+        themeIndex: 2, // Sage
+        rootNode: MindMapNode(
+          id: 'root_c8_micro',
+          label: 'Microorganisms',
+          detail: 'Microscopic Biological Entities',
+          children: [
+            MindMapNode(
+              id: 'c8_types',
+              label: 'Classification',
+              detail: 'Bacteria, Fungi, Protozoa & Algae',
+              children: [
+                MindMapNode(id: 'c8_bac', label: 'Bacteria', detail: 'Single-celled prokaryotes (e.g. Lactobacillus)'),
+                MindMapNode(id: 'c8_fun', label: 'Fungi & Algae', detail: 'Saprophytic & photosynthetic autotrophs'),
+              ],
+            ),
+            MindMapNode(
+              id: 'c8_uses',
+              label: 'Beneficial Roles',
+              detail: 'Fermentation, nitrogen fixation & antibiotics',
+              children: [
+                MindMapNode(id: 'c8_fert', label: 'Rhizobium', detail: 'Fixes atmospheric nitrogen in root nodules'),
+                MindMapNode(id: 'c8_med', label: 'Penicillin', detail: 'Alexander Fleming discovery (antibiotics)'),
+              ],
+            ),
+            MindMapNode(
+              id: 'c8_patho',
+              label: 'Harmful Pathogens',
+              detail: 'Disease carriers & food spoilage',
+              children: [
+                MindMapNode(id: 'c8_dis', label: 'Human Diseases', detail: 'Cholera, TB, malaria & ringworm'),
+                MindMapNode(id: 'c8_pres', label: 'Food Preservation', detail: 'Pasteurization, salting, sugaring & chemical preservatives'),
+              ],
+            ),
+          ],
+        ),
+      ),
+      const MindMapDeck(
+        id: 'mm_c8_force_pressure',
+        title: 'Force & Pressure Dynamics',
+        subject: 'Physics',
+        gradeLevel: 'Class 8',
+        themeIndex: 0, // Teal
+        rootNode: MindMapNode(
+          id: 'root_c8_force',
+          label: 'Force & Pressure',
+          detail: 'Interactions & Applied Thrust',
+          children: [
+            MindMapNode(
+              id: 'c8_f_types',
+              label: 'Types of Forces',
+              detail: 'Contact vs non-contact forces',
+              children: [
+                MindMapNode(id: 'c8_f_contact', label: 'Contact Forces', detail: 'Muscular force & frictional resistance'),
+                MindMapNode(id: 'c8_f_field', label: 'Field Forces', detail: 'Gravitational, electrostatic & magnetic'),
+              ],
+            ),
+            MindMapNode(
+              id: 'c8_f_press',
+              label: 'Pressure Formulation',
+              detail: 'P = Force / Area (N/m² or Pascal)',
+              children: [
+                MindMapNode(id: 'c8_f_inv', label: 'Area Inversion', detail: 'Smaller contact area generates greater pressure'),
+                MindMapNode(id: 'c8_f_atm', label: 'Atmospheric Pressure', detail: 'Enormous air column weight acting downwards'),
+              ],
+            ),
+            MindMapNode(
+              id: 'c8_f_fluids',
+              label: 'Fluid Pressure',
+              detail: 'Isotropic pressure exertion in liquids & gases',
+              children: [
+                MindMapNode(id: 'c8_f_depth', label: 'Depth Dependent', detail: 'Pressure increases proportionally with liquid depth'),
+              ],
+            ),
+          ],
+        ),
+      ),
+      const MindMapDeck(
+        id: 'mm_c8_metals',
+        title: 'Metals & Non-Metals',
+        subject: 'Chemistry',
+        gradeLevel: 'Class 8',
+        themeIndex: 1, // Lavender
+        rootNode: MindMapNode(
+          id: 'root_c8_metals',
+          label: 'Metals & Non-Metals',
+          detail: 'Elemental Properties & Reactivity',
+          children: [
+            MindMapNode(
+              id: 'c8_m_phys',
+              label: 'Physical Properties',
+              detail: 'Malleability, ductility & sonority',
+              children: [
+                MindMapNode(id: 'c8_m_mal', label: 'Malleable & Ductile', detail: 'Drawn into wires & beaten into thin sheets'),
+                MindMapNode(id: 'c8_m_cond', label: 'Conduction', detail: 'Excellent thermal & electrical conductors'),
+              ],
+            ),
+            MindMapNode(
+              id: 'c8_m_chem',
+              label: 'Chemical Reactions',
+              detail: 'Oxidation & displacement series',
+              children: [
+                MindMapNode(id: 'c8_m_ox', label: 'Metal Oxides', detail: 'Basic in nature, turns red litmus blue'),
+                MindMapNode(id: 'c8_m_disp', label: 'Displacement', detail: 'More reactive metal displaces less reactive metal'),
+              ],
+            ),
+          ],
+        ),
+      ),
+      const MindMapDeck(
+        id: 'mm_c8_rational',
+        title: 'Rational Numbers & Algebra',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 8',
+        themeIndex: 3, // Terracotta
+        rootNode: MindMapNode(
+          id: 'root_c8_math',
+          label: 'Rational Numbers',
+          detail: 'p/q Form & Axiomatic Properties',
+          children: [
+            MindMapNode(
+              id: 'c8_r_props',
+              label: 'Arithmetic Properties',
+              detail: 'Closure, commutativity & associativity',
+              children: [
+                MindMapNode(id: 'c8_r_dist', label: 'Distributive Law', detail: 'a(b + c) = ab + ac'),
+                MindMapNode(id: 'c8_r_inv', label: 'Identities & Inverses', detail: 'Additive inverse (-a) & reciprocal (1/a)'),
+              ],
+            ),
+            MindMapNode(
+              id: 'c8_r_eq',
+              label: 'Linear Equations',
+              detail: 'Equations in one variable: ax + b = c',
+              children: [
+                MindMapNode(id: 'c8_r_trans', label: 'Transposition', detail: 'Moving terms across equality changes signs'),
+              ],
+            ),
+          ],
+        ),
+      ),
       // === CLASS 12 ===
       const MindMapDeck(
         id: 'mm_3d_geometry',
@@ -2146,6 +2305,155 @@ class StudioPreTemplates {
   // -------------------------------------------------------------------------
   static List<QuizDeck> getSampleQuizzes() {
     return [
+      // === CLASS 8 QUIZZES ===
+      QuizDeck(
+        id: 'qz_c8_micro',
+        title: 'Microorganisms: Friend & Foe',
+        subject: 'Biology',
+        gradeLevel: 'Class 8',
+        themeIndex: 2,
+        questions: [
+          QuizQuestion(
+            id: 'q_c8_1',
+            question: 'Which bacterium is primarily responsible for the curdling of milk into curd?',
+            options: ['Lactobacillus', 'Rhizobium', 'Escherichia coli', 'Bacillus anthracis'],
+            correctOptionIndex: 0,
+            explanation: 'Lactobacillus promotes curd formation by multiplying in milk and converting lactose into lactic acid.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_2',
+            question: 'What is the role of Rhizobium bacteria in leguminous plants?',
+            options: ['Causing leaf blight', 'Fixing atmospheric nitrogen', 'Photosynthesis', 'Producing fruit sugars'],
+            correctOptionIndex: 1,
+            explanation: 'Rhizobium lives symbiotically in root nodules of legumes and fixes nitrogen into ammonium salts in soil.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_3',
+            question: 'The process of conversion of sugar into alcohol by yeast is known as:',
+            options: ['Pasteurization', 'Nitrogenation', 'Fermentation', 'Sublimation'],
+            correctOptionIndex: 2,
+            explanation: 'Fermentation is anaerobic respiration where yeast converts glucose into ethyl alcohol and carbon dioxide.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_4',
+            question: 'Who discovered the very first antibiotic, Penicillin, in 1929?',
+            options: ['Louis Pasteur', 'Alexander Fleming', 'Edward Jenner', 'Robert Koch'],
+            correctOptionIndex: 1,
+            explanation: 'Sir Alexander Fleming discovered penicillin produced by the fungus Penicillium notatum.',
+          ),
+        ],
+      ),
+      QuizDeck(
+        id: 'qz_c8_force',
+        title: 'Force & Pressure Dynamics',
+        subject: 'Physics',
+        gradeLevel: 'Class 8',
+        themeIndex: 0,
+        questions: [
+          QuizQuestion(
+            id: 'q_c8_f1',
+            question: 'What is the SI unit of pressure?',
+            options: ['Newton (N)', 'Pascal (Pa)', 'Joule (J)', 'Watt (W)'],
+            correctOptionIndex: 1,
+            explanation: 'Pressure is defined as Force per unit Area (N/m²), which is given the SI name Pascal (Pa).',
+          ),
+          QuizQuestion(
+            id: 'q_c8_f2',
+            question: 'Why do sharp knives cut vegetables much more effectively than blunt knives?',
+            options: ['Sharp knives have greater mass', 'Sharp edge has smaller area, producing larger pressure', 'Sharp edge reduces gravity', 'Blunt knives absorb moisture'],
+            correctOptionIndex: 1,
+            explanation: 'Because P = F / A, when the contact area A is extremely small, the resulting pressure P is maximized for the same hand force.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_f3',
+            question: 'Which of the following is a non-contact force?',
+            options: ['Muscular force', 'Frictional force', 'Gravitational force', 'Tension in a string'],
+            correctOptionIndex: 2,
+            explanation: 'Gravitational, electrostatic, and magnetic forces act at a distance through their respective vector fields without physical contact.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_f4',
+            question: 'As depth inside a column of water increases, liquid pressure:',
+            options: ['Decreases linearly', 'Remains unchanged', 'Increases proportionally (P = hρg)', 'Drops to zero'],
+            correctOptionIndex: 2,
+            explanation: 'Hydrostatic pressure P = h * rho * g is directly proportional to depth h below the free liquid surface.',
+          ),
+        ],
+      ),
+      QuizDeck(
+        id: 'qz_c8_metals',
+        title: 'Metals, Non-Metals & Reactivity',
+        subject: 'Chemistry',
+        gradeLevel: 'Class 8',
+        themeIndex: 1,
+        questions: [
+          QuizQuestion(
+            id: 'q_c8_m1',
+            question: 'Which unique metal remains a liquid at room temperature (25°C)?',
+            options: ['Sodium', 'Mercury', 'Gallium', 'Bromine'],
+            correctOptionIndex: 1,
+            explanation: 'Mercury (Hg) is the only metallic element that is liquid at standard ambient temperature and pressure (Bromine is a non-metal).',
+          ),
+          QuizQuestion(
+            id: 'q_c8_m2',
+            question: 'The property of metals that allows them to be hammered into thin sheets is called:',
+            options: ['Ductility', 'Malleability', 'Sonority', 'Brittleness'],
+            correctOptionIndex: 1,
+            explanation: 'Malleability is the ability of metals (like gold and aluminum) to deform under compressive stress into thin foils.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_m3',
+            question: 'Metal oxides are generally ______ in nature and turn red litmus paper ______.',
+            options: ['Acidic, red', 'Basic, blue', 'Neutral, green', 'Amphoteric, orange'],
+            correctOptionIndex: 1,
+            explanation: 'Metallic oxides (such as MgO and Na2O) form alkaline solutions with water and turn red litmus paper blue.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_m4',
+            question: 'What happens when iron nails are immersed in copper sulfate (CuSO4) blue solution?',
+            options: ['No reaction occurs', 'Iron displaces copper, turning the solution green', 'The solution turns bright yellow', 'Iron dissolves into pure gold'],
+            correctOptionIndex: 1,
+            explanation: 'Iron is more reactive than copper, displacing Cu to form green ferrous sulfate (FeSO4) while reddish copper deposits on the nail.',
+          ),
+        ],
+      ),
+      QuizDeck(
+        id: 'qz_c8_math',
+        title: 'Rational Numbers & Linear Algebra',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 8',
+        themeIndex: 3,
+        questions: [
+          QuizQuestion(
+            id: 'q_c8_ma1',
+            question: 'What is the additive inverse of -7/12?',
+            options: ['-12/7', '12/7', '7/12', '0'],
+            correctOptionIndex: 2,
+            explanation: 'The additive inverse of a rational number x is -x such that x + (-x) = 0. Thus -(-7/12) = 7/12.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_ma2',
+            question: 'Solve for x: 3x - 5 = 16.',
+            options: ['x = 5', 'x = 7', 'x = 9', 'x = 3'],
+            correctOptionIndex: 1,
+            explanation: '3x = 16 + 5 = 21 -> x = 21 / 3 = 7.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_ma3',
+            question: 'Which property states that a * (b + c) = a*b + a*c for any rational numbers?',
+            options: ['Commutative property', 'Associative property', 'Distributive property of multiplication over addition', 'Closure property'],
+            correctOptionIndex: 2,
+            explanation: 'Distributivity allows multiplying a single term over each summand inside parentheses.',
+          ),
+          QuizQuestion(
+            id: 'q_c8_ma4',
+            question: 'Between any two distinct rational numbers, how many rational numbers exist?',
+            options: ['Only one', 'Exactly ten', 'Infinitely many', 'Zero'],
+            correctOptionIndex: 2,
+            explanation: 'The set of rational numbers is dense on the real number line; infinitely many rationals lie between any two numbers.',
+          ),
+        ],
+      ),
       // === CLASS 12 ===
       const QuizDeck(
         id: 'quiz_math_physics_12',
@@ -2754,6 +3062,313 @@ class StudioPreTemplates {
             options: ['0', '1', '2', '−1'],
             correctOptionIndex: 0,
             explanation: 'By the Remainder Theorem, R = p(1) = 1⁴ − 1 = 1 − 1 = 0. Therefore (x − 1) is an exact factor.',
+          ),
+        ],
+      ),
+      // === CLASS 12 (ADDITIONAL) ===
+      const QuizDeck(
+        id: 'quiz_emi_12',
+        title: 'Class 12 Physics: Electromagnetic Induction',
+        subject: 'Physics',
+        gradeLevel: 'Class 12',
+        themeIndex: 0, // Teal
+        questions: [
+          QuizQuestion(
+            id: 'qemi12_1',
+            question: 'What does Lenz’s Law state about the direction of induced current?',
+            options: ['Current always aids the magnetic field', 'Current opposes the change in magnetic flux producing it', 'Current is perpendicular to electric field', 'Current is always clockwise'],
+            correctOptionIndex: 1,
+            explanation: 'Lenz’s Law is a direct consequence of conservation of energy: the induced emf always opposes the change in magnetic flux that causes it.',
+          ),
+          QuizQuestion(
+            id: 'qemi12_2',
+            question: 'What is the formula for magnetic flux Φ through a planar area A in magnetic field B?',
+            options: ['Φ = B · A · cos(θ)', 'Φ = B · A · sin(θ)', 'Φ = B / A', 'Φ = B² · A'],
+            correctOptionIndex: 0,
+            explanation: 'Magnetic flux is the scalar dot product of magnetic field and area vector: Φ = B · A · cos(θ). SI unit is Weber (Wb).',
+          ),
+          QuizQuestion(
+            id: 'qemi12_3',
+            question: 'What is the self-inductance L of a solenoid with N turns, length l, and core area A?',
+            options: ['L = μ₀ N A / l', 'L = μ₀ N² A / l', 'L = μ₀ N A · l', 'L = μ₀ N² A · l'],
+            correctOptionIndex: 1,
+            explanation: 'Self-inductance scales with the square of the number of turns: L = (μ₀ · N² · A) / l. SI unit is Henry (H).',
+          ),
+          QuizQuestion(
+            id: 'qemi12_4',
+            question: 'In an AC circuit with an inductor, does the current lead or lag the voltage?',
+            options: ['Current leads voltage by 90°', 'Current lags voltage by 90°', 'Current is in phase with voltage', 'Current lags voltage by 180°'],
+            correctOptionIndex: 1,
+            explanation: 'In a purely inductive circuit, current lags alternating voltage by π/2 radians (90°). Remember mnemonic CIVIL.',
+          ),
+        ],
+      ),
+
+      const QuizDeck(
+        id: 'quiz_kinetics_12',
+        title: 'Class 12 Chemistry: Chemical Kinetics',
+        subject: 'Chemistry',
+        gradeLevel: 'Class 12',
+        themeIndex: 2, // Sage
+        questions: [
+          QuizQuestion(
+            id: 'qck12_1',
+            question: 'What is the unit of rate constant k for a first-order chemical reaction?',
+            options: ['mol · L⁻¹ · s⁻¹', 's⁻¹', 'L · mol⁻¹ · s⁻¹', 'L² · mol⁻² · s⁻¹'],
+            correctOptionIndex: 1,
+            explanation: 'For a first-order reaction, rate = k[A]¹. Therefore unit of k is (mol/L/s) / (mol/L) = s⁻¹ (independent of concentration).',
+          ),
+          QuizQuestion(
+            id: 'qck12_2',
+            question: 'What is the relationship between half-life t_1/2 and initial concentration for a first-order reaction?',
+            options: ['Proportional to initial concentration', 'Inversely proportional to initial concentration', 'Completely independent of initial concentration', 'Proportional to square of concentration'],
+            correctOptionIndex: 2,
+            explanation: 't_1/2 = ln(2) / k ≈ 0.693 / k. The half-life of a first-order reaction is completely independent of the starting concentration.',
+          ),
+          QuizQuestion(
+            id: 'qck12_3',
+            question: 'According to the Arrhenius equation k = A · e^(-Ea / RT), what happens to rate constant k as temperature T increases?',
+            options: ['Decreases exponentially', 'Increases exponentially', 'Remains constant', 'First increases then decreases'],
+            correctOptionIndex: 1,
+            explanation: 'As T rises, the fraction of molecules with kinetic energy exceeding activation energy Ea increases exponentially.',
+          ),
+          QuizQuestion(
+            id: 'qck12_4',
+            question: 'What effect does a positive catalyst have on the activation energy Ea of a reaction?',
+            options: ['Increases Ea', 'Lowers Ea by providing an alternate reaction pathway', 'Does not affect Ea', 'Changes the net enthalpy ΔH'],
+            correctOptionIndex: 1,
+            explanation: 'A catalyst lowers the activation energy barrier without being consumed and without altering the thermodynamic equilibrium ΔH.',
+          ),
+        ],
+      ),
+
+      // === CLASS 11 (ADDITIONAL) ===
+      const QuizDeck(
+        id: 'quiz_rotational_11',
+        title: 'Class 11 Physics: Rotational Dynamics',
+        subject: 'Physics',
+        gradeLevel: 'Class 11',
+        themeIndex: 0, // Teal
+        questions: [
+          QuizQuestion(
+            id: 'qr11_1',
+            question: 'What is the rotational analogue of mass in linear translational mechanics?',
+            options: ['Torque', 'Angular momentum', 'Moment of Inertia (I)', 'Angular velocity'],
+            correctOptionIndex: 2,
+            explanation: 'Moment of Inertia I = ∑ m·r² measures a body’s resistance to angular acceleration, exactly as mass resists linear acceleration.',
+          ),
+          QuizQuestion(
+            id: 'qr11_2',
+            question: 'What is the moment of inertia of a solid cylinder of mass M and radius R about its central axis?',
+            options: ['M R²', '½ M R²', '¼ M R²', '⅔ M R²'],
+            correctOptionIndex: 1,
+            explanation: 'For a solid cylinder or solid disc about its symmetry axis: I = ½ M R².',
+          ),
+          QuizQuestion(
+            id: 'qr11_3',
+            question: 'What quantity remains conserved when the net external torque on a rotating system is zero?',
+            options: ['Rotational kinetic energy', 'Angular momentum L⃗', 'Linear momentum only', 'Moment of inertia'],
+            correctOptionIndex: 1,
+            explanation: 'By the law of conservation of angular momentum: dL/dt = τ_ext. If τ_ext = 0, then L = I·ω = constant.',
+          ),
+          QuizQuestion(
+            id: 'qr11_4',
+            question: 'Why does a spinning ice skater pull their arms inward to spin faster?',
+            options: ['To increase external torque', 'To decrease moment of inertia I, causing angular velocity ω to increase', 'To increase potential energy', 'Friction decreases'],
+            correctOptionIndex: 1,
+            explanation: 'Pulling mass closer to the rotational axis reduces I. Since L = I·ω is conserved, decreasing I forces ω to increase.',
+          ),
+        ],
+      ),
+
+      const QuizDeck(
+        id: 'quiz_equilibrium_11',
+        title: 'Class 11 Chemistry: Chemical Equilibrium',
+        subject: 'Chemistry',
+        gradeLevel: 'Class 11',
+        themeIndex: 2, // Sage
+        questions: [
+          QuizQuestion(
+            id: 'qe11_1',
+            question: 'What does Le Chatelier’s Principle predict when pressure is increased on a gaseous equilibrium system?',
+            options: ['Equilibrium shifts toward side with more gas moles', 'Equilibrium shifts toward side with fewer gas moles', 'Reaction stops', 'Equilibrium constant K increases'],
+            correctOptionIndex: 1,
+            explanation: 'Increasing pressure shifts the equilibrium in the direction that produces fewer moles of gas to relieve the pressure change.',
+          ),
+          QuizQuestion(
+            id: 'qe11_2',
+            question: 'What is the relation between equilibrium constants K_p and K_c for ideal gas reactions?',
+            options: ['K_p = K_c · (RT)^Δn', 'K_p = K_c / (RT)^Δn', 'K_p = K_c', 'K_p = K_c · Δn · RT'],
+            correctOptionIndex: 0,
+            explanation: 'K_p = K_c · (RT)^Δn, where Δn is the difference between total stoichiometric moles of gaseous products and gaseous reactants.',
+          ),
+          QuizQuestion(
+            id: 'qe11_3',
+            question: 'How does adding a catalyst affect the equilibrium constant K_eq of a reaction?',
+            options: ['Increases K_eq', 'Decreases K_eq', 'Has zero effect on K_eq', 'Doubles K_eq'],
+            correctOptionIndex: 2,
+            explanation: 'A catalyst speeds up both the forward and reverse reactions equally, reaching equilibrium faster without changing the position of K_eq.',
+          ),
+          QuizQuestion(
+            id: 'qe11_4',
+            question: 'What is the pH of a 0.001 M HCl aqueous solution at 25°C?',
+            options: ['1', '2', '3', '11'],
+            correctOptionIndex: 2,
+            explanation: 'HCl is a strong monoprotic acid that fully dissociates: [H⁺] = 10⁻³ M. pH = −log₁₀(10⁻³) = 3.',
+          ),
+        ],
+      ),
+
+      // === CLASS 10 (ADDITIONAL) ===
+      const QuizDeck(
+        id: 'quiz_life_processes_10',
+        title: 'Class 10 Biology: Life Processes',
+        subject: 'Biology',
+        gradeLevel: 'Class 10',
+        themeIndex: 3, // Terracotta
+        questions: [
+          QuizQuestion(
+            id: 'qlp10_1',
+            question: 'What is the structural and functional filtration unit of the human kidney?',
+            options: ['Neuron', 'Nephron', 'Alveolus', 'Glomerulus only'],
+            correctOptionIndex: 1,
+            explanation: 'Nephrons are the microscopic filtration units in kidneys that filter blood and form urine.',
+          ),
+          QuizQuestion(
+            id: 'qlp10_2',
+            question: 'Which raw materials are directly required by green plants for autotrophic photosynthesis?',
+            options: ['Oxygen and Glucose', 'Carbon dioxide, Water, Chlorophyll and Sunlight', 'Nitrogen and Carbon monoxide', 'Glucose and Water'],
+            correctOptionIndex: 1,
+            explanation: 'Photosynthesis equation: 6 CO₂ + 6 H₂O + sunlight (chlorophyll) ⟶ C₆H₁₂O₆ + 6 O₂.',
+          ),
+          QuizQuestion(
+            id: 'qlp10_3',
+            question: 'Why does oxygenated and deoxygenated blood not mix in the human heart?',
+            options: ['Fast blood speed', 'Presence of thick inter-ventricular septum dividing 4 chambers', 'Different blood colors', 'Gravity'],
+            correctOptionIndex: 1,
+            explanation: 'The human heart is divided into four distinct chambers by a muscular septum, preventing mixing and maximizing aerobic efficiency.',
+          ),
+          QuizQuestion(
+            id: 'qlp10_4',
+            question: 'What enzyme present in human saliva initiates starch digestion in the mouth?',
+            options: ['Pepsin', 'Salivary Amylase (Ptyalin)', 'Trypsin', 'Lipase'],
+            correctOptionIndex: 1,
+            explanation: 'Salivary amylase breaks down complex starch polysaccharides into simpler disaccharides like maltose.',
+          ),
+        ],
+      ),
+
+      const QuizDeck(
+        id: 'quiz_carbon_compounds_10',
+        title: 'Class 10 Chemistry: Carbon & Its Compounds',
+        subject: 'Chemistry',
+        gradeLevel: 'Class 10',
+        themeIndex: 3, // Terracotta
+        questions: [
+          QuizQuestion(
+            id: 'qcc10_1',
+            question: 'Why does carbon form millions of covalent compounds?',
+            options: ['High radioactivity', 'Catenation and tetravalency', 'Ionic bonding tendency', 'Metallic luster'],
+            correctOptionIndex: 1,
+            explanation: 'Carbon’s unique ability to form long stable covalent chains (catenation) and its tetravalent capacity (4 valence electrons) yield vast diversity.',
+          ),
+          QuizQuestion(
+            id: 'qcc10_2',
+            question: 'What is the functional group present in ethanol (CH₃CH₂OH)?',
+            options: ['Aldehyde (−CHO)', 'Alcohol (−OH)', 'Carboxylic Acid (−COOH)', 'Ketone (−CO−)'],
+            correctOptionIndex: 1,
+            explanation: 'The hydroxyl group (−OH) is the characteristic functional group of alcohols.',
+          ),
+          QuizQuestion(
+            id: 'qcc10_3',
+            question: 'What is the general molecular formula for saturated alkane hydrocarbons?',
+            options: ['C_n H_2n', 'C_n H_2n+2', 'C_n H_2n-2', 'C_n H_n'],
+            correctOptionIndex: 1,
+            explanation: 'Alkanes have single covalent carbon-carbon bonds and follow C_n H_2n+2 (e.g. Methane CH₄, Ethane C₂H₆).',
+          ),
+          QuizQuestion(
+            id: 'qcc10_4',
+            question: 'How do soap molecules clean oily grease from clothing in water?',
+            options: ['By neutralizing acid', 'By forming spherical micelle structures with hydrophobic tails dissolved in grease and hydrophilic heads in water', 'By evaporating water', 'By dissolving the fabric'],
+            correctOptionIndex: 1,
+            explanation: 'Soap molecules are amphipathic: hydrophobic hydrocarbon tails trap the oily dirt, while hydrophilic ionic heads interact with water to rinse it away.',
+          ),
+        ],
+      ),
+
+      // === CLASS 9 (ADDITIONAL) ===
+      const QuizDeck(
+        id: 'quiz_gravitation_9',
+        title: 'Class 9 Physics: Gravitation & Buoyancy',
+        subject: 'Physics',
+        gradeLevel: 'Class 9',
+        themeIndex: 0, // Teal
+        questions: [
+          QuizQuestion(
+            id: 'qg9_1',
+            question: 'What is the acceleration due to gravity g near the surface of Earth?',
+            options: ['6.67 m/s²', '9.8 m/s²', '11.2 m/s²', '3.0 × 10⁸ m/s²'],
+            correctOptionIndex: 1,
+            explanation: 'Standard acceleration due to Earth’s gravity is g = G·M / R² ≈ 9.8 m/s² directed toward Earth’s center.',
+          ),
+          QuizQuestion(
+            id: 'qg9_2',
+            question: 'What is Archimedes’ Principle regarding buoyant upthrust force?',
+            options: ['Upthrust equals object weight', 'Upthrust equals the weight of the fluid displaced by the submerged body', 'Upthrust equals container volume', 'Upthrust is zero in water'],
+            correctOptionIndex: 1,
+            explanation: 'Archimedes’ principle states that any body submerged in a fluid experiences an upward buoyant force equal to the weight of fluid it displaces.',
+          ),
+          QuizQuestion(
+            id: 'qg9_3',
+            question: 'If an astronaut has a mass of 60 kg on Earth, what is their mass on the Moon?',
+            options: ['10 kg', '60 kg', '360 kg', '0 kg'],
+            correctOptionIndex: 1,
+            explanation: 'Mass is the fundamental quantity of matter in a body and remains invariant (60 kg) anywhere in the universe. Weight changes, but mass does not.',
+          ),
+          QuizQuestion(
+            id: 'qg9_4',
+            question: 'What happens to the gravitational attraction between two objects if the distance between them is tripled?',
+            options: ['Becomes 3x stronger', 'Becomes 9x stronger', 'Becomes 1/3 as strong', 'Becomes 1/9 as strong'],
+            correctOptionIndex: 3,
+            explanation: 'Gravitational force follows the inverse square law F ∝ 1/r². Tripling the distance (3r) reduces the force to 1/(3)² = 1/9 of initial value.',
+          ),
+        ],
+      ),
+
+      const QuizDeck(
+        id: 'quiz_tissues_9',
+        title: 'Class 9 Biology: Plant & Animal Tissues',
+        subject: 'Biology',
+        gradeLevel: 'Class 9',
+        themeIndex: 3, // Terracotta
+        questions: [
+          QuizQuestion(
+            id: 'qt9_1',
+            question: 'Which plant vascular tissue conducts water and dissolved mineral ions upward from roots?',
+            options: ['Phloem', 'Xylem', 'Parenchyma', 'Collenchyma'],
+            correctOptionIndex: 1,
+            explanation: 'Xylem vessels and tracheids transport water and minerals unidirectionally from roots to leaves.',
+          ),
+          QuizQuestion(
+            id: 'qt9_2',
+            question: 'Which plant vascular tissue translocates synthesized sugars and organic food throughout the plant?',
+            options: ['Xylem', 'Phloem', 'Sclerenchyma', 'Epidermis'],
+            correctOptionIndex: 1,
+            explanation: 'Phloem sieve tubes and companion cells transport synthesized photosynthate bidirectionally to growing and storage tissues.',
+          ),
+          QuizQuestion(
+            id: 'qt9_3',
+            question: 'What type of connective animal tissue connects muscles to bones?',
+            options: ['Ligament', 'Tendon', 'Cartilage', 'Adipose'],
+            correctOptionIndex: 1,
+            explanation: 'Tendons connect muscle to bone; Ligaments connect bone to bone.',
+          ),
+          QuizQuestion(
+            id: 'qt9_4',
+            question: 'Which tissue is responsible for continuous cell division and growth at root and shoot tips in plants?',
+            options: ['Permanent tissue', 'Meristematic tissue (Apical meristem)', 'Protective tissue', 'Cork'],
+            correctOptionIndex: 1,
+            explanation: 'Apical meristematic tissue contains actively dividing undifferentiated cells responsible for longitudinal plant growth.',
           ),
         ],
       ),
