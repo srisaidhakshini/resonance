@@ -115,6 +115,37 @@ class LLMService {
     _isGenerating = false;
   }
 
+  /// One-shot, stateless generation for non-conversational tasks. On web
+  /// there's no real local model - this only ever succeeds if a local
+  /// Ollama daemon happens to be running, and returns empty otherwise so
+  /// the caller's own fallback kicks in immediately instead of paying for
+  /// [streamResponse]'s slow word-by-word canned-response simulation for
+  /// text that was never going to match the caller's expected format anyway.
+  Future<String> generateStructuredContent(
+    String systemPrompt,
+    String userPrompt, {
+    Duration silenceTimeout = const Duration(seconds: 6),
+    Duration warmupTimeout = const Duration(seconds: 45),
+  }) async {
+    try {
+      final response = await _dio.post(
+        'http://127.0.0.1:11434/api/generate',
+        data: {
+          'model': 'qwen2.5:0.5b',
+          'prompt': userPrompt,
+          'system': systemPrompt,
+          'stream': false,
+        },
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        return (response.data['response']?.toString() ?? '').trim();
+      }
+    } catch (_) {
+      // No local Ollama available - expected on most web sessions.
+    }
+    return '';
+  }
+
   /// Wraps web preview answers with active pedagogical style cues
   String _personalizeWebResponse(String text, UserProfile profile) {
     final prefix = StringBuffer();
