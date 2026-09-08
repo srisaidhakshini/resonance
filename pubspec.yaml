@@ -67,3 +67,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/sample_content/
+    - assets/mascot/idle/
+    - assets/mascot/thinking/
+    - assets/mascot/correct/
+    - assets/mascot/wrong/

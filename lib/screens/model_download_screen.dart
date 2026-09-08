@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/download_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/mascot_widget.dart';
 
 class ModelDownloadScreen extends ConsumerStatefulWidget {
   const ModelDownloadScreen({super.key});
@@ -104,53 +105,26 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
                   color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
                 ),
               ),
-              const SizedBox(height: 36),
+              const SizedBox(height: 20),
 
-              // Central Icon
-              Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 2,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 52,
-                      color: AppColors.lightTeal,
-                    ),
-                  ),
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkCard : AppColors.lightCard,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                        width: 1,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.cloud_off_rounded,
-                      size: 20,
-                      color: AppColors.lightTeal,
-                    ),
-                  ),
-                ],
+              // Mascot reacts to the current download state.
+              MascotWidget(
+                state: error != null
+                    ? MascotState.wrong
+                    : (isReady
+                        ? MascotState.correct
+                        : (isDownloading ? MascotState.thinking : MascotState.idle)),
+                size: 150,
               ),
 
               const SizedBox(height: 32),
 
               Text(
-                'One-Time Offline Setup',
+                error != null
+                    ? 'Oops, that hiccuped!'
+                    : (isReady
+                        ? "You're all set!"
+                        : (isDownloading ? 'Sprite is fetching your tutor...' : 'One-Time Offline Setup')),
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
@@ -160,7 +134,11 @@ class _ModelDownloadScreenState extends ConsumerState<ModelDownloadScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Downloading the on-device AI model weights so Echo can tutor you 100% offline with zero latency.',
+                error != null
+                    ? 'Something went wrong during the download. Give it another try below.'
+                    : (isReady
+                        ? 'The AI model is ready on your device. Taking you to your profile...'
+                        : 'Downloading the on-device AI model weights so Echo can tutor you 100% offline with zero latency.'),
                 textAlign: TextAlign.center,
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 13,

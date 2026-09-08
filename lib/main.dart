@@ -12,11 +12,13 @@ import 'providers/download_provider.dart';
 import 'providers/theme_provider.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/content_library_screen.dart';
+import 'screens/chat_screen.dart';
 import 'screens/main_navigation_shell.dart';
 import 'screens/model_download_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'services/native_loader.dart';
 import 'theme/app_theme.dart';
+import 'widgets/mascot_widget.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -142,9 +144,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
             future: checkInitialRoute(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  body: Center(child: CircularProgressIndicator(color: AppColors.lightTeal)),
-                );
+                return const _SplashScreen();
               }
 
               final route = snapshot.data ?? '/onboarding';
@@ -161,13 +161,52 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       routes: {
         '/onboarding': (context) => const OnboardingScreen(),
         '/home': (context) => const MainNavigationShell(),
-        '/chat': (context) => const MainNavigationShell(initialIndex: 2),
+        '/chat': (context) => const ChatScreen(),
         '/learn': (context) => const MainNavigationShell(initialIndex: 1),
         '/progress': (context) => const MainNavigationShell(initialIndex: 3),
         '/download': (context) => const ModelDownloadScreen(),
         '/profile_setup': (context) => const ProfileSetupScreen(),
         '/library': (context) => const ContentLibraryScreen(),
       },
+    );
+  }
+}
+
+/// Splash screen shown while checking download/profile state at launch.
+/// Uses the Sprite mascot instead of a bare spinner for a Duolingo-style
+/// first impression.
+class _SplashScreen extends StatelessWidget {
+  const _SplashScreen();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MascotWidget(state: MascotState.idle, size: 160),
+            const SizedBox(height: 24),
+            Text(
+              'Echo',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.5,
+                color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.lightTeal),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
