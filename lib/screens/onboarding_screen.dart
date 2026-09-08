@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../widgets/mascot_widget.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -567,6 +568,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ),
         ),
+
+        // Sprite, unbothered by the lack of wifi
+        const Positioned(
+          bottom: 4,
+          right: 4,
+          child: MascotWidget(state: MascotState.idle, size: 92),
+        ),
       ],
     );
   }
@@ -664,6 +672,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             backgroundColor: const Color(0xFF00C853),
             child: const Icon(Icons.check, color: Colors.white, size: 20),
           ),
+        ),
+
+        // Sprite, sorting through the folders
+        const Positioned(
+          bottom: 4,
+          left: 4,
+          child: MascotWidget(state: MascotState.thinking, size: 92),
         ),
       ],
     );
@@ -815,6 +830,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ),
           ],
         ),
+
+        // Sprite, delighted by the instant answer
+        const Positioned(
+          bottom: 4,
+          right: 4,
+          child: MascotWidget(state: MascotState.correct, size: 92),
+        ),
       ],
     );
   }
@@ -954,6 +976,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ), // Brownish icon
             ),
           ),
+        ),
+
+        // Sprite, ready to get started
+        const Positioned(
+          bottom: 4,
+          left: 4,
+          child: MascotWidget(state: MascotState.correct, size: 92),
         ),
       ],
     );

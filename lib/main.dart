@@ -18,7 +18,7 @@ import 'screens/model_download_screen.dart';
 import 'screens/profile_setup_screen.dart';
 import 'services/native_loader.dart';
 import 'theme/app_theme.dart';
-import 'widgets/mascot_widget.dart';
+import 'widgets/echo_intro_widget.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -187,18 +187,8 @@ class _SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const MascotWidget(state: MascotState.idle, size: 160),
-            const SizedBox(height: 24),
-            Text(
-              'Echo',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-                color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
-              ),
-            ),
-            const SizedBox(height: 16),
+            const EchoIntroWidget(size: 300),
+            const SizedBox(height: 20),
             const SizedBox(
               width: 22,
               height: 22,
