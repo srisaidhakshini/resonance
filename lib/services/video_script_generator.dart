@@ -105,8 +105,10 @@ class VideoScriptGenerator {
           'TITLE: <short headline, under 6 words>\n'
           'BULLET: <short phrase>\n'
           'BULLET: <short phrase>\n'
+          'BULLET: <short phrase>\n'
+          'BULLET: <short phrase>\n'
           'BULLET: <short phrase, optional>\n'
-          'NARRATION: <1-2 spoken sentences explaining this segment>\n'
+          'NARRATION: <2-3 spoken sentences explaining this segment>\n'
           '### SEGMENT 2\n'
           '...continue the same pattern for each segment.';
 
@@ -173,7 +175,7 @@ class VideoScriptGenerator {
           VideoSegment(
             segmentNumber: segments.length + 1,
             title: title,
-            bulletPoints: bullets.take(4).toList(),
+            bulletPoints: bullets.take(6).toList(),
             narration: narration,
           ),
         );
@@ -199,6 +201,8 @@ class VideoScriptGenerator {
           bulletPoints: const [
             'Core concepts synthesized from your material',
             'A quick recap of the key ideas',
+            'Framed around what matters most for review',
+            'Pulled directly from your study session',
           ],
           narration: "Here's a quick recap of $topic, covering the core ideas from your material.",
         ),
@@ -208,6 +212,8 @@ class VideoScriptGenerator {
           bulletPoints: [
             'Connects to related concepts',
             'Useful for exam-style questions',
+            'Builds a foundation for deeper topics',
+            'Worth revisiting before a test',
           ],
           narration: 'Understanding this well makes it easier to connect related ideas and answer exam-style questions with confidence.',
         ),

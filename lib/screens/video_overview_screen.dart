@@ -378,23 +378,6 @@ class _VideoOverviewScreenState extends State<VideoOverviewScreen> with TickerPr
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: theme.accent.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'SEGMENT ${_activeSegmentIndex + 1} / ${_currentScript.segments.length}',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    color: theme.accent,
-                    letterSpacing: 0.6,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
               Opacity(
                 opacity: titleAnim.value,
                 child: Transform.translate(

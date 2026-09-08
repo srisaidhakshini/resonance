@@ -634,7 +634,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ),
               clipBehavior: Clip.antiAlias,
               padding: const EdgeInsets.all(3),
-              child: Image.asset('assets/mascot/idle/frame_000.png', fit: BoxFit.contain),
+              child: const MascotWidget(state: MascotState.idle, size: 26),
             ),
             const SizedBox(width: 8),
             Text(
@@ -805,18 +805,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       itemCount: messages.length + (isThinking ? 1 : 0),
       itemBuilder: (context, index) {
         if (isThinking && index == messages.length) {
-          return _buildThinkingIndicator(context, isDark);
+          return _MessageEntrance(
+            isUser: false,
+            child: _buildThinkingIndicator(context, isDark),
+          );
         }
 
         final message = messages[index];
         final isUser = message.role == 'user';
         final isLastAiMessage = !isUser && index == messages.length - 1 && !isGenerating;
+        final isStreamingNow = !isUser &&
+            isGenerating &&
+            index == messages.length - 1 &&
+            message.content != '...';
         final messageId = message.timestamp.toIso8601String();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildMessageBubble(context, message.content, isUser, isDark, messageId),
+            _MessageEntrance(
+              isUser: isUser,
+              child: _buildMessageBubble(
+                context,
+                message.content,
+                isUser,
+                isDark,
+                messageId,
+                isStreamingNow,
+              ),
+            ),
             if (isLastAiMessage) ...[
               const SizedBox(height: 8),
               _buildEducationalActionChips(context, isDark, messages),
@@ -836,18 +853,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         children: [
           Container(
             margin: const EdgeInsets.only(top: 2, right: 10),
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                width: 1,
+            child: _PulsingGlow(
+              color: AppColors.lightTeal,
+              child: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 1,
+                  ),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: const MascotWidget(state: MascotState.thinking, size: 32),
               ),
             ),
-            clipBehavior: Clip.antiAlias,
-            child: const MascotWidget(state: MascotState.thinking, size: 32),
           ),
           Flexible(
             child: Container(
@@ -1010,6 +1032,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     bool isUser,
     bool isDark, [
     String? messageId,
+    bool isStreamingNow = false,
   ]) {
     if (isUser) {
       // User Message Bubble
@@ -1051,22 +1074,32 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Sprite Avatar Motif
+            // Sprite Avatar Motif — thinks while the placeholder is up, then
+            // settles back to its idle breathing loop once real tokens land.
             Container(
               margin: const EdgeInsets.only(top: 2, right: 10),
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  width: 1,
+              child: _PulsingGlow(
+                color: AppColors.lightTeal,
+                active: isThinking,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                      width: 1,
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  padding: const EdgeInsets.all(2),
+                  child: MascotWidget(
+                    state: isThinking ? MascotState.thinking : MascotState.idle,
+                    size: 24,
+                  ),
                 ),
               ),
-              clipBehavior: Clip.antiAlias,
-              padding: const EdgeInsets.all(2),
-              child: Image.asset('assets/mascot/idle/frame_000.png', fit: BoxFit.contain),
             ),
 
             // Bubble
@@ -1092,7 +1125,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildMessageContent(content, isUser, isDark, context),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(child: _buildMessageContent(content, isUser, isDark, context)),
+                        if (isStreamingNow) ...[
+                          const SizedBox(width: 3),
+                          const _BlinkingCursor(color: AppColors.lightTeal),
+                        ],
+                      ],
+                    ),
                     if (!isThinking && content.trim().isNotEmpty) ...[
                       const SizedBox(height: 10),
                       Align(
@@ -1159,39 +1202,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       child: Wrap(
         spacing: 8,
         runSpacing: 6,
-        children: actions.map((action) {
+        children: actions.asMap().entries.map((entry) {
+          final chipIndex = entry.key;
+          final action = entry.value;
           final isStudioAction = action.contains('Studio Artifacts');
-          return ActionChip(
-            label: Text(
-              action,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+          return _StaggeredPopIn(
+            index: chipIndex,
+            child: ActionChip(
+              label: Text(
+                action,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isStudioAction
+                      ? AppColors.lightTeal
+                      : (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
+                ),
+              ),
+              backgroundColor: isStudioAction
+                  ? AppColors.lightTeal.withValues(alpha: isDark ? 0.18 : 0.12)
+                  : (isDark ? AppColors.darkCard : AppColors.lightSecondary),
+              side: BorderSide(
                 color: isStudioAction
                     ? AppColors.lightTeal
-                    : (isDark ? AppColors.darkPrimary : AppColors.lightPrimary),
+                    : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                width: 1,
               ),
+              shape: RoundedRectangleBorder(
+                borderRadius: AppRadii.pillRadius,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              onPressed: () {
+                if (isStudioAction) {
+                  _showStudioGenerationSheet(context, messages);
+                } else {
+                  _handleSubmitted(action);
+                }
+              },
             ),
-            backgroundColor: isStudioAction
-                ? AppColors.lightTeal.withValues(alpha: isDark ? 0.18 : 0.12)
-                : (isDark ? AppColors.darkCard : AppColors.lightSecondary),
-            side: BorderSide(
-              color: isStudioAction
-                  ? AppColors.lightTeal
-                  : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
-              width: 1,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: AppRadii.pillRadius,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            onPressed: () {
-              if (isStudioAction) {
-                _showStudioGenerationSheet(context, messages);
-              } else {
-                _handleSubmitted(action);
-              }
-            },
           );
         }).toList(),
       ),
@@ -1538,6 +1586,228 @@ class _BouncingDotState extends State<_BouncingDot> with SingleTickerProviderSta
           ),
         );
       },
+    );
+  }
+}
+
+/// Plays a bouncy pop-in (fade + spring scale + directional slide) the first
+/// time a message row mounts. Because ListView.builder reuses element state
+/// at a stable index as new messages are only ever appended, this animates
+/// exactly once per message — later rebuilds (streaming tokens updating the
+/// same bubble) just feed a new `child` through, already-settled.
+class _MessageEntrance extends StatefulWidget {
+  final Widget child;
+  final bool isUser;
+
+  const _MessageEntrance({required this.child, required this.isUser});
+
+  @override
+  State<_MessageEntrance> createState() => _MessageEntranceState();
+}
+
+class _MessageEntranceState extends State<_MessageEntrance> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _fade;
+  late final Animation<double> _scale;
+  late final Animation<Offset> _slide;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 480), vsync: this);
+    _fade = CurvedAnimation(parent: _controller, curve: const Interval(0.0, 0.55, curve: Curves.easeOut));
+    _scale = Tween<double>(begin: 0.82, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
+    _slide = Tween<Offset>(
+      begin: Offset(widget.isUser ? 0.1 : -0.06, 0.16),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _fade.value.clamp(0.0, 1.0),
+          child: FractionalTranslation(
+            translation: _slide.value,
+            child: Transform.scale(
+              scale: _scale.value,
+              alignment: widget.isUser ? Alignment.centerRight : Alignment.centerLeft,
+              child: child,
+            ),
+          ),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// A soft teal glow ring that breathes around the mascot avatar while
+/// [active] is true (used for the "thinking" placeholder state), and fades
+/// back out smoothly once real tokens arrive.
+class _PulsingGlow extends StatefulWidget {
+  final Widget child;
+  final Color color;
+  final bool active;
+
+  const _PulsingGlow({required this.child, required this.color, this.active = true});
+
+  @override
+  State<_PulsingGlow> createState() => _PulsingGlowState();
+}
+
+class _PulsingGlowState extends State<_PulsingGlow> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    if (widget.active) _controller.repeat(reverse: true);
+  }
+
+  @override
+  void didUpdateWidget(covariant _PulsingGlow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active && !_controller.isAnimating) {
+      _controller.repeat(reverse: true);
+    } else if (!widget.active && oldWidget.active) {
+      _controller.animateTo(0, duration: const Duration(milliseconds: 300));
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final t = _controller.value;
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: t > 0
+                ? [
+                    BoxShadow(
+                      color: widget.color.withValues(alpha: 0.22 + 0.25 * t),
+                      blurRadius: 6 + 10 * t,
+                      spreadRadius: 0.5 + 2 * t,
+                    ),
+                  ]
+                : null,
+          ),
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// Pops in one child of the action-chip row at a time, cascading left to
+/// right, so the suggestions feel like they're spring-loading into place
+/// rather than all appearing flatly at once.
+class _StaggeredPopIn extends StatefulWidget {
+  final int index;
+  final Widget child;
+
+  const _StaggeredPopIn({required this.index, required this.child});
+
+  @override
+  State<_StaggeredPopIn> createState() => _StaggeredPopInState();
+}
+
+class _StaggeredPopInState extends State<_StaggeredPopIn> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 380), vsync: this);
+    Future.delayed(Duration(milliseconds: 60 * widget.index), () {
+      if (mounted) _controller.forward();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final curved = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    return AnimatedBuilder(
+      animation: curved,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _controller.value.clamp(0.0, 1.0),
+          child: Transform.scale(scale: 0.5 + 0.5 * curved.value, child: child),
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+/// A soft blinking caret shown at the tail of the AI bubble while its answer
+/// is actively streaming in, for a "live typing" feel.
+class _BlinkingCursor extends StatefulWidget {
+  final Color color;
+
+  const _BlinkingCursor({required this.color});
+
+  @override
+  State<_BlinkingCursor> createState() => _BlinkingCursorState();
+}
+
+class _BlinkingCursorState extends State<_BlinkingCursor> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 650), vsync: this)
+      ..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _controller,
+      child: Container(
+        width: 2,
+        height: 14,
+        margin: const EdgeInsets.only(bottom: 2),
+        decoration: BoxDecoration(
+          color: widget.color,
+          borderRadius: BorderRadius.circular(1),
+        ),
+      ),
     );
   }
 }

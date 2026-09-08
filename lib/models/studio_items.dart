@@ -3805,6 +3805,8 @@ class StudioPreTemplates {
               'Objects resist changes to motion',
               'A body at rest stays at rest',
               'A body in motion stays in motion',
+              'Only an unbalanced force changes that',
+              'Also called the Law of Inertia',
             ],
             narration:
                 'Every object resists a change in its state of motion. A body at rest stays at rest, and a body in motion keeps moving in a straight line, unless an unbalanced force acts on it.',
@@ -3816,6 +3818,8 @@ class StudioPreTemplates {
               'F = m × a',
               'Bigger mass needs bigger force',
               'Acceleration points with the force',
+              'Doubling mass halves acceleration',
+              'The core equation of dynamics',
             ],
             narration:
                 'The second law quantifies motion: force equals mass times acceleration. The heavier the object, the more force you need to accelerate it at the same rate.',
@@ -3827,6 +3831,8 @@ class StudioPreTemplates {
               'Every action has an equal, opposite reaction',
               'Forces always come in pairs',
               'Seen in rockets, swimming, walking',
+              'Acts on two different bodies at once',
+              'Explains recoil in a fired gun',
             ],
             narration:
                 'For every action, there is an equal and opposite reaction. Forces always occur in pairs acting on two different bodies, which is exactly how rockets launch and how we walk.',
@@ -3847,6 +3853,8 @@ class StudioPreTemplates {
               'Every living thing is made of cells',
               'Cells can be single or multi-cellular',
               'Discovered by Robert Hooke in 1665',
+              'Smallest structural unit of life',
+              'Studied under the field of cytology',
             ],
             narration:
                 'Every living organism is built from cells, the fundamental unit of life. Some organisms are just a single cell, while others are made of trillions working together.',
@@ -3858,6 +3866,8 @@ class StudioPreTemplates {
               'Houses the genetic material, DNA',
               'Directs all cell activity',
               'Surrounded by a nuclear membrane',
+              'Contains the nucleolus, which builds ribosomes',
+              'Often called the "brain" of the cell',
             ],
             narration:
                 'The nucleus acts as the control center, housing DNA and directing every activity the cell performs, from growth to repair to reproduction.',
@@ -3869,6 +3879,8 @@ class StudioPreTemplates {
               'Converts food into usable energy',
               'Produces ATP through respiration',
               'More mitochondria in active cells',
+              'Has its own small DNA strand',
+              'Known as the "powerhouse of the cell"',
             ],
             narration:
                 'Mitochondria convert nutrients into usable energy through cellular respiration, producing the ATP that powers everything the cell does.',
@@ -3889,6 +3901,8 @@ class StudioPreTemplates {
               'Highest power of x is 2',
               'Standard form: ax² + bx + c = 0',
               'Graphs as a parabola',
+              'Has at most two solutions for x',
+              'Common in projectile motion problems',
             ],
             narration:
                 'A quadratic equation has its highest power of x equal to two, written in standard form as a x squared plus b x plus c equals zero, and it always graphs as a parabola.',
@@ -3900,6 +3914,8 @@ class StudioPreTemplates {
               'x = (−b ± √(b² − 4ac)) / 2a',
               'Works for every quadratic equation',
               'The discriminant reveals root type',
+              'No factoring required',
+              'A reliable fallback when factoring fails',
             ],
             narration:
                 'The quadratic formula solves any quadratic equation directly. The discriminant, b squared minus four a c, tells you whether the roots are real, equal, or complex.',
@@ -3911,6 +3927,8 @@ class StudioPreTemplates {
               'Positive discriminant: two real roots',
               'Zero discriminant: one repeated root',
               'Negative discriminant: no real roots',
+              'Discriminant = b² − 4ac',
+              'Tells you the answer before solving',
             ],
             narration:
                 'When the discriminant is positive you get two distinct real roots, zero gives one repeated root, and a negative discriminant means the roots are not real numbers.',
