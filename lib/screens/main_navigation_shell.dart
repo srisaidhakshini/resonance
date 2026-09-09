@@ -8,6 +8,7 @@ import 'learn_screen.dart';
 import 'quiz_screen.dart';
 import 'progress_screen.dart';
 import 'profile_setup_screen.dart';
+import 'chat_screen.dart';
 
 class MainNavigationShell extends ConsumerStatefulWidget {
   final int initialIndex;
@@ -46,6 +47,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
       LearnScreen(onNavigateToChatWithPrompt: _navigateToChatWithPrompt),
       const QuizScreen(isTab: true),
       ProgressScreen(onNavigateToChatWithPrompt: _navigateToChatWithPrompt),
+      const ChatScreen(),
       const ProfileSetupScreen(isEditMode: true, isStandaloneTab: true),
     ];
 
@@ -113,6 +115,11 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
                 icon: Icon(Icons.insights_outlined, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
                 selectedIcon: Icon(Icons.insights_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
                 label: 'Progress',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.chat_bubble_outline_rounded, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
+                selectedIcon: Icon(Icons.chat_bubble_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
+                label: 'Echo',
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline_rounded, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
