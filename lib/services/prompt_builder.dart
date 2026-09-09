@@ -32,7 +32,7 @@ class PromptBuilder {
   /// Builds the personalized system prompt block.
   static String buildSystemPrompt({
     required UserProfile profile,
-    required String hardwareInstructions,
+    String hardwareInstructions = '',
   }) {
     final styleTemplate = TeachingStyleTemplate.fromStyle(
       profile.teachingStyle,
@@ -42,7 +42,11 @@ class PromptBuilder {
         ? '- **Pacing:** Break concepts and calculations down step-by-step into digestible, bite-sized components.'
         : '- **Pacing:** Give a direct high-level summary and big-picture overview first before expanding.';
 
-    return '''You are Echo, a dedicated and friendly offline AI tutor for ${profile.userName}.
+    final hwText = hardwareInstructions.isNotEmpty
+        ? '\n\nHARDWARE & SYSTEM CONSTRAINTS:\n$hardwareInstructions'
+        : '';
+
+    return '''You are Echo, a dedicated and friendly AI tutor for ${profile.userName}.
 The student is in **Class/Grade ${profile.grade}**.
 
 ADAPTABILITY & TONE:
@@ -50,10 +54,24 @@ ADAPTABILITY & TONE:
 $pacingInstruction
 - For Math and Science, format formulas clearly using LaTeX (e.g. \$x^2\$) and show working steps.
 
-${styleTemplate.systemInstructions}
+${styleTemplate.systemInstructions}$hwText''';
+  }
 
-HARDWARE & SYSTEM CONSTRAINTS:
-$hardwareInstructions''';
+  /// Formats user prompt optionally attaching RAG grounding context.
+  static String buildUserPrompt(
+    String message, {
+    String? groundingContext,
+  }) {
+    final sanitizedMessage = sanitizeForPrompt(message);
+    if (groundingContext != null && groundingContext.trim().isNotEmpty) {
+      final sanitizedContext = sanitizeForPrompt(groundingContext);
+      return '''CONTEXT FROM STUDY MATERIAL:
+$sanitizedContext
+
+STUDENT QUESTION:
+$sanitizedMessage''';
+    }
+    return sanitizedMessage;
   }
 
   /// Assembles the complete ChatML formatted prompt buffer ready for llama.cpp / local SLM.
