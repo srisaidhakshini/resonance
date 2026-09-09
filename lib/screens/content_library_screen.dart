@@ -6,6 +6,8 @@ import '../models/study_content.dart';
 import '../providers/chat_provider.dart';
 import '../providers/content_provider.dart';
 import '../services/video_script_generator.dart';
+import '../theme/app_theme.dart';
+import '../widgets/ambient_background.dart';
 import '../widgets/mascot_widget.dart';
 import 'video_overview_screen.dart';
 
@@ -78,25 +80,42 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
   }
 
   /// Generates a kinetic-typography video overview of an ingested chapter
-  /// via the on-device LLM (real content generation, unlike the template
-  /// generators the rest of the Studio suite uses), showing a mascot
-  /// loading state while it runs.
   Future<void> _generateVideoOverview(StudyContent content) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
+          ),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const MascotWidget(state: MascotState.thinking, size: 96),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
-                'Generating your video overview...',
-                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: const Color(0xFF6B7280)),
+                'Generating Video Overview...',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : AppColors.lightForeground,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Summarizing concepts and kinetic script with AI',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
               ),
             ],
           ),
@@ -118,22 +137,52 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
   }
 
   Future<void> _deleteContent(StudyContent content) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Remove Chapter'),
-        content: Text('Remove "${content.title}"? This cannot be undone.'),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(
+            color: isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
+          ),
+        ),
+        title: Text(
+          'Remove Chapter',
+          style: GoogleFonts.plusJakartaSans(
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : AppColors.lightForeground,
+          ),
+        ),
+        content: Text(
+          'Remove "${content.title}"? This cannot be undone.',
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 14,
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.plusJakartaSans(
+                fontWeight: FontWeight.w600,
+                color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+              ),
+            ),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove'),
+            child: Text(
+              'Remove',
+              style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -145,90 +194,204 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final myChapters = ref.watch(contentNotifierProvider);
 
+    final textPrimary = isDark ? Colors.white : AppColors.lightForeground;
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+    final cardBg = isDark ? Colors.white.withValues(alpha: 0.055) : Colors.white.withValues(alpha: 0.90);
+    final borderCol = isDark ? Colors.white.withValues(alpha: 0.10) : const Color(0xFFE2E8F0);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(8, 8, 16, 0),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
-                        ),
-                        Text(
-                          'Study Materials',
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF1A1A1A),
+      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      body: AmbientBackground(
+        child: SafeArea(
+          child: Stack(
+            children: [
+              CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  // Top Navigation Bar
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () => Navigator.pop(context),
+                                borderRadius: BorderRadius.circular(21),
+                                child: Container(
+                                  width: 42,
+                                  height: 42,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
+                                    border: Border.all(
+                                      color: isDark ? Colors.white.withValues(alpha: 0.12) : AppColors.lightBorder,
+                                      width: 1.0,
+                                    ),
+                                    boxShadow: isDark
+                                        ? null
+                                        : [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.04),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                  ),
+                                  child: Icon(
+                                    Icons.arrow_back_rounded,
+                                    color: textPrimary,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Study Materials',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.w800,
+                                      color: textPrimary,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Grounded Document Intelligence',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11.5,
+                                      color: textSecondary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+
+                          // Offline Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFF00F5A0).withValues(alpha: 0.12)
+                                  : const Color(0xFF0D9488).withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF00F5A0).withValues(alpha: 0.3)
+                                    : const Color(0xFF0D9488).withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF00F5A0) : const Color(0xFF0D9488),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'Offline RAG',
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? const Color(0xFF00F5A0) : const Color(0xFF0D9488),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                  sliver: SliverList(
-                    delegate: SliverChildListDelegate([
-                      _buildUploadCard(),
-                      const SizedBox(height: 32),
-                      _buildSectionHeader('SAMPLE CHAPTERS'),
-                      const SizedBox(height: 12),
-                      for (final sample in _kSamples)
-                        _buildSampleTile(sample.$1, sample.$2),
-                      const SizedBox(height: 32),
-                      if (myChapters.isNotEmpty) ...[
-                        _buildSectionHeader('MY CHAPTERS'),
+
+                  // Content List
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(20, 4, 20, 28),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _buildUploadCard(isDark),
+                        const SizedBox(height: 28),
+                        _buildSectionHeader('SAMPLE CHAPTERS', isDark),
                         const SizedBox(height: 12),
-                        for (final chapter in myChapters)
-                          _buildChapterTile(chapter),
-                      ],
-                    ]),
+                        for (final sample in _kSamples)
+                          _buildSampleTile(sample.$1, sample.$2, isDark, cardBg, borderCol, textPrimary),
+                        const SizedBox(height: 28),
+                        if (myChapters.isNotEmpty) ...[
+                          _buildSectionHeader('MY CHAPTERS', isDark),
+                          const SizedBox(height: 12),
+                          for (final chapter in myChapters)
+                            _buildChapterTile(chapter, isDark, cardBg, borderCol, textPrimary, textSecondary),
+                        ],
+                      ]),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            if (_isIngesting) _buildIngestOverlay(),
-          ],
+                ],
+              ),
+              if (_isIngesting) _buildIngestOverlay(isDark),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSectionHeader(String title) {
+  Widget _buildSectionHeader(String title, bool isDark) {
     return Text(
       title,
-      style: GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-        letterSpacing: 1.2,
-        color: const Color(0xFF9CA3AF),
+      style: GoogleFonts.plusJakartaSans(
+        fontSize: 11.5,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.1,
+        color: isDark ? const Color(0xFF2DD4BF) : const Color(0xFF0D9488),
       ),
     );
   }
 
-  Widget _buildUploadCard() {
+  Widget _buildUploadCard(bool isDark) {
     return InkWell(
       onTap: _isIngesting ? null : _pickAndIngest,
       borderRadius: BorderRadius.circular(24),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(22),
         decoration: BoxDecoration(
-          color: const Color(0xFF8B7FD6),
           borderRadius: BorderRadius.circular(24),
+          gradient: LinearGradient(
+            colors: isDark
+                ? [
+                    const Color(0xFF0D9488).withValues(alpha: 0.35),
+                    const Color(0xFF1E293B).withValues(alpha: 0.70),
+                  ]
+                : [
+                    const Color(0xFF0D9488),
+                    const Color(0xFF14B8A6),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(
+            color: isDark ? const Color(0xFF2DD4BF).withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.25),
+            width: 1.2,
+          ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF8B7FD6).withValues(alpha: 0.3),
+              color: isDark
+                  ? const Color(0xFF0D9488).withValues(alpha: 0.20)
+                  : const Color(0xFF0D9488).withValues(alpha: 0.28),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -237,10 +400,13 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                color: Colors.white24,
+              padding: const EdgeInsets.all(13),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: isDark ? 0.12 : 0.20),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.25),
+                ),
               ),
               child: const Icon(Icons.upload_file_rounded, color: Colors.white, size: 24),
             ),
@@ -251,108 +417,221 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
                 children: [
                   Text(
                     'Upload a Chapter',
-                    style: GoogleFonts.outfit(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 3),
                   Text(
-                    'PDF, text file, or a photo of a page',
-                    style: GoogleFonts.inter(fontSize: 13, color: Colors.white70),
+                    'PDF, textbook photo, or text file',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12.5,
+                      color: Colors.white.withValues(alpha: 0.82),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.white),
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.chevron_right_rounded, color: Colors.white, size: 20),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSampleTile(String assetPath, String title) {
+  Widget _buildSampleTile(
+    String assetPath,
+    String title,
+    bool isDark,
+    Color cardBg,
+    Color borderCol,
+    Color textPrimary,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardBg,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: borderCol),
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
       ),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20),
         clipBehavior: Clip.antiAlias,
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           leading: Container(
             padding: const EdgeInsets.all(10),
-            decoration: const BoxDecoration(color: Color(0xFFE0F2FE), shape: BoxShape.circle),
-            child: const Icon(Icons.menu_book_rounded, color: Color(0xFF0284C7), size: 20),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? const Color(0xFF2DD4BF).withValues(alpha: 0.15)
+                  : const Color(0xFF0D9488).withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.menu_book_rounded,
+              color: isDark ? const Color(0xFF26F0B5) : const Color(0xFF0D9488),
+              size: 20,
+            ),
           ),
           title: Text(
             title,
-            style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF1A1A1A)),
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: textPrimary,
+            ),
           ),
-          trailing: TextButton(
-            onPressed: _isIngesting ? null : () => _ingestSample(assetPath, title),
-            child: const Text('Load'),
+          trailing: InkWell(
+            onTap: _isIngesting ? null : () => _ingestSample(assetPath, title),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF26F0B5).withValues(alpha: 0.15)
+                    : const Color(0xFF0D9488).withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF26F0B5).withValues(alpha: 0.35)
+                      : const Color(0xFF0D9488).withValues(alpha: 0.25),
+                ),
+              ),
+              child: Text(
+                'Load',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? const Color(0xFF26F0B5) : const Color(0xFF0D9488),
+                ),
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildChapterTile(StudyContent content) {
+  Widget _buildChapterTile(
+    StudyContent content,
+    bool isDark,
+    Color cardBg,
+    Color borderCol,
+    Color textPrimary,
+    Color textSecondary,
+  ) {
     return Dismissible(
       key: Key(content.id),
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
         await _deleteContent(content);
-        return false; // deletion already handled via provider; keep list in sync
+        return false;
       },
       background: Container(
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.only(right: 20),
-        decoration: BoxDecoration(color: Colors.red[400], borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEF4444).withValues(alpha: 0.85),
+          borderRadius: BorderRadius.circular(20),
+        ),
         alignment: Alignment.centerRight,
-        child: const Icon(Icons.delete_outline, color: Colors.white),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
       ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardBg,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
+          border: Border.all(color: borderCol),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
         ),
         child: Material(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           clipBehavior: Clip.antiAlias,
           child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             leading: Container(
               padding: const EdgeInsets.all(10),
-              decoration: const BoxDecoration(color: Color(0xFFF3E8FF), shape: BoxShape.circle),
-              child: const Icon(Icons.description_outlined, color: Color(0xFF8B7FD6), size: 20),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF2DD4BF).withValues(alpha: 0.15)
+                    : const Color(0xFF0D9488).withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.description_outlined,
+                color: isDark ? const Color(0xFF26F0B5) : const Color(0xFF0D9488),
+                size: 20,
+              ),
             ),
             title: Text(
               content.title,
-              style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w600, color: const Color(0xFF1A1A1A)),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: textPrimary,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             subtitle: Text(
               '${content.chunks.length} sections',
-              style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF9CA3AF)),
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12,
+                color: textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            trailing: IconButton(
-              icon: const Icon(Icons.movie_filter_outlined, color: Color(0xFF8B7FD6)),
-              tooltip: 'Generate video overview',
-              onPressed: () => _generateVideoOverview(content),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.movie_filter_rounded,
+                    color: isDark ? const Color(0xFF26F0B5) : const Color(0xFF0D9488),
+                    size: 22,
+                  ),
+                  tooltip: 'Generate video overview',
+                  onPressed: () => _generateVideoOverview(content),
+                ),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: textSecondary.withValues(alpha: 0.6),
+                  size: 20,
+                ),
+              ],
             ),
             onTap: () => _activateAndOpenChat(content),
           ),
@@ -361,26 +640,52 @@ class _ContentLibraryScreenState extends ConsumerState<ContentLibraryScreen> {
     );
   }
 
-  Widget _buildIngestOverlay() {
+  Widget _buildIngestOverlay(bool isDark) {
     return Container(
-      color: Colors.black.withValues(alpha: 0.4),
+      color: Colors.black.withValues(alpha: 0.6),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
           margin: const EdgeInsets.symmetric(horizontal: 32),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDark ? const Color(0xFF0F172A) : Colors.white,
             borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 25,
+                offset: const Offset(0, 10),
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const CircularProgressIndicator(color: Color(0xFF8B7FD6)),
-              const SizedBox(height: 16),
+              CircularProgressIndicator(
+                color: isDark ? const Color(0xFF26F0B5) : const Color(0xFF0D9488),
+                strokeWidth: 3,
+              ),
+              const SizedBox(height: 20),
               Text(
                 'Reading and understanding your chapter…',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : AppColors.lightForeground,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Extracting offline text layers & indexing chunks',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                ),
               ),
             ],
           ),

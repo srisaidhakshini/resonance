@@ -64,7 +64,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   void _navigateToProfile() {
     if (widget.isTab) {
       // In persistent bottom navigation shell: jump directly to Profile tab
-      ref.read(selectedNavIndexProvider.notifier).state = 4;
+      ref.read(selectedNavIndexProvider.notifier).state = 5;
     } else {
       // Pushed modal or route: push ProfileSetupScreen
       Navigator.push(

@@ -146,34 +146,9 @@ class LLMService {
     return '';
   }
 
-  /// Wraps web preview answers with active pedagogical style cues
+  /// Returns web preview answers directly without banner or checkpoint prefixes
   String _personalizeWebResponse(String text, UserProfile profile) {
-    final prefix = StringBuffer();
-    prefix.writeln(
-      '> 👤 **Personalized for ${profile.userName}** | Class ${profile.grade} | ${profile.teachingStyle.displayName}\n',
-    );
-
-    switch (profile.teachingStyle) {
-      case TeachingStyle.socratic:
-        prefix.writeln('🤔 **Socratic Checkpoint:**');
-        prefix.writeln(
-          '*Before reading the full breakdown below, what core principle or intuition comes to your mind for this problem? How would you take the very first step?*\n',
-        );
-        prefix.writeln('---\n');
-        break;
-      case TeachingStyle.storytelling:
-        prefix.writeln('📖 **Intuitive Storytelling Perspective:**');
-        prefix.writeln(
-          '*Let\'s connect this concept to everyday objects and stories so it clicks intuitively!*\n',
-        );
-        prefix.writeln('---\n');
-        break;
-      case TeachingStyle.direct:
-        prefix.writeln('⚡ **Direct Structured Reference:**\n');
-        break;
-    }
-
-    return '$prefix$text';
+    return text;
   }
 
   /// Tries streaming from a local Ollama daemon (e.g. running on port 11434)
