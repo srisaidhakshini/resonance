@@ -15,6 +15,8 @@ import 'mind_map_screen.dart';
 import 'video_overview_screen.dart';
 import '../widgets/call_launch_sheet.dart';
 
+import '../widgets/ambient_background.dart';
+
 class HomeScreen extends ConsumerStatefulWidget {
   final Function(String prompt)? onNavigateToChatWithPrompt;
   const HomeScreen({super.key, this.onNavigateToChatWithPrompt});
@@ -47,92 +49,148 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
       drawer: const AppDrawer(),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 1. Top Bar Navigation
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Builder(
-                    builder: (context) => IconButton(
-                      onPressed: () => Scaffold.of(context).openDrawer(),
-                      icon: Icon(
-                        Icons.menu_rounded,
-                        color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
-                      ),
-                      tooltip: 'Menu',
-                    ),
-                  ),
-
-                  // Brand & Logo
-                  Row(
-                    children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-                          borderRadius: AppRadii.smRadius,
-                        ),
-                        child: const Icon(
-                          Icons.auto_awesome_rounded,
-                          color: AppColors.lightTeal,
-                          size: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Echo',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  // Theme Mode Toggle (Light/Dark) & Profile Avatar
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        onPressed: () => ref.read(themeProvider.notifier).toggleTheme(),
-                        icon: Container(
-                          padding: const EdgeInsets.all(6),
+      body: AmbientBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 1. Top Bar Navigation
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Builder(
+                      builder: (context) => InkWell(
+                        onTap: () => Scaffold.of(context).openDrawer(),
+                        borderRadius: BorderRadius.circular(22),
+                        child: Container(
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
+                            shape: BoxShape.circle,
+                            color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+                            border: Border.all(
+                              color: isDark ? Colors.white.withOpacity(0.12) : AppColors.lightBorder,
+                              width: 1.0,
+                            ),
+                            boxShadow: isDark
+                                ? null
+                                : [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                          ),
+                          child: Icon(
+                            Icons.menu_rounded,
+                            color: isDark ? Colors.white : AppColors.lightForeground,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Brand & Logo
+                    Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: isDark ? const Color(0xFF00F5A0).withOpacity(0.16) : AppColors.lightSecondary,
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                            color: isDark ? const Color(0xFFFBBF24) : AppColors.lightPrimary,
-                            size: 18,
+                            Icons.auto_awesome_rounded,
+                            color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
+                            size: 16,
                           ),
                         ),
-                        tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.pushNamed(context, '/profile_setup'),
-                        icon: CircleAvatar(
-                          radius: 16,
-                          backgroundColor: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
-                          child: Icon(
-                            Icons.person_rounded,
-                            color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                            size: 18,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Echo',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white : AppColors.lightForeground,
+                            letterSpacing: -0.2,
                           ),
                         ),
-                        tooltip: 'Profile',
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+
+                    // Theme Mode Toggle (Light/Dark) & Profile Avatar
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () => ref.read(themeProvider.notifier).toggleTheme(),
+                          borderRadius: BorderRadius.circular(22),
+                          child: Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+                              border: Border.all(
+                                color: isDark ? Colors.white.withOpacity(0.12) : AppColors.lightBorder,
+                                width: 1.0,
+                              ),
+                              boxShadow: isDark
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                            ),
+                            child: Icon(
+                              isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                              color: isDark ? const Color(0xFFFBBF24) : AppColors.lightPrimary,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        InkWell(
+                          onTap: () => Navigator.pushNamed(context, '/profile_setup'),
+                          borderRadius: BorderRadius.circular(22),
+                          child: Container(
+                            width: 42,
+                            height: 42,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+                              border: Border.all(
+                                color: isDark ? Colors.white.withOpacity(0.12) : AppColors.lightBorder,
+                                width: 1.0,
+                              ),
+                              boxShadow: isDark
+                                  ? null
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.04),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                            ),
+                            child: Icon(
+                              Icons.person_rounded,
+                              color: isDark ? const Color(0xFF00F5A0) : AppColors.lightPrimary,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
             // 2. Scrollable Body
             Expanded(
@@ -152,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '$greeting, $name 👋',
+                              '$greeting, $name',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
@@ -205,8 +263,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildSectionHeader(BuildContext context, String title, bool isDark) {
     return Text(
@@ -223,13 +282,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildAskEchoCard(BuildContext context, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: AppRadii.featureRadius,
+        color: isDark ? Colors.white.withOpacity(0.055) : Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1,
+          color: isDark ? Colors.white.withOpacity(0.10) : AppColors.lightBorder,
+          width: 1.2,
         ),
-        boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.25) : const Color(0xFF123B46).withOpacity(0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -241,12 +306,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 width: 32,
                 height: 32,
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                  color: isDark ? const Color(0xFF00F5A0).withOpacity(0.16) : AppColors.lightSecondary,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.auto_awesome,
-                  color: AppColors.lightTeal,
+                  color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
                   size: 16,
                 ),
               ),
@@ -256,14 +321,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                  color: isDark ? Colors.white : AppColors.lightForeground,
                 ),
               ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
+                  color: isDark ? Colors.white.withOpacity(0.08) : AppColors.lightMuted,
                   borderRadius: AppRadii.pillRadius,
                 ),
                 child: Text(
@@ -271,7 +336,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                    color: isDark ? const Color(0xFF00F5A0) : AppColors.lightMutedForeground,
                   ),
                 ),
               ),
@@ -285,26 +350,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Expanded(
                 child: TextField(
                   controller: _askEchoController,
+                  style: GoogleFonts.plusJakartaSans(
+                    color: isDark ? Colors.white : AppColors.lightForeground,
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Ask anything about your subjects...',
                     hintStyle: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
-                      color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                      color: isDark ? Colors.white.withOpacity(0.4) : AppColors.lightMutedForeground,
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     filled: true,
-                    fillColor: isDark ? AppColors.darkInput : AppColors.lightInput,
+                    fillColor: isDark ? Colors.white.withOpacity(0.06) : AppColors.lightInput,
                     border: OutlineInputBorder(
-                      borderRadius: AppRadii.buttonRadius,
+                      borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: AppRadii.buttonRadius,
-                      borderSide: BorderSide.none,
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: isDark ? Colors.white.withOpacity(0.08) : Colors.transparent,
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadii.buttonRadius,
-                      borderSide: const BorderSide(color: AppColors.lightTeal, width: 1.5),
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(
+                        color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                   onSubmitted: (value) {
@@ -317,10 +391,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(width: 8),
               Material(
-                color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                borderRadius: AppRadii.buttonRadius,
+                color: isDark ? const Color(0xFF00F5A0) : AppColors.lightPrimary,
+                borderRadius: BorderRadius.circular(16),
                 child: InkWell(
-                  borderRadius: AppRadii.buttonRadius,
+                  borderRadius: BorderRadius.circular(16),
                   onTap: () {
                     final text = _askEchoController.text.trim();
                     _triggerPrompt(text.isNotEmpty ? text : 'Explain what we are studying next.');
@@ -330,7 +404,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     padding: const EdgeInsets.all(12),
                     child: Icon(
                       Icons.arrow_upward_rounded,
-                      color: isDark ? AppColors.darkPrimaryForeground : AppColors.lightPrimaryForeground,
+                      color: isDark ? const Color(0xFF070B11) : AppColors.lightPrimaryForeground,
                       size: 20,
                     ),
                   ),
@@ -349,20 +423,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: AppRadii.cardRadius,
+          borderRadius: BorderRadius.circular(22),
           onTap: () {
             _triggerPrompt(latest.prompt);
           },
           child: Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkCard : AppColors.lightCard,
-              borderRadius: AppRadii.cardRadius,
+              color: isDark ? Colors.white.withOpacity(0.055) : Colors.white.withOpacity(0.92),
+              borderRadius: BorderRadius.circular(22),
               border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                width: 1,
+                color: isDark ? Colors.white.withOpacity(0.10) : AppColors.lightBorder,
+                width: 1.2,
               ),
-              boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
+              boxShadow: [
+                BoxShadow(
+                  color: isDark ? Colors.black.withOpacity(0.25) : const Color(0xFF123B46).withOpacity(0.06),
+                  blurRadius: 18,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -370,12 +450,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      latest.subjectName,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.lightTeal,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF00F5A0).withOpacity(0.15) : AppColors.lightSecondary,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        latest.subjectName,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
+                        ),
                       ),
                     ),
                     Text(
@@ -383,18 +470,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                        color: isDark ? Colors.white.withOpacity(0.6) : AppColors.lightForeground,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 10),
                 Text(
                   latest.title,
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                    color: isDark ? Colors.white : AppColors.lightForeground,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -402,13 +489,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.play_circle_fill_rounded, size: 16, color: AppColors.lightTeal),
+                    Icon(Icons.play_circle_fill_rounded, size: 16, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal),
                     const SizedBox(width: 6),
                     Text(
                       'Tap to resume study session with Echo',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
-                        color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                        color: isDark ? Colors.white.withOpacity(0.50) : AppColors.lightMutedForeground,
                       ),
                     ),
                   ],
@@ -423,22 +510,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: AppRadii.cardRadius,
+        color: isDark ? Colors.white.withOpacity(0.055) : Colors.white.withOpacity(0.92),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1,
+          color: isDark ? Colors.white.withOpacity(0.10) : AppColors.lightBorder,
+          width: 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? Colors.black.withOpacity(0.20) : const Color(0xFF123B46).withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+              color: isDark ? const Color(0xFF00F5A0).withOpacity(0.16) : AppColors.lightSecondary,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.school_outlined, size: 20, color: AppColors.lightTeal),
+            child: Icon(Icons.school_outlined, size: 20, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -450,7 +544,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                    color: isDark ? Colors.white : AppColors.lightForeground,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -458,7 +552,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Ask any question above or choose a quick action.',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
-                    color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                    color: isDark ? Colors.white.withOpacity(0.5) : AppColors.lightMutedForeground,
                   ),
                 ),
               ],
@@ -474,43 +568,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () => CallLaunchSheet.show(context),
-        borderRadius: AppRadii.cardRadius,
+        borderRadius: BorderRadius.circular(22),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isDark
-                  ? [const Color(0xFF132B30), const Color(0xFF0F1E22)]
-                  : [const Color(0xFFE6F7F5), const Color(0xFFF0FDFB)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: AppRadii.cardRadius,
+            color: isDark ? Colors.white.withOpacity(0.055) : null,
+            gradient: isDark
+                ? null
+                : const LinearGradient(
+                    colors: [Color(0xFFE6F7F5), Color(0xFFF0FDFB)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+            borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: const Color(0xFF14B8A6).withValues(alpha: isDark ? 0.35 : 0.45),
+              color: isDark ? const Color(0xFF00F5A0).withOpacity(0.35) : const Color(0xFF14B8A6).withOpacity(0.45),
               width: 1.2,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF14B8A6).withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+            boxShadow: isDark
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF00F5A0).withOpacity(0.08),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: const Color(0xFF14B8A6).withValues(alpha: 0.08),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0D9488).withValues(alpha: 0.18),
+                  color: isDark ? const Color(0xFF00F5A0).withOpacity(0.16) : const Color(0xFF0D9488).withValues(alpha: 0.18),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.phone_in_talk_rounded,
-                  color: Color(0xFF0D9488),
+                  color: isDark ? const Color(0xFF00F5A0) : const Color(0xFF0D9488),
                   size: 20,
                 ),
               ),
@@ -520,43 +623,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Wrap(
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      spacing: 6,
-                      runSpacing: 2,
-                      children: [
-                        Text(
-                          'Live Voice Call Tutor',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0D9488).withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            'ELEVENLABS',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0D9488),
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'Live Voice Call Tutor',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppColors.lightForeground,
+                      ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       'Solve doubts back-and-forth via live call or Twilio dial',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 11.5,
-                        color: isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground,
+                        color: isDark ? Colors.white.withOpacity(0.55) : AppColors.lightMutedForeground,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -566,22 +646,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0D9488),
-                  borderRadius: BorderRadius.circular(10),
+                  color: isDark ? Colors.white : const Color(0xFF0D9488),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.call_rounded, size: 13, color: Colors.white),
+                    Icon(Icons.call_rounded, size: 13, color: isDark ? const Color(0xFF070B11) : Colors.white),
                     const SizedBox(width: 4),
                     Text(
                       'Call',
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: isDark ? const Color(0xFF070B11) : Colors.white,
                       ),
                     ),
                   ],
@@ -599,7 +679,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       {
         'icon': Icons.phone_in_talk_rounded,
         'title': 'Voice Call',
-        'desc': 'ElevenLabs + Twilio doubts',
+        'desc': 'Real-time AI voice tutor',
         'tag': 'AI CALL',
         'onTap': () => CallLaunchSheet.show(context),
       },
@@ -709,18 +789,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: AppRadii.cardRadius,
+        borderRadius: BorderRadius.circular(20),
         onTap: onTap,
         child: Container(
-          padding: const EdgeInsets.all(13),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkCard : AppColors.lightCard,
-            borderRadius: AppRadii.cardRadius,
+            color: isDark ? Colors.white.withOpacity(0.055) : Colors.white.withOpacity(0.92),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-              width: 1,
+              color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
+              width: 1.1,
             ),
-            boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
+            boxShadow: [
+              BoxShadow(
+                color: isDark ? Colors.black.withOpacity(0.15) : const Color(0xFF123B46).withOpacity(0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -730,18 +816,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(7),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-                      borderRadius: AppRadii.smRadius,
+                      color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, size: 18, color: AppColors.lightTeal),
+                    child: Icon(icon, size: 18, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal),
                   ),
                   if (tag != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                       decoration: BoxDecoration(
-                        color: AppColors.lightTeal.withValues(alpha: 0.12),
+                        color: isDark ? const Color(0xFF00F5A0).withOpacity(0.15) : AppColors.lightTeal.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -749,7 +835,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.lightTeal,
+                          color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
                           letterSpacing: 0.8,
                         ),
                       ),

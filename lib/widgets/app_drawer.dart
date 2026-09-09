@@ -57,7 +57,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     }
 
     return Drawer(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark ? const Color(0xFF070B11) : AppColors.lightBackground,
       child: SafeArea(
         child: Column(
           children: [
@@ -69,14 +69,14 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(7),
                         decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
-                          borderRadius: AppRadii.smRadius,
+                          color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary,
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.auto_awesome_rounded,
-                          color: AppColors.lightTeal,
+                          color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
                           size: 16,
                         ),
                       ),
@@ -86,7 +86,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                          color: isDark ? Colors.white : AppColors.lightForeground,
                         ),
                       ),
                     ],
@@ -108,20 +108,20 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                         size: 18,
                       ),
                       filled: true,
-                      fillColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                      fillColor: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightCard,
                       contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       isDense: true,
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: AppRadii.cardRadius,
+                        borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
-                          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                          color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
                           width: 1,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderRadius: AppRadii.cardRadius,
-                        borderSide: const BorderSide(
-                          color: AppColors.lightTeal,
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(
+                          color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
                           width: 1.5,
                         ),
                       ),
@@ -138,14 +138,14 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   ListTile(
                     dense: true,
                     leading: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                        color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.add_rounded,
-                        color: AppColors.lightTeal,
+                        color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
                         size: 18,
                       ),
                     ),
@@ -154,7 +154,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                        color: isDark ? Colors.white : AppColors.lightForeground,
                       ),
                     ),
                     onTap: () {
@@ -162,7 +162,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       Navigator.pop(context);
                     },
                     shape: RoundedRectangleBorder(
-                      borderRadius: AppRadii.cardRadius,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
 
@@ -170,14 +170,14 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                   ListTile(
                     dense: true,
                     leading: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(7),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+                        color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary,
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.menu_book_outlined,
-                        color: isDark ? AppColors.darkTeal : AppColors.lightTeal,
+                        color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
                         size: 18,
                       ),
                     ),
@@ -186,7 +186,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                        color: isDark ? Colors.white : AppColors.lightForeground,
                       ),
                     ),
                     onTap: () {
@@ -194,7 +194,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       Navigator.pushNamed(context, '/library');
                     },
                     shape: RoundedRectangleBorder(
-                      borderRadius: AppRadii.cardRadius,
+                      borderRadius: BorderRadius.circular(14),
                     ),
                   ),
                 ],
@@ -233,12 +233,20 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
             // 3. Footer
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              color: isDark ? AppColors.darkCard : AppColors.lightCard,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0E1520) : AppColors.lightCard,
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? Colors.white.withOpacity(0.08) : AppColors.lightBorder,
+                    width: 1,
+                  ),
+                ),
+              ),
               child: Row(
                 children: [
                   Expanded(
                     child: InkWell(
-                      borderRadius: AppRadii.cardRadius,
+                      borderRadius: BorderRadius.circular(14),
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.push(
@@ -250,13 +258,22 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       },
                       child: Row(
                         children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: isDark ? AppColors.darkSecondary : AppColors.lightSecondary,
-                            child: Icon(
-                              Icons.person_rounded,
-                              color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
-                              size: 18,
+                          Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark ? const Color(0xFF00F5A0).withOpacity(0.25) : Colors.transparent,
+                              ),
+                            ),
+                            child: Center(
+                              child: Icon(
+                                Icons.person_rounded,
+                                color: isDark ? const Color(0xFF00F5A0) : AppColors.lightPrimary,
+                                size: 18,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 10),
@@ -397,18 +414,21 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
         margin: const EdgeInsets.symmetric(vertical: 2),
         decoration: BoxDecoration(
           color: isSelected
-              ? (isDark ? AppColors.darkSecondary : AppColors.lightSecondary)
+              ? (isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary)
               : Colors.transparent,
-          borderRadius: AppRadii.cardRadius,
+          borderRadius: BorderRadius.circular(12),
+          border: isSelected && isDark
+              ? Border.all(color: const Color(0xFF00F5A0).withOpacity(0.25), width: 1)
+              : null,
         ),
         child: ListTile(
           dense: true,
           contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-          shape: RoundedRectangleBorder(borderRadius: AppRadii.cardRadius),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           leading: Icon(
             Icons.chat_bubble_outline_rounded,
             size: 16,
-            color: isSelected ? AppColors.lightTeal : (isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground),
+            color: isSelected ? (isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal) : (isDark ? AppColors.darkMutedForeground : AppColors.lightMutedForeground),
           ),
           title: Text(
             session.title.isEmpty ? 'Untitled Study Session' : session.title,
@@ -416,8 +436,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               fontSize: 13,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: isSelected
-                  ? (isDark ? AppColors.darkPrimary : AppColors.lightPrimary)
-                  : (isDark ? AppColors.darkForeground : AppColors.lightForeground),
+                  ? (isDark ? const Color(0xFF00F5A0) : AppColors.lightPrimary)
+                  : (isDark ? Colors.white : AppColors.lightForeground),
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

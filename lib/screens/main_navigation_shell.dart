@@ -17,12 +17,14 @@ class MainNavigationShell extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
-  late int _currentIndex;
-
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.initialIndex != 0) {
+        ref.read(selectedNavIndexProvider.notifier).state = widget.initialIndex;
+      }
+    });
   }
 
   void _navigateToChatWithPrompt(String prompt) {
@@ -39,9 +41,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
 
     if (looksLikeTopic) {
       ref.read(pendingQuizTopicProvider.notifier).state = trimmed;
-      setState(() {
-        _currentIndex = 2; // Switch to Practice Tab
-      });
+      ref.read(selectedNavIndexProvider.notifier).state = 2; // Switch to Practice Tab
     } else {
       Navigator.of(context).pushNamed('/chat', arguments: {'initialText': prompt});
     }
@@ -50,6 +50,7 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final navIndex = ref.watch(selectedNavIndexProvider);
 
     final pages = [
       HomeScreen(onNavigateToChatWithPrompt: _navigateToChatWithPrompt),
@@ -61,62 +62,76 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
 
     return Scaffold(
       body: IndexedStack(
-        index: _currentIndex,
+        index: navIndex,
         children: pages,
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkCard : AppColors.lightCard,
+          color: isDark ? const Color(0xFF070B11) : AppColors.lightCard,
           border: Border(
             top: BorderSide(
-              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+              color: isDark ? Colors.white.withOpacity(0.08) : AppColors.lightBorder,
               width: 1,
             ),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+              blurRadius: 12,
               offset: const Offset(0, -2),
             ),
           ],
         ),
-        child: NavigationBar(
-          selectedIndex: _currentIndex,
-          onDestinationSelected: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
-          },
-          height: 60,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.home_outlined, size: 20),
-              selectedIcon: Icon(Icons.home_rounded, color: AppColors.lightTeal, size: 20),
-              label: 'Home',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.menu_book_outlined, size: 20),
-              selectedIcon: Icon(Icons.menu_book_rounded, color: AppColors.lightTeal, size: 20),
-              label: 'Learn',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.quiz_outlined, size: 20),
-              selectedIcon: Icon(Icons.quiz_rounded, color: AppColors.lightTeal, size: 20),
-              label: 'Practice',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.insights_outlined, size: 20),
-              selectedIcon: Icon(Icons.insights_rounded, color: AppColors.lightTeal, size: 20),
-              label: 'Progress',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.person_outline_rounded, size: 20),
-              selectedIcon: Icon(Icons.person_rounded, color: AppColors.lightTeal, size: 20),
-              label: 'Profile',
-            ),
-          ],
+        child: NavigationBarTheme(
+          data: NavigationBarThemeData(
+            indicatorColor: isDark ? const Color(0xFF00F5A0).withOpacity(0.18) : AppColors.lightSecondary,
+            labelTextStyle: WidgetStateProperty.resolveWith((states) {
+              final isSelected = states.contains(WidgetState.selected);
+              return TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? (isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal)
+                    : (isDark ? Colors.white.withOpacity(0.5) : AppColors.lightMutedForeground),
+              );
+            }),
+          ),
+          child: NavigationBar(
+            backgroundColor: Colors.transparent,
+            selectedIndex: navIndex,
+            onDestinationSelected: (index) {
+              ref.read(selectedNavIndexProvider.notifier).state = index;
+            },
+            height: 60,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            destinations: [
+              NavigationDestination(
+                icon: Icon(Icons.home_outlined, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
+                selectedIcon: Icon(Icons.home_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
+                label: 'Home',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.menu_book_outlined, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
+                selectedIcon: Icon(Icons.menu_book_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
+                label: 'Learn',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.quiz_outlined, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
+                selectedIcon: Icon(Icons.quiz_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
+                label: 'Practice',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.insights_outlined, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
+                selectedIcon: Icon(Icons.insights_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
+                label: 'Progress',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.person_outline_rounded, size: 20, color: isDark ? Colors.white.withOpacity(0.6) : null),
+                selectedIcon: Icon(Icons.person_rounded, color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal, size: 20),
+                label: 'Profile',
+              ),
+            ],
+          ),
         ),
       ),
     );

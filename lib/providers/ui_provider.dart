@@ -5,6 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Practice tab is shown (set by quick-action cards on Home/Learn/Progress).
 final pendingQuizTopicProvider = StateProvider<String?>((ref) => null);
 
+// Controls the active bottom navigation tab in MainNavigationShell (0: Home, 1: Learn, 2: Practice, 3: Progress, 4: Profile)
+final selectedNavIndexProvider = StateProvider<int>((ref) => 0);
+
+
 // Font Size Provider: 0.8 (Small), 1.0 (Medium), 1.2 (Large)
 final fontSizeProvider = StateNotifierProvider<FontSizeNotifier, double>((ref) {
   return FontSizeNotifier();

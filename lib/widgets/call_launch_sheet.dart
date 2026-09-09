@@ -4,7 +4,6 @@ import '../models/studio_items.dart';
 import '../services/call_tutor_service.dart';
 import '../services/web_audio_player.dart';
 import '../screens/voice_call_screen.dart';
-import '../theme/app_theme.dart';
 
 class CallLaunchSheet extends StatefulWidget {
   final String? initialTopic;
@@ -182,14 +181,14 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final sheetBg = isDark ? const Color(0xFF0F181D) : Colors.white;
-    final cardBg = isDark ? const Color(0xFF15252B) : const Color(0xFFF1F5F9);
+    final sheetBg = isDark ? const Color(0xFF070B11) : Colors.white;
+    final cardBg = isDark ? Colors.white.withValues(alpha: 0.055) : const Color(0xFFF1F5F9);
     final textPrimary = isDark ? Colors.white : const Color(0xFF0F172A);
-    final textSecondary = isDark ? Colors.white70 : const Color(0xFF475569);
+    final textSecondary = isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
     final textMuted = isDark ? Colors.white38 : const Color(0xFF94A3B8);
-    final borderCol = isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE2E8F0);
-    final brandTeal = const Color(0xFF0D9488);
-    final brandAccent = const Color(0xFF14B8A6);
+    final borderCol = isDark ? Colors.white.withValues(alpha: 0.09) : const Color(0xFFE2E8F0);
+    final brandTeal = isDark ? const Color(0xFF00F5A0) : const Color(0xFF0D9488);
+    final brandAccent = isDark ? const Color(0xFF00F5A0) : const Color(0xFF14B8A6);
 
     return Container(
       constraints: BoxConstraints(
@@ -198,9 +197,15 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
       decoration: BoxDecoration(
         color: sheetBg,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.white.withValues(alpha: 0.12) : const Color(0xFFE2E8F0),
+            width: 1.2,
+          ),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.12),
+            color: Colors.black.withValues(alpha: isDark ? 0.6 : 0.12),
             blurRadius: 24,
             offset: const Offset(0, -6),
           ),
@@ -242,7 +247,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                   ),
                   child: Icon(
                     Icons.headset_mic_rounded,
-                    color: isDark ? const Color(0xFF2DD4BF) : brandTeal,
+                    color: isDark ? const Color(0xFF00F5A0) : brandTeal,
                     size: 22,
                   ),
                 ),
@@ -260,7 +265,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                         ),
                       ),
                       Text(
-                        'Real-time verbal doubt solver powered by ElevenLabs',
+                        'Interactive verbal guidance with Spirit',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11.5,
                           color: textSecondary,
@@ -273,7 +278,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                   tooltip: 'API Settings',
                   icon: Icon(
                     _showSettings ? Icons.close_rounded : Icons.tune_rounded,
-                    color: _showSettings ? (isDark ? const Color(0xFF2DD4BF) : brandTeal) : textMuted,
+                    color: _showSettings ? (isDark ? const Color(0xFF00F5A0) : brandTeal) : textMuted,
                     size: 20,
                   ),
                   onPressed: () => setState(() => _showSettings = !_showSettings),
@@ -582,10 +587,9 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                       style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: brandTeal,
-                      foregroundColor: Colors.white,
-                      elevation: 3,
-                      shadowColor: brandTeal.withValues(alpha: 0.4),
+                      backgroundColor: isDark ? Colors.white : brandTeal,
+                      foregroundColor: isDark ? const Color(0xFF070B11) : Colors.white,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: _startInAppCall,
@@ -597,10 +601,13 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                   height: 52,
                   child: ElevatedButton.icon(
                     icon: _isDialing
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 18,
                             height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: isDark ? const Color(0xFF070B11) : Colors.white,
+                            ),
                           )
                         : const Icon(Icons.phone_in_talk_rounded, size: 20),
                     label: Text(
@@ -608,10 +615,9 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                       style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14),
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: brandTeal,
-                      foregroundColor: Colors.white,
-                      elevation: 3,
-                      shadowColor: brandTeal.withValues(alpha: 0.4),
+                      backgroundColor: isDark ? Colors.white : brandTeal,
+                      foregroundColor: isDark ? const Color(0xFF070B11) : Colors.white,
+                      elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
                     onPressed: _isDialing ? null : _triggerTwilioCall,
@@ -620,20 +626,20 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
 
               const SizedBox(height: 12),
 
-              // Direct ElevenLabs Agent link
+              // Direct Web Agent link
               Center(
                 child: TextButton.icon(
                   icon: Icon(
                     Icons.open_in_new_rounded,
                     size: 14,
-                    color: isDark ? const Color(0xFF2DD4BF) : brandTeal,
+                    color: isDark ? const Color(0xFF00F5A0) : brandTeal,
                   ),
                   label: Text(
-                    'Or talk directly via ElevenLabs Web Agent',
+                    'Or talk directly via AI Web Agent',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? const Color(0xFF2DD4BF) : brandTeal,
+                      color: isDark ? const Color(0xFF00F5A0) : brandTeal,
                     ),
                   ),
                   onPressed: () {
