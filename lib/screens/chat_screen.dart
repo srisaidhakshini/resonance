@@ -46,6 +46,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _isIngestingFile = false;
   bool _showCelebration = false;
   Timer? _celebrationTimer;
+  String? _pendingAutoSubmitText;
 
   // Video Recommendations Cache (keyed by message ID or user query)
   final Map<String, List<VideoRecommendation>> _videoRecsMap = {};
@@ -511,10 +512,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null && args.containsKey('initialText')) {
-        _textController.text = args['initialText'];
-        setState(() {});
+        final text = (args['initialText'] as String? ?? '').trim();
+        if (text.isNotEmpty) {
+          _textController.text = text;
+          setState(() {});
+          if (args['autoSubmit'] == true) {
+            _pendingAutoSubmitText = text;
+            _checkAndTriggerAutoSubmit();
+          }
+        }
       }
     });
+  }
+
+  void _checkAndTriggerAutoSubmit() {
+    final text = _pendingAutoSubmitText;
+    if (text != null && text.isNotEmpty && !_isModelLoading && !_hasError && mounted) {
+      _pendingAutoSubmitText = null;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _handleSubmitted(text);
+        }
+      });
+    }
   }
 
   @override
@@ -533,6 +553,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       await llmService.loadModel();
       if (mounted) {
         setState(() => _isModelLoading = false);
+        _checkAndTriggerAutoSubmit();
       }
     } catch (e) {
       if (mounted) {
@@ -663,13 +684,25 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         scrolledUnderElevation: 0,
         elevation: 0,
         leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-              Icons.menu_rounded,
-              color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
-            ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
+          builder: (context) {
+            if (Navigator.of(context).canPop()) {
+              return IconButton(
+                icon: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                  size: 20,
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              );
+            }
+            return IconButton(
+              icon: Icon(
+                Icons.menu_rounded,
+                color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+              ),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            );
+          },
         ),
         title: Row(
           children: [

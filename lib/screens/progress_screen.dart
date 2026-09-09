@@ -833,7 +833,10 @@ class ProgressScreen extends ConsumerWidget {
       Navigator.pushNamed(
         context,
         '/chat',
-        arguments: {'initialText': prompt},
+        arguments: {
+          'initialText': prompt,
+          'autoSubmit': true,
+        },
       );
     }
   }
