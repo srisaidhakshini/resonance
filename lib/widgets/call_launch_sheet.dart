@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/studio_items.dart';
 import '../services/call_tutor_service.dart';
-import '../services/web_audio_player.dart';
-import '../screens/voice_call_screen.dart';
 
 class CallLaunchSheet extends StatefulWidget {
   final String? initialTopic;
@@ -52,6 +50,10 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
     'Light: Reflection & Refraction',
   ];
 
+  final TextEditingController _customTopicCtrl = TextEditingController();
+  bool _isAddingCustomTopic = false;
+  bool _callDispatched = false;
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +89,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
   void dispose() {
     _phoneCtrl.dispose();
     _topicCtrl.dispose();
+    _customTopicCtrl.dispose();
     _twilioSidCtrl.dispose();
     _twilioAuthCtrl.dispose();
     _twilioFromCtrl.dispose();
@@ -109,7 +112,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Twilio & ElevenLabs configuration saved successfully!'),
+          content: Text('API configuration saved successfully!'),
           backgroundColor: Color(0xFF0D9488),
         ),
       );
@@ -117,30 +120,31 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
     }
   }
 
-  void _startInAppCall() {
-    final topic = _topicCtrl.text.trim().isEmpty ? 'General STEM Doubts' : _topicCtrl.text.trim();
-    Navigator.pop(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VoiceCallScreen(
-          topic: topic,
-          grade: _selectedGrade,
-        ),
-      ),
-    );
+  void _addCustomTopic() {
+    final custom = _customTopicCtrl.text.trim();
+    if (custom.isNotEmpty) {
+      setState(() {
+        if (!_quickTopics.contains(custom)) {
+          _quickTopics.insert(0, custom);
+        }
+        _topicCtrl.text = custom;
+        _customTopicCtrl.clear();
+        _isAddingCustomTopic = false;
+      });
+    }
   }
 
   Future<void> _triggerTwilioCall() async {
     final phone = _phoneCtrl.text.trim();
     if (phone.isEmpty) {
-      setState(() => _statusMessage = 'Please enter your phone number with country code (e.g. +91 9876543210)');
+      setState(() => _statusMessage = 'Please enter your phone number with country code');
       return;
     }
 
     setState(() {
       _isDialing = true;
-      _statusMessage = 'Connecting to Twilio Voice Gateway...';
+      _callDispatched = true;
+      _statusMessage = 'Connecting carrier gateway & ringing your phone...';
     });
 
     final topic = _topicCtrl.text.trim().isEmpty ? 'General STEM' : _topicCtrl.text.trim();
@@ -155,29 +159,8 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
         _isDialing = false;
         _statusMessage = result.message;
       });
-
-      if (result.success) {
-        // Also open call companion screen
-        Future.delayed(const Duration(milliseconds: 900), () {
-          if (!mounted) return;
-          Navigator.pop(context);
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => VoiceCallScreen(
-                topic: topic,
-                grade: _selectedGrade,
-                isTwilioDirectCall: true,
-                phoneNumber: phone,
-              ),
-            ),
-          );
-        });
-      }
     }
   }
-
-  int _selectedModeTab = 0; // 0: In-App Voice Call, 1: Call My Phone
 
   @override
   Widget build(BuildContext context) {
@@ -248,7 +231,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                     border: Border.all(color: brandAccent.withValues(alpha: 0.3)),
                   ),
                   child: Icon(
-                    Icons.headset_mic_rounded,
+                    Icons.phone_in_talk_rounded,
                     color: isDark ? const Color(0xFF00F5A0) : brandTeal,
                     size: 22,
                   ),
@@ -259,7 +242,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'AI Voice Tutor',
+                        'AI Voice Tutor Call',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -267,7 +250,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                         ),
                       ),
                       Text(
-                        'Interactive verbal guidance with Spirit',
+                        'Receive an instant live voice call on your phone',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11.5,
                           color: textSecondary,
@@ -292,114 +275,16 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
 
             if (_showSettings) ...[
               _buildSettingsForm(isDark, cardBg, textPrimary, textSecondary, textMuted, borderCol, brandTeal),
+            ] else if (_callDispatched) ...[
+              // Active Calling Mic UI (No complicated popup, just focused mic state)
+              _buildActiveCallingMicUi(isDark, cardBg, textPrimary, textSecondary, brandTeal, brandAccent),
             ] else ...[
-              // Mode Selector Tabs (In-App Call vs Call My Phone)
-              Container(
-                height: 44,
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: borderCol),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedModeTab = 0),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          decoration: BoxDecoration(
-                            color: _selectedModeTab == 0 ? brandTeal : Colors.transparent,
-                            borderRadius: BorderRadius.circular(11),
-                            boxShadow: _selectedModeTab == 0
-                                ? [
-                                    BoxShadow(
-                                      color: brandTeal.withValues(alpha: 0.3),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.headset_rounded,
-                                  size: 16,
-                                  color: _selectedModeTab == 0 ? Colors.white : textSecondary,
-                                ),
-                                const SizedBox(width: 7),
-                                Text(
-                                  'In-App Call',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13,
-                                    fontWeight: _selectedModeTab == 0 ? FontWeight.w700 : FontWeight.w600,
-                                    color: _selectedModeTab == 0 ? Colors.white : textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => setState(() => _selectedModeTab = 1),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          decoration: BoxDecoration(
-                            color: _selectedModeTab == 1 ? brandTeal : Colors.transparent,
-                            borderRadius: BorderRadius.circular(11),
-                            boxShadow: _selectedModeTab == 1
-                                ? [
-                                    BoxShadow(
-                                      color: brandTeal.withValues(alpha: 0.3),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.phone_rounded,
-                                  size: 16,
-                                  color: _selectedModeTab == 1 ? Colors.white : textSecondary,
-                                ),
-                                const SizedBox(width: 7),
-                                Text(
-                                  'Call My Phone',
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13,
-                                    fontWeight: _selectedModeTab == 1 ? FontWeight.w700 : FontWeight.w600,
-                                    color: _selectedModeTab == 1 ? Colors.white : textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
-              // Topic Section Header
+              // Topic Section Header with "Add Custom Topic" button
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'TOPIC / QUESTION',
+                    'TOPIC / DOUBT',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -407,18 +292,82 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                       letterSpacing: 0.6,
                     ),
                   ),
-                  Text(
-                    'Tap a topic or type custom',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 11,
-                      color: textMuted,
+                  InkWell(
+                    onTap: () => setState(() => _isAddingCustomTopic = !_isAddingCustomTopic),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      child: Row(
+                        children: [
+                          Icon(
+                            _isAddingCustomTopic ? Icons.remove_circle_outline_rounded : Icons.add_circle_outline_rounded,
+                            size: 13,
+                            color: brandAccent,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isAddingCustomTopic ? 'Cancel' : '+ Add Own Topic',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: brandAccent,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
 
-              // Topic Input Field
+              // Add Custom Topic Inline Box
+              if (_isAddingCustomTopic) ...[
+                Container(
+                  margin: const EdgeInsets.only(bottom: 10),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: cardBg,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: brandAccent.withValues(alpha: 0.5)),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _customTopicCtrl,
+                          autofocus: true,
+                          style: TextStyle(color: textPrimary, fontSize: 13),
+                          decoration: InputDecoration(
+                            hintText: 'Enter your custom doubt or topic...',
+                            hintStyle: TextStyle(color: textMuted, fontSize: 12.5),
+                            isDense: true,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                          ),
+                          onSubmitted: (_) => _addCustomTopic(),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: _addCustomTopic,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: brandTeal,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Add',
+                          style: GoogleFonts.plusJakartaSans(fontSize: 12, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Current Selected Topic Input Field
               TextField(
                 controller: _topicCtrl,
                 style: TextStyle(color: textPrimary, fontSize: 13.5),
@@ -428,6 +377,12 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                   filled: true,
                   fillColor: cardBg,
                   prefixIcon: Icon(Icons.school_rounded, color: brandTeal, size: 18),
+                  suffixIcon: _topicCtrl.text.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear_rounded, color: textMuted, size: 16),
+                          onPressed: () => setState(() => _topicCtrl.clear()),
+                        )
+                      : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(color: borderCol),
@@ -446,9 +401,9 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
 
               const SizedBox(height: 12),
 
-              // Clean Topic Grid with Icons
+              // Clean Topic Grid
               Text(
-                'POPULAR SUBJECT TOPICS',
+                'SELECT OR CHOOSE TOPIC',
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -509,45 +464,43 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
 
               const SizedBox(height: 18),
 
-              // Mode 1: Call My Phone requires phone number
-              if (_selectedModeTab == 1) ...[
-                Text(
-                  'YOUR PHONE NUMBER (WITH COUNTRY CODE)',
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? const Color(0xFF2DD4BF) : brandTeal,
-                    letterSpacing: 0.6,
-                  ),
+              // Phone number input
+              Text(
+                'YOUR PHONE NUMBER',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? const Color(0xFF2DD4BF) : brandTeal,
+                  letterSpacing: 0.6,
                 ),
-                const SizedBox(height: 8),
-                TextField(
-                  controller: _phoneCtrl,
-                  keyboardType: TextInputType.phone,
-                  style: TextStyle(color: textPrimary, fontSize: 13.5),
-                  decoration: InputDecoration(
-                    hintText: '+91 82480 59760',
-                    hintStyle: TextStyle(color: textMuted),
-                    filled: true,
-                    fillColor: cardBg,
-                    prefixIcon: Icon(Icons.phone_iphone_rounded, color: brandTeal, size: 18),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: borderCol),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: borderCol),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: brandAccent, width: 1.5),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                style: TextStyle(color: textPrimary, fontSize: 13.5),
+                decoration: InputDecoration(
+                  hintText: '+91 82480 59760',
+                  hintStyle: TextStyle(color: textMuted),
+                  filled: true,
+                  fillColor: cardBg,
+                  prefixIcon: Icon(Icons.phone_iphone_rounded, color: brandTeal, size: 18),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: borderCol),
                   ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: borderCol),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: brandAccent, width: 1.5),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 ),
-                const SizedBox(height: 16),
-              ],
+              ),
+              const SizedBox(height: 16),
 
               if (_statusMessage != null) ...[
                 Container(
@@ -577,86 +530,145 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
                 ),
               ],
 
-              // Big Primary Action Button
-              if (_selectedModeTab == 0)
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    icon: const Icon(Icons.headset_mic_rounded, size: 20),
-                    label: Text(
-                      'Start In-App Voice Call',
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? Colors.white : brandTeal,
-                      foregroundColor: isDark ? const Color(0xFF070B11) : Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: _startInAppCall,
-                  ),
-                )
-              else
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    icon: _isDialing
-                        ? SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: isDark ? const Color(0xFF070B11) : Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.phone_in_talk_rounded, size: 20),
-                    label: Text(
-                      _isDialing ? 'Connecting Carrier Gateway...' : 'Call My Phone Now',
-                      style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isDark ? Colors.white : brandTeal,
-                      foregroundColor: isDark ? const Color(0xFF070B11) : Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    onPressed: _isDialing ? null : _triggerTwilioCall,
-                  ),
-                ),
-
-              const SizedBox(height: 12),
-
-              // Direct Web Agent link
-              Center(
-                child: TextButton.icon(
-                  icon: Icon(
-                    Icons.open_in_new_rounded,
-                    size: 14,
-                    color: isDark ? const Color(0xFF00F5A0) : brandTeal,
-                  ),
+              // Primary Action Button (Call Phone Now)
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton.icon(
+                  icon: _isDialing
+                      ? SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: isDark ? const Color(0xFF070B11) : Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.phone_in_talk_rounded, size: 20),
                   label: Text(
-                    'Or talk directly via AI Web Agent',
-                    style: GoogleFonts.plusJakartaSans(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? const Color(0xFF00F5A0) : brandTeal,
-                    ),
+                    _isDialing ? 'Connecting Carrier Gateway...' : 'Call My Phone Now',
+                    style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800, fontSize: 14),
                   ),
-                  onPressed: () {
-                    final aid = _agentIdCtrl.text.trim();
-                    openExternalUrl(
-                      aid.isNotEmpty
-                          ? 'https://elevenlabs.io/app/talk-to?agent_id=$aid'
-                          : 'https://elevenlabs.io/app/conversational-ai',
-                    );
-                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDark ? Colors.white : brandTeal,
+                    foregroundColor: isDark ? const Color(0xFF070B11) : Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  onPressed: _isDialing ? null : _triggerTwilioCall,
                 ),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  /// Clean active calling UI: Just a sleek pulsing microphone UI with call status
+  Widget _buildActiveCallingMicUi(
+    bool isDark,
+    Color cardBg,
+    Color textPrimary,
+    Color textSecondary,
+    Color brandTeal,
+    Color brandAccent,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      width: double.infinity,
+      child: Column(
+        children: [
+          // Animated Pulsing Mic Wave
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 130,
+                height: 130,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: brandTeal.withValues(alpha: 0.12),
+                ),
+              ),
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: brandTeal.withValues(alpha: 0.22),
+                ),
+              ),
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [brandTeal, brandAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: brandTeal.withValues(alpha: 0.45),
+                      blurRadius: 18,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(Icons.mic_rounded, color: Colors.white, size: 34),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          Text(
+            _isDialing ? 'Calling ${_phoneCtrl.text}...' : 'Carrier Gateway Connected',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              _statusMessage ?? 'Pick up your incoming phone call to speak directly with Echo.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 12.5,
+                color: textSecondary,
+                height: 1.4,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Done / Dismiss
+          SizedBox(
+            width: 160,
+            height: 42,
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(context),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: isDark ? Colors.white24 : const Color(0xFFCBD5E1)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(
+                'Close',
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: textPrimary,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
