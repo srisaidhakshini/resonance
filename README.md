@@ -1,6 +1,6 @@
 # Echo
 
-Echo is a mobile-first, privacy-focused educational assistant powered by local on-device small language models (SLMs). It provides students with an intelligent, interactive tutor that operates completely offline on consumer smartphones without cloud dependencies.
+Echo is a mobile-first educational assistant that puts a real tutor in a student's pocket — one that still works when the signal doesn't. The moment you have a connection, Echo hands your question to Gemini for a fast, high-quality answer. The moment you don't, it quietly falls back to a small language model running entirely on your own phone, no cloud round-trip required. You're never stuck waiting on a spinner because a bus went through a dead zone.
 
 ---
 
@@ -12,19 +12,22 @@ Modern educational AI tools rely heavily on cloud-hosted language models, creati
 - **Latency and Cost**: Cloud API calls introduce network latency and recurrent bandwidth consumption that can be prohibitive on limited data plans.
 - **Data Privacy**: Sensitive student inquiries, learning difficulties, and academic session histories are continuously transmitted to and stored on third-party servers.
 
-Without an internet connection, existing digital tutoring assistants become completely unusable.
+Without an internet connection, existing digital tutoring assistants become completely unusable — and pure on-device models alone still lag behind frontier cloud models on nuanced, multi-step reasoning.
 
 ---
 
 ## Solution
 
-Echo resolves this gap by embedding quantized language models directly onto the user's mobile device:
+Echo doesn't force a choice between "always great, but online-only" and "always available, but weaker." It gives you both, and switches between them for you:
 
-- **100% On-Device Inference**: After the initial model file is placed on the device, all prompt tokenization, inference computation, and response generation occur locally. No prompts, notes, or chat logs ever leave the phone.
-- **Dynamic Hardware Profiling**: The system profiles available device memory (MemAvailable via system accounting) and battery level to automatically configure optimal context window sizes, thread allocation, and batch processing limits.
-- **Real-Time Token Streaming**: Leverages background Dart isolates and FFI bindings to stream tokens asynchronously to the UI, keeping the interface responsive and interactive during generation.
-- **STEM & Math Ready**: Full offline support for LaTeX math expressions (using KaTeX) and structured Markdown formatting for equations, code blocks, and diagrams.
-- **Zero-Latency Local Storage**: Chat sessions, settings, and user progress are indexed and stored on-device using Hive and SharedPreferences.
+- **Hybrid AI Routing**: An `AIRouter` checks live internet reachability before every message. Online, it streams the response straight from **Google Gemini** for the strongest possible answer. If Gemini errors out mid-stream, or there's no connection at all, it transparently drops down to the **on-device SLM** — same chat, same UI, the student never has to think about which "mode" they're in.
+- **100% On-Device Fallback**: When offline, all prompt tokenization, inference, and response generation happen locally via `llama.cpp` + Dart FFI. No prompts, notes, or chat logs leave the phone in this mode.
+- **Voice Tutoring, Phone-Call Style**: Echo can place a real outbound phone call to a student (via Twilio) and hand the conversation to an **ElevenLabs** Conversational AI agent, so a student without a smartphone in hand — or one who just learns better by talking — can get tutored over an ordinary voice call.
+- **Dynamic Hardware Profiling**: The system profiles available device memory and battery level to automatically configure optimal context window sizes, thread allocation, and batch processing limits for the local model.
+- **Real-Time Token Streaming**: Background Dart isolates and FFI bindings stream tokens asynchronously to the UI, whether the answer is coming from Gemini or the local model, so the interface stays responsive either way.
+- **STEM & Math Ready**: Full support for LaTeX math expressions (KaTeX) and structured Markdown for equations, code blocks, and diagrams, in both online and offline modes.
+- **Zero-Latency Local Storage**: Chat sessions, settings, and user progress are indexed and stored on-device using Hive and SharedPreferences, regardless of which AI provider answered.
+- **Built for Federated Learning**: The on-device model was deliberately picked (Qwen2.5-1.5B, not the smaller 0.5B) to stay compatible with a planned federated LoRA fine-tuning pipeline — students' devices will eventually be able to train small local adapters on their own study patterns and contribute anonymized weight updates back via FedAvg, so the tutor keeps improving without anyone's raw chat data ever leaving their phone.
 
 ---
 
@@ -46,6 +49,26 @@ Echo resolves this gap by embedding quantized language models directly onto the 
 
 ---
 
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="assets/home.png" width="200"/><br/><sub>Home</sub></td>
+    <td align="center"><img src="assets/chat_interface.png" width="200"/><br/><sub>Chat Interface</sub></td>
+    <td align="center"><img src="assets/chatbot_response.jpeg" width="200"/><br/><sub>Chatbot Response</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/learn.png" width="200"/><br/><sub>Learn</sub></td>
+    <td align="center"><img src="assets/quiz.png" width="200"/><br/><sub>Quiz</sub></td>
+    <td align="center"><img src="assets/profile.png" width="200"/><br/><sub>Profile</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="assets/roadmap.png" width="200"/><br/><sub>Roadmap</sub></td>
+  </tr>
+</table>
+
+---
+
 ## Architecture
 
 The application is structured into clearly separated layers: presentation, state coordination, domain services, platform abstractions, and local persistence.
@@ -56,7 +79,7 @@ flowchart TD
         A1[Chat Screen]
         A2[Home & History Screen]
         A3[Settings Screen]
-        A4[Benchmark Diagnostic Screen]
+        A4[Voice Call Screen]
         A5[Math & LaTeX Renderer]
     end
 
@@ -66,15 +89,19 @@ flowchart TD
         B3[Theme & UI Providers]
     end
 
-    subgraph Services ["Core Services & Domain Logic"]
-        C1[LLM Service Interface]
-        C2[Device Profiler & Config]
-        C3[Model Asset Service]
-        C4[Benchmark Engine]
-        C5[Native Loader Abstraction]
+    subgraph Router ["AI Router"]
+        R1{Internet Reachable?}
     end
 
-    subgraph Runtime ["Inference & Platform Backends"]
+    subgraph Cloud ["Cloud AI"]
+        G1["Gemini Service\n(Google Gemini API)"]
+        G2["Call Tutor Service\n(ElevenLabs + Twilio)"]
+    end
+
+    subgraph Local ["On-Device SLM"]
+        C1[Local LLM Service]
+        C2[Device Profiler & Config]
+        C5[Native Loader Abstraction]
         D1["Android Native Runtime\n(llama.cpp + FFI + ARM64 .so)"]
         D2["Web Client Runtime\n(Host Browser Engine)"]
     end
@@ -85,13 +112,19 @@ flowchart TD
         E3[Local Model File: GGUF]
     end
 
-    UI --> Providers
-    Providers --> Services
-    C1 --> Runtime
-    C2 --> Runtime
-    C5 --> Runtime
-    Runtime --> Storage
-    Providers --> Storage
+    subgraph Future ["Planned: Federated Learning"]
+        F1[On-Device LoRA Fine-Tune]
+        F2[FedAvg Aggregation]
+    end
+
+    UI --> Providers --> R1
+    R1 -- "online" --> G1
+    R1 -- "voice call" --> G2
+    R1 -- "offline / Gemini failed" --> C1
+    C1 --> C2 --> C5 --> D1 & D2
+    G1 --> Storage
+    C1 --> Storage
+    D1 -.-> F1 -.-> F2 -.-> D1
 ```
 
 ---
@@ -105,9 +138,17 @@ flowchart TD
 ### State Management
 - **Riverpod**: Reactive dependency injection and unidirectional state management (`flutter_riverpod`, `riverpod_annotation`).
 
+### Cloud AI
+- **Google Gemini API**: Primary answer source whenever the device has internet — chosen for `AIRouter` first, with the on-device model as automatic fallback on failure or offline.
+- **ElevenLabs Conversational AI**: Powers Echo's voice-call tutoring mode with natural, low-latency speech.
+- **Twilio**: Places the actual outbound phone call that connects a student to the ElevenLabs voice agent.
+
 ### Inference & Native Bindings
-- **llama.cpp**: C++ inference engine for quantized GGUF models.
+- **llama.cpp**: C++ inference engine for quantized GGUF models, used for the fully offline fallback path.
 - **Dart FFI**: Low-overhead foreign function interface bridging Dart background isolates to precompiled ARM64 native binaries (`libllama.so`, `libggml.so`, `libomp.so`).
+
+### Planned: Federated Learning
+- The on-device model (Qwen2.5-1.5B-Instruct) was picked specifically to stay training-friendly for a future federated LoRA pipeline: devices fine-tune small local adapters on their own usage, contribute anonymized weight updates via FedAvg, and the merged model gets redistributed — no raw student data ever leaves the device.
 
 ### Formatting & Rendering
 - **flutter_math_fork**: Fast, offline KaTeX mathematical typesetting engine for inline and block equations.
