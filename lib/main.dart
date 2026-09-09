@@ -19,6 +19,7 @@ import 'screens/profile_setup_screen.dart';
 import 'services/native_loader.dart';
 import 'theme/app_theme.dart';
 import 'widgets/echo_intro_widget.dart';
+import 'widgets/sprite_intro_flyin.dart';
 import 'package:flutter/foundation.dart';
 
 void main() {
@@ -174,29 +175,48 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
 
 /// Splash screen shown while checking download/profile state at launch.
 /// Uses the Sprite mascot instead of a bare spinner for a Duolingo-style
-/// first impression.
-class _SplashScreen extends StatelessWidget {
+/// first impression: it opens with a one-shot "Sprite launches skyward,
+/// floods the screen green, then darts back in" lead-in, then hands off
+/// to the pre-rendered "jumps into the ECHO logo" cinematic.
+class _SplashScreen extends StatefulWidget {
   const _SplashScreen();
+
+  @override
+  State<_SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<_SplashScreen> {
+  bool _leadInDone = false;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const EchoIntroWidget(size: 300),
-            const SizedBox(height: 20),
-            const SizedBox(
-              width: 22,
-              height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.lightTeal),
+      backgroundColor: backgroundColor,
+      body: _leadInDone
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const EchoIntroWidget(size: 300),
+                  const SizedBox(height: 20),
+                  const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.lightTeal),
+                  ),
+                ],
+              ),
+            )
+          : SizedBox.expand(
+              child: SpriteFlyInIntro(
+                backgroundColor: backgroundColor,
+                onComplete: () {
+                  if (mounted) setState(() => _leadInDone = true);
+                },
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }
