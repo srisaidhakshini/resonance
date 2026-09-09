@@ -13,10 +13,14 @@ class ChatMessage extends HiveObject {
   @HiveField(2)
   final DateTime timestamp;
 
+  @HiveField(3)
+  final String? provider; // 'gemini' or 'local'
+
   ChatMessage({
     required this.role,
     required this.content,
     required this.timestamp,
+    this.provider,
   });
 
   String get sender => role;
