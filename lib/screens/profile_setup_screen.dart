@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/user_profile.dart';
+import '../providers/user_profile_provider.dart';
 import '../services/personalization_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_drawer.dart';
 import 'settings_screen.dart';
 
-class ProfileSetupScreen extends StatefulWidget {
+class ProfileSetupScreen extends ConsumerStatefulWidget {
   final bool isEditMode;
   final bool isStandaloneTab;
   const ProfileSetupScreen({
@@ -17,10 +19,10 @@ class ProfileSetupScreen extends StatefulWidget {
   });
 
   @override
-  State<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
+  ConsumerState<ProfileSetupScreen> createState() => _ProfileSetupScreenState();
 }
 
-class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
+class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   final _nameController = TextEditingController();
   String? _selectedGrade;
   TeachingStyle _selectedTeachingStyle = TeachingStyle.socratic;
@@ -63,7 +65,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         teachingStyle: _selectedTeachingStyle,
         pacingLevel: _selectedPacingLevel,
       );
-      await PersonalizationService.instance.saveUserProfile(profile);
+      await ref.read(userProfileNotifierProvider.notifier).updateProfile(profile);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -72,6 +74,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             backgroundColor: AppColors.lightTeal,
           ),
         );
+
         if (!widget.isStandaloneTab && widget.isEditMode) {
           Navigator.pop(context);
         } else if (!widget.isEditMode) {
@@ -142,64 +145,123 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     }
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark ? const Color(0xFF070B11) : AppColors.lightBackground,
       drawer: widget.isStandaloneTab ? const AppDrawer() : null,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              _buildHeader(context, isDark),
-
-              const SizedBox(height: 16),
-
-              // Student Avatar & Bio Banner
-              _buildStudentHeader(context, isDark),
-
-              const SizedBox(height: 24),
-
-              // Personalization Form
-              _buildSectionHeader(context, 'PERSONALIZATION & PREFERENCES', isDark),
-              const SizedBox(height: 12),
-              _buildPersonalizationForm(context, isDark),
-
-              const SizedBox(height: 24),
-
-              // Action Buttons
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  onPressed: _saveProfile,
-                  icon: const Icon(Icons.check_rounded, size: 18),
-                  label: Text(
-                    widget.isEditMode ? 'Save Profile Changes' : 'Finish & Start Learning',
+      body: Stack(
+        children: [
+          // Spirit ambient radial glows in dark mode
+          if (isDark) ...[
+            Positioned(
+              top: -80,
+              right: -60,
+              child: Container(
+                width: 320,
+                height: 320,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF00F5A0).withOpacity(0.12),
+                      const Color(0xFF00F5A0).withOpacity(0.0),
+                    ],
                   ),
                 ),
               ),
-
-              if (widget.isStandaloneTab) ...[
-                const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const SettingsScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.settings_outlined, size: 18),
-                    label: const Text('Advanced Settings & Benchmarks'),
+            ),
+            Positioned(
+              top: 350,
+              left: -80,
+              child: Container(
+                width: 280,
+                height: 280,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      const Color(0xFF0EA5E9).withOpacity(0.08),
+                      const Color(0xFF0EA5E9).withOpacity(0.0),
+                    ],
                   ),
                 ),
-              ],
+              ),
+            ),
+          ],
 
-              const SizedBox(height: 24),
-            ],
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  _buildHeader(context, isDark),
+
+                  const SizedBox(height: 16),
+
+                  // Student Avatar & Bio Banner
+                  _buildStudentHeader(context, isDark),
+
+                  const SizedBox(height: 24),
+
+                  // Personalization Form
+                  _buildSectionHeader(context, 'PERSONALIZATION & PREFERENCES', isDark),
+                  const SizedBox(height: 12),
+                  _buildPersonalizationForm(context, isDark),
+
+                  const SizedBox(height: 24),
+
+                  // Action Buttons
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _saveProfile,
+                      icon: const Icon(Icons.check_rounded, size: 18),
+                      label: Text(
+                        widget.isEditMode ? 'Save Profile Changes' : 'Finish & Start Learning',
+                        style: GoogleFonts.plusJakartaSans(fontWeight: FontWeight.w800),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? Colors.white : AppColors.lightTeal,
+                        foregroundColor: isDark ? const Color(0xFF070B11) : Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
+                  ),
+
+                  if (widget.isStandaloneTab) ...[
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                          );
+                        },
+                        icon: const Icon(Icons.settings_outlined, size: 18),
+                        label: const Text('Advanced Settings & Benchmarks'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isDark ? Colors.white : AppColors.lightTeal,
+                          side: BorderSide(
+                            color: isDark ? Colors.white.withOpacity(0.18) : AppColors.lightTeal,
+                            width: 1.2,
+                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -209,22 +271,36 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
       return Row(
         children: [
           Builder(
-            builder: (context) => IconButton(
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: Icon(
-                Icons.menu_rounded,
-                color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+            builder: (context) => InkWell(
+              onTap: () => Scaffold.of(context).openDrawer(),
+              borderRadius: BorderRadius.circular(21),
+              child: Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+                  border: Border.all(
+                    color: isDark ? Colors.white.withOpacity(0.12) : AppColors.lightBorder,
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.menu_rounded,
+                  size: 20,
+                  color: isDark ? Colors.white : AppColors.lightForeground,
+                ),
               ),
-              tooltip: 'Menu',
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Text(
             'Profile',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 22,
-              fontWeight: FontWeight.w700,
-              color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : AppColors.lightForeground,
+              letterSpacing: -0.4,
             ),
           ),
         ],
@@ -233,21 +309,35 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
     return Row(
       children: [
-        IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            size: 20,
-            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+        InkWell(
+          onTap: widget.isEditMode ? () => Navigator.pop(context) : _showExitDialog,
+          borderRadius: BorderRadius.circular(21),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+              border: Border.all(
+                color: isDark ? Colors.white.withOpacity(0.12) : AppColors.lightBorder,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              size: 18,
+              color: isDark ? Colors.white : AppColors.lightForeground,
+            ),
           ),
-          onPressed: widget.isEditMode ? () => Navigator.pop(context) : _showExitDialog,
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
         Text(
           widget.isEditMode ? 'Edit Profile' : 'Profile Setup',
           style: GoogleFonts.plusJakartaSans(
             fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : AppColors.lightForeground,
+            letterSpacing: -0.4,
           ),
         ),
       ],
@@ -273,13 +363,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: AppRadii.featureRadius,
+        color: isDark ? Colors.white.withOpacity(0.055) : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1,
+          color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
+          width: 1.1,
         ),
-        boxShadow: isDark ? AppShadows.darkCard : AppShadows.card,
+        boxShadow: isDark ? null : AppShadows.card,
       ),
       child: Row(
         children: [
@@ -287,17 +377,17 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkAccent : AppColors.lightSecondary,
+              color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightSecondary,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                width: 2,
+                color: isDark ? const Color(0xFF00F5A0).withOpacity(0.25) : AppColors.lightBorder,
+                width: 1.5,
               ),
             ),
             child: Icon(
               Icons.person_rounded,
               size: 30,
-              color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+              color: isDark ? const Color(0xFF00F5A0) : AppColors.lightPrimary,
             ),
           ),
           const SizedBox(width: 16),
@@ -310,7 +400,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? AppColors.darkForeground : AppColors.lightForeground,
+                    color: isDark ? Colors.white : AppColors.lightForeground,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -319,15 +409,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkMuted : AppColors.lightMuted,
-                        borderRadius: AppRadii.pillRadius,
+                        color: isDark ? const Color(0xFF00F5A0).withOpacity(0.12) : AppColors.lightMuted,
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         gradeText,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? AppColors.darkPrimary : AppColors.lightPrimary,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? const Color(0xFF00F5A0) : AppColors.lightPrimary,
                         ),
                       ),
                     ),
@@ -351,14 +441,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   Widget _buildPersonalizationForm(BuildContext context, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCard : AppColors.lightCard,
-        borderRadius: AppRadii.cardRadius,
+        color: isDark ? Colors.white.withOpacity(0.055) : AppColors.lightCard,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-          width: 1,
+          color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
+          width: 1.1,
         ),
+        boxShadow: isDark ? null : AppShadows.card,
       ),
       child: Form(
         key: _formKey,
@@ -409,11 +500,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkInput : AppColors.lightInput,
-                borderRadius: AppRadii.cardRadius,
+                color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightInput,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  width: 1,
+                  color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
+                  width: 1.1,
                 ),
               ),
               child: DropdownButtonHideUnderline(
@@ -427,8 +518,11 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                     ),
                   ),
                   isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.lightTeal),
-                  dropdownColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
+                  ),
+                  dropdownColor: isDark ? const Color(0xFF0E1520) : AppColors.lightCard,
                   items: List.generate(12, (index) => (index + 1).toString()).map((grade) {
                     return DropdownMenuItem(
                       value: grade,
@@ -467,19 +561,22 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkInput : AppColors.lightInput,
-                borderRadius: AppRadii.cardRadius,
+                color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightInput,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  width: 1,
+                  color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
+                  width: 1.1,
                 ),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<TeachingStyle>(
                   value: _selectedTeachingStyle,
                   isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.lightTeal),
-                  dropdownColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
+                  ),
+                  dropdownColor: isDark ? const Color(0xFF0E1520) : AppColors.lightCard,
                   items: TeachingStyle.values.map((style) {
                     return DropdownMenuItem(
                       value: style,
@@ -530,19 +627,22 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14),
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkInput : AppColors.lightInput,
-                borderRadius: AppRadii.cardRadius,
+                color: isDark ? Colors.white.withOpacity(0.05) : AppColors.lightInput,
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
-                  width: 1,
+                  color: isDark ? Colors.white.withOpacity(0.09) : AppColors.lightBorder,
+                  width: 1.1,
                 ),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<PacingLevel>(
                   value: _selectedPacingLevel,
                   isExpanded: true,
-                  icon: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.lightTeal),
-                  dropdownColor: isDark ? AppColors.darkCard : AppColors.lightCard,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: isDark ? const Color(0xFF00F5A0) : AppColors.lightTeal,
+                  ),
+                  dropdownColor: isDark ? const Color(0xFF0E1520) : AppColors.lightCard,
                   items: PacingLevel.values.map((pacing) {
                     return DropdownMenuItem(
                       value: pacing,

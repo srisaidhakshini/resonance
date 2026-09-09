@@ -1984,7 +1984,7 @@ class StudioPreTemplates {
       // === CLASS 10 ===
       FlashcardDeck(
         id: 'fc_class10_science',
-        title: 'Class 10 Board Rapid Recall',
+        title: 'Board Rapid Recall',
         subject: 'Science',
         gradeLevel: 'Class 10',
         themeIndex: 3, // Terracotta
@@ -2158,7 +2158,7 @@ class StudioPreTemplates {
       // === CLASS 9 ===
       FlashcardDeck(
         id: 'fc_class9_foundation',
-        title: 'Class 9 Science & Motion Essentials',
+        title: 'Science & Motion Essentials',
         subject: 'Physics',
         gradeLevel: 'Class 9',
         themeIndex: 0, // Teal
@@ -2343,6 +2343,440 @@ class StudioPreTemplates {
   // -------------------------------------------------------------------------
   static List<QuizDeck> getSampleQuizzes() {
     return [
+      // === CLASS 1 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c1_sci',
+        title: 'Five Senses & Living World',
+        subject: 'Science',
+        gradeLevel: 'Class 1',
+        themeIndex: 0,
+        questions: [
+          QuizQuestion(
+            id: 'q_c1_1',
+            question: 'Which sense organ do we use to see colors and shapes?',
+            options: ['Eyes', 'Ears', 'Nose', 'Tongue'],
+            correctOptionIndex: 0,
+            explanation: 'We use our eyes for sight and vision.',
+          ),
+          QuizQuestion(
+            id: 'q_c1_2',
+            question: 'Which of the following is a living thing?',
+            options: ['Puppy dog', 'Toy car', 'Pencil', 'Water bottle'],
+            correctOptionIndex: 0,
+            explanation: 'Living things breathe, grow, and move. A puppy is a living animal.',
+          ),
+          QuizQuestion(
+            id: 'q_c1_3',
+            question: 'Which sense organ helps us taste sweet mangoes?',
+            options: ['Tongue', 'Skin', 'Ears', 'Hands'],
+            correctOptionIndex: 0,
+            explanation: 'The tongue has taste buds that identify sweet, salty, sour, and bitter tastes.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c1_math',
+        title: 'Fun with Numbers & Shapes',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 1',
+        themeIndex: 3,
+        questions: [
+          QuizQuestion(
+            id: 'q_c1_m1',
+            question: 'What number comes immediately after 19?',
+            options: ['18', '20', '21', '22'],
+            correctOptionIndex: 1,
+            explanation: 'Counting forward: 18, 19, 20.',
+          ),
+          QuizQuestion(
+            id: 'q_c1_m2',
+            question: 'How many sides does a triangle have?',
+            options: ['2', '3', '4', '5'],
+            correctOptionIndex: 1,
+            explanation: 'A triangle always has 3 straight sides and 3 corners.',
+          ),
+          QuizQuestion(
+            id: 'q_c1_m3',
+            question: 'What is 5 + 4?',
+            options: ['8', '9', '10', '7'],
+            correctOptionIndex: 1,
+            explanation: 'Adding 4 to 5 equals 9.',
+          ),
+        ],
+      ),
+
+      // === CLASS 2 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c2_sci',
+        title: 'Plants, Animals & Seasons',
+        subject: 'Science',
+        gradeLevel: 'Class 2',
+        themeIndex: 2,
+        questions: [
+          QuizQuestion(
+            id: 'q_c2_1',
+            question: 'Which part of the plant absorbs water and nutrients from the soil?',
+            options: ['Flower', 'Roots', 'Leaves', 'Stem'],
+            correctOptionIndex: 1,
+            explanation: 'Roots grow downward into the soil to anchor the plant and absorb moisture.',
+          ),
+          QuizQuestion(
+            id: 'q_c2_2',
+            question: 'In which season do we wear warm woolen clothes?',
+            options: ['Summer', 'Monsoon', 'Winter', 'Spring'],
+            correctOptionIndex: 2,
+            explanation: 'Woolen sweaters and jackets keep us warm during the cold winter season.',
+          ),
+          QuizQuestion(
+            id: 'q_c2_3',
+            question: 'Which animal gives us wool to make sweaters?',
+            options: ['Sheep', 'Horse', 'Cow', 'Lion'],
+            correctOptionIndex: 0,
+            explanation: 'Sheep fleece is sheared and spun into wool fibers.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c2_math',
+        title: 'Addition, Subtraction & Patterns',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 2',
+        themeIndex: 1,
+        questions: [
+          QuizQuestion(
+            id: 'q_c2_m1',
+            question: 'What is 45 + 23?',
+            options: ['68', '58', '78', '62'],
+            correctOptionIndex: 0,
+            explanation: '45 + 23 = 68 (40+20=60, 5+3=8).',
+          ),
+          QuizQuestion(
+            id: 'q_c2_m2',
+            question: 'Complete the pattern: 2, 4, 6, 8, __',
+            options: ['9', '10', '11', '12'],
+            correctOptionIndex: 1,
+            explanation: 'This sequence adds 2 at each step (even numbers). Next is 10.',
+          ),
+          QuizQuestion(
+            id: 'q_c2_m3',
+            question: 'If you have 15 apples and eat 7, how many are left?',
+            options: ['7', '8', '9', '6'],
+            correctOptionIndex: 1,
+            explanation: '15 - 7 = 8 apples remaining.',
+          ),
+        ],
+      ),
+
+      // === CLASS 3 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c3_sci',
+        title: 'Food Habits & Human Body',
+        subject: 'Science',
+        gradeLevel: 'Class 3',
+        themeIndex: 0,
+        questions: [
+          QuizQuestion(
+            id: 'q_c3_1',
+            question: 'Animals that eat only plants and grass are called:',
+            options: ['Carnivores', 'Herbivores', 'Omnivores', 'Parasites'],
+            correctOptionIndex: 1,
+            explanation: 'Herbivores like cows, deer, and rabbits eat solely plant matter.',
+          ),
+          QuizQuestion(
+            id: 'q_c3_2',
+            question: 'Which gas do humans inhale for cellular respiration?',
+            options: ['Carbon dioxide', 'Oxygen', 'Nitrogen', 'Helium'],
+            correctOptionIndex: 1,
+            explanation: 'We inhale oxygen from air to produce energy in our body cells.',
+          ),
+          QuizQuestion(
+            id: 'q_c3_3',
+            question: 'Which bird cannot fly in the air but is a champion swimmer?',
+            options: ['Eagle', 'Penguin', 'Sparrow', 'Parrot'],
+            correctOptionIndex: 1,
+            explanation: 'Penguins are flightless birds with flipper-like wings adapted for swimming.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c3_math',
+        title: 'Place Value, Multiplication & Time',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 3',
+        themeIndex: 3,
+        questions: [
+          QuizQuestion(
+            id: 'q_c3_m1',
+            question: 'What is the place value of 7 in 4,725?',
+            options: ['7', '70', '700', '7000'],
+            correctOptionIndex: 2,
+            explanation: '7 is in the hundreds column, representing 700.',
+          ),
+          QuizQuestion(
+            id: 'q_c3_m2',
+            question: 'What is 8 multiplied by 6?',
+            options: ['42', '46', '48', '54'],
+            correctOptionIndex: 2,
+            explanation: '8 × 6 = 48.',
+          ),
+          QuizQuestion(
+            id: 'q_c3_m3',
+            question: 'How many minutes are there in 2 hours?',
+            options: ['60 minutes', '100 minutes', '120 minutes', '180 minutes'],
+            correctOptionIndex: 2,
+            explanation: 'Each hour has 60 minutes, so 2 × 60 = 120 minutes.',
+          ),
+        ],
+      ),
+
+      // === CLASS 4 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c4_sci',
+        title: 'States of Matter & Ecosystems',
+        subject: 'Science',
+        gradeLevel: 'Class 4',
+        themeIndex: 2,
+        questions: [
+          QuizQuestion(
+            id: 'q_c4_1',
+            question: 'Water vapor turning into liquid water droplets is called:',
+            options: ['Evaporation', 'Condensation', 'Freezing', 'Melting'],
+            correctOptionIndex: 1,
+            explanation: 'Condensation occurs when warm water vapor cools down into liquid droplets.',
+          ),
+          QuizQuestion(
+            id: 'q_c4_2',
+            question: 'The green pigment in plant leaves that traps sunlight is:',
+            options: ['Hemoglobin', 'Chlorophyll', 'Melanin', 'Carotene'],
+            correctOptionIndex: 1,
+            explanation: 'Chlorophyll enables plants to convert sunlight into chemical food.',
+          ),
+          QuizQuestion(
+            id: 'q_c4_3',
+            question: 'Which state of matter has a fixed volume but takes the shape of its container?',
+            options: ['Solid', 'Liquid', 'Gas', 'Plasma'],
+            correctOptionIndex: 1,
+            explanation: 'Liquids flow and assume container shape while maintaining constant volume.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c4_math',
+        title: 'Fractions, Multiples & Perimeter',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 4',
+        themeIndex: 1,
+        questions: [
+          QuizQuestion(
+            id: 'q_c4_m1',
+            question: 'Which of the following fractions is equivalent to 1/2?',
+            options: ['2/3', '3/6', '4/9', '5/8'],
+            correctOptionIndex: 1,
+            explanation: '3/6 simplifies to 1/2 by dividing numerator and denominator by 3.',
+          ),
+          QuizQuestion(
+            id: 'q_c4_m2',
+            question: 'What is the perimeter of a square with side length 7 cm?',
+            options: ['14 cm', '21 cm', '28 cm', '49 cm'],
+            correctOptionIndex: 2,
+            explanation: 'Perimeter of a square = 4 × side = 4 × 7 = 28 cm.',
+          ),
+          QuizQuestion(
+            id: 'q_c4_m3',
+            question: 'What is the smallest common multiple (LCM) of 4 and 6?',
+            options: ['8', '12', '18', '24'],
+            correctOptionIndex: 1,
+            explanation: 'Multiples of 4: 4, 8, 12... Multiples of 6: 6, 12... LCM is 12.',
+          ),
+        ],
+      ),
+
+      // === CLASS 5 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c5_sci',
+        title: 'Super Senses & Digestive System',
+        subject: 'Science',
+        gradeLevel: 'Class 5',
+        themeIndex: 0,
+        questions: [
+          QuizQuestion(
+            id: 'q_c5_1',
+            question: 'Which organ produces bile juice to assist in digesting fats?',
+            options: ['Stomach', 'Liver', 'Lungs', 'Heart'],
+            correctOptionIndex: 1,
+            explanation: 'The liver secretes alkaline bile juice stored in the gallbladder to emulsify fats.',
+          ),
+          QuizQuestion(
+            id: 'q_c5_2',
+            question: 'Why do ants walk in a single straight line behind one another?',
+            options: ['They hold hands', 'They follow a scent trail (pheromones)', 'They follow sound waves', 'They see magnetic lines'],
+            correctOptionIndex: 1,
+            explanation: 'Ants leave chemical pheromone scents on the ground for followers to trace.',
+          ),
+          QuizQuestion(
+            id: 'q_c5_3',
+            question: 'Which insect spreads malaria parasite to humans through bites?',
+            options: ['Housefly', 'Female Anopheles mosquito', 'Honeybee', 'Dragonfly'],
+            correctOptionIndex: 1,
+            explanation: 'Female Anopheles mosquitoes carry and transmit the Plasmodium malaria parasite.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c5_math',
+        title: 'Decimals, Area & Angles',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 5',
+        themeIndex: 3,
+        questions: [
+          QuizQuestion(
+            id: 'q_c5_m1',
+            question: 'What is the area of a rectangle with length 12 cm and width 8 cm?',
+            options: ['40 cm²', '96 cm²', '80 cm²', '100 cm²'],
+            correctOptionIndex: 1,
+            explanation: 'Area = Length × Width = 12 × 8 = 96 cm².',
+          ),
+          QuizQuestion(
+            id: 'q_c5_m2',
+            question: 'An angle that measures exactly 90 degrees is called a:',
+            options: ['Acute angle', 'Right angle', 'Obtuse angle', 'Straight angle'],
+            correctOptionIndex: 1,
+            explanation: 'A 90° angle forms a square corner and is called a right angle.',
+          ),
+          QuizQuestion(
+            id: 'q_c5_m3',
+            question: 'Convert the decimal 0.75 into a simple fraction:',
+            options: ['1/4', '1/2', '3/4', '7/5'],
+            correctOptionIndex: 2,
+            explanation: '0.75 = 75/100 = 3/4.',
+          ),
+        ],
+      ),
+
+      // === CLASS 6 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c6_sci',
+        title: 'Nutrients, Matter & Motion',
+        subject: 'Science',
+        gradeLevel: 'Class 6',
+        themeIndex: 2,
+        questions: [
+          QuizQuestion(
+            id: 'q_c6_1',
+            question: 'Which vitamin deficiency causes poor night vision and scurvy respectively?',
+            options: ['Vitamin A and Vitamin C', 'Vitamin D and Vitamin B', 'Vitamin K and Iron', 'Calcium and Zinc'],
+            correctOptionIndex: 0,
+            explanation: 'Vitamin A deficiency leads to night blindness; Vitamin C deficiency causes scurvy.',
+          ),
+          QuizQuestion(
+            id: 'q_c6_2',
+            question: 'The process of separating grains from stalks by beating is known as:',
+            options: ['Winnowing', 'Threshing', 'Handpicking', 'Filtration'],
+            correctOptionIndex: 1,
+            explanation: 'Threshing separates harvested crop grains from dry straw and chaff.',
+          ),
+          QuizQuestion(
+            id: 'q_c6_3',
+            question: 'What kind of motion is exhibited by the blades of a spinning ceiling fan?',
+            options: ['Linear rectilinear motion', 'Rotational circular motion', 'Periodic pendulum motion', 'Random Brownian motion'],
+            correctOptionIndex: 1,
+            explanation: 'Blades trace concentric circles around a fixed central hub axis in circular motion.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c6_math',
+        title: 'Integers, Algebra & Geometry',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 6',
+        themeIndex: 1,
+        questions: [
+          QuizQuestion(
+            id: 'q_c6_m1',
+            question: 'What is (-15) + (+28)?',
+            options: ['-13', '+13', '+43', '-43'],
+            correctOptionIndex: 1,
+            explanation: '28 - 15 = +13.',
+          ),
+          QuizQuestion(
+            id: 'q_c6_m2',
+            question: 'If 3x = 36, what is the value of x?',
+            options: ['9', '11', '12', '14'],
+            correctOptionIndex: 2,
+            explanation: 'x = 36 / 3 = 12.',
+          ),
+          QuizQuestion(
+            id: 'q_c6_m3',
+            question: 'How many lines of symmetry does an equilateral triangle have?',
+            options: ['1', '2', '3', 'Infinite'],
+            correctOptionIndex: 2,
+            explanation: 'An equilateral triangle has 3 equal sides and 3 reflectional axes of symmetry.',
+          ),
+        ],
+      ),
+
+      // === CLASS 7 QUIZZES ===
+      const QuizDeck(
+        id: 'qz_c7_sci',
+        title: 'Nutrition & Heat Transfer',
+        subject: 'Science',
+        gradeLevel: 'Class 7',
+        themeIndex: 0,
+        questions: [
+          QuizQuestion(
+            id: 'q_c7_1',
+            question: 'Mode of heat transfer in solids where vibrating atoms pass thermal energy without bulk movement is:',
+            options: ['Conduction', 'Convection', 'Radiation', 'Advection'],
+            correctOptionIndex: 0,
+            explanation: 'Conduction transfers heat through direct microscopic atomic collisions in solids.',
+          ),
+          QuizQuestion(
+            id: 'q_c7_2',
+            question: 'What is the tiny mouth-like pore on plant leaves through which gases are exchanged?',
+            options: ['Cuticle', 'Stomata', 'Lenticel', 'Xylem pore'],
+            correctOptionIndex: 1,
+            explanation: 'Stomata surrounded by guard cells regulate CO2 intake and transpiration.',
+          ),
+          QuizQuestion(
+            id: 'q_c7_3',
+            question: 'What is the normal core body temperature of a healthy human being in Celsius?',
+            options: ['32°C', '37°C', '42°C', '98.6°C'],
+            correctOptionIndex: 1,
+            explanation: '37°C (corresponding to 98.6°F) is normal human body temperature.',
+          ),
+        ],
+      ),
+      const QuizDeck(
+        id: 'qz_c7_math',
+        title: 'Integers, Rational Numbers & Lines',
+        subject: 'Mathematics',
+        gradeLevel: 'Class 7',
+        themeIndex: 3,
+        questions: [
+          QuizQuestion(
+            id: 'q_c7_m1',
+            question: 'What is the product of (-4) × (-5) × (-2)?',
+            options: ['-40', '+40', '-20', '+20'],
+            correctOptionIndex: 0,
+            explanation: '(-4) × (-5) = +20; (+20) × (-2) = -40.',
+          ),
+          QuizQuestion(
+            id: 'q_c7_m2',
+            question: 'If two angles are complementary, their sum is always:',
+            options: ['45°', '90°', '180°', '360°'],
+            correctOptionIndex: 1,
+            explanation: 'Complementary angles add to 90°; supplementary angles add to 180°.',
+          ),
+          QuizQuestion(
+            id: 'q_c7_m3',
+            question: 'Solve for y: 2y + 7 = 19.',
+            options: ['y = 5', 'y = 6', 'y = 7', 'y = 8'],
+            correctOptionIndex: 1,
+            explanation: '2y = 19 - 7 = 12 ⟹ y = 12 / 2 = 6.',
+          ),
+        ],
+      ),
+
       // === CLASS 8 QUIZZES ===
       QuizDeck(
         id: 'qz_c8_micro',
@@ -2495,7 +2929,7 @@ class StudioPreTemplates {
       // === CLASS 12 ===
       const QuizDeck(
         id: 'quiz_math_physics_12',
-        title: 'Class 12 Advanced STEM Quiz',
+        title: 'Advanced STEM Quiz',
         subject: 'Mathematics & CS',
         gradeLevel: 'Class 12',
         themeIndex: 1, // Lavender
@@ -2533,7 +2967,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_electrostatics_12',
-        title: 'Class 12 Physics: Electrostatics & Fields',
+        title: 'Electrostatics & Fields',
         subject: 'Physics',
         gradeLevel: 'Class 12',
         themeIndex: 0, // Teal
@@ -2571,7 +3005,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_cybersecurity_12',
-        title: 'Class 12 CS: Cybersecurity & Networks',
+        title: 'Cybersecurity & Networks',
         subject: 'Computer Science',
         gradeLevel: 'Class 12',
         themeIndex: 2, // Sage
@@ -2609,9 +3043,10 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_calculus_12',
-        title: 'Class 12 Math: Integration Mastery',
+        title: 'Integration Mastery',
         subject: 'Mathematics',
         gradeLevel: 'Class 12',
+
         themeIndex: 1, // Lavender
         questions: [
           QuizQuestion(
@@ -2648,7 +3083,7 @@ class StudioPreTemplates {
       // === CLASS 11 ===
       const QuizDeck(
         id: 'quiz_class11',
-        title: 'Class 11 Physics & Chemistry Quiz',
+        title: 'Physics & Chemistry Quiz',
         subject: 'Physics & Chemistry',
         gradeLevel: 'Class 11',
         themeIndex: 0, // Teal
@@ -2686,7 +3121,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_thermodynamics_11',
-        title: 'Class 11 Physics: Thermal Dynamics',
+        title: 'Thermal Dynamics',
         subject: 'Physics',
         gradeLevel: 'Class 11',
         themeIndex: 0, // Teal
@@ -2724,7 +3159,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_chem_bonding_11',
-        title: 'Class 11 Chemistry: Chemical Bonding',
+        title: 'Chemical Bonding',
         subject: 'Chemistry',
         gradeLevel: 'Class 11',
         themeIndex: 2, // Sage
@@ -2762,7 +3197,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_math_conics_11',
-        title: 'Class 11 Math: Trigonometry & Geometry',
+        title: 'Trigonometry & Geometry',
         subject: 'Mathematics',
         gradeLevel: 'Class 11',
         themeIndex: 1, // Lavender
@@ -2801,7 +3236,7 @@ class StudioPreTemplates {
       // === CLASS 10 ===
       const QuizDeck(
         id: 'quiz_class10',
-        title: 'Class 10 Science & Math Sprint',
+        title: 'Science & Math Sprint',
         subject: 'Science & Math',
         gradeLevel: 'Class 10',
         themeIndex: 3, // Terracotta
@@ -2839,7 +3274,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_optics_10',
-        title: 'Class 10 Physics: Light & Eyes',
+        title: 'Light & Eyes',
         subject: 'Physics',
         gradeLevel: 'Class 10',
         themeIndex: 3, // Terracotta
@@ -2877,7 +3312,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_acids_salts_10',
-        title: 'Class 10 Chemistry: Acids & Reactions',
+        title: 'Acids & Reactions',
         subject: 'Chemistry',
         gradeLevel: 'Class 10',
         themeIndex: 3, // Terracotta
@@ -2915,9 +3350,10 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_math_ap_10',
-        title: 'Class 10 Math: Arithmetic Progressions',
+        title: 'Arithmetic Progressions',
         subject: 'Mathematics',
         gradeLevel: 'Class 10',
+
         themeIndex: 1, // Lavender
         questions: [
           QuizQuestion(
@@ -2954,7 +3390,7 @@ class StudioPreTemplates {
       // === CLASS 9 ===
       const QuizDeck(
         id: 'quiz_class9',
-        title: 'Class 9 Foundation Mastery Quiz',
+        title: 'Foundation Mastery Quiz',
         subject: 'Science & Math',
         gradeLevel: 'Class 9',
         themeIndex: 0, // Teal
@@ -2992,7 +3428,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_matter_9',
-        title: 'Class 9 Chemistry: States of Matter',
+        title: 'States of Matter',
         subject: 'Chemistry',
         gradeLevel: 'Class 9',
         themeIndex: 3, // Terracotta
@@ -3030,7 +3466,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_cell_biology_9',
-        title: 'Class 9 Biology: Cell Structures',
+        title: 'Cell Structures',
         subject: 'Biology',
         gradeLevel: 'Class 9',
         themeIndex: 3, // Terracotta
@@ -3068,9 +3504,10 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_math_polynomials_9',
-        title: 'Class 9 Math: Polynomials & Number Systems',
+        title: 'Polynomials & Number Systems',
         subject: 'Mathematics',
         gradeLevel: 'Class 9',
+
         themeIndex: 1, // Lavender
         questions: [
           QuizQuestion(
@@ -3106,7 +3543,7 @@ class StudioPreTemplates {
       // === CLASS 12 (ADDITIONAL) ===
       const QuizDeck(
         id: 'quiz_emi_12',
-        title: 'Class 12 Physics: Electromagnetic Induction',
+        title: 'Electromagnetic Induction',
         subject: 'Physics',
         gradeLevel: 'Class 12',
         themeIndex: 0, // Teal
@@ -3144,7 +3581,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_kinetics_12',
-        title: 'Class 12 Chemistry: Chemical Kinetics',
+        title: 'Chemical Kinetics',
         subject: 'Chemistry',
         gradeLevel: 'Class 12',
         themeIndex: 2, // Sage
@@ -3183,7 +3620,7 @@ class StudioPreTemplates {
       // === CLASS 11 (ADDITIONAL) ===
       const QuizDeck(
         id: 'quiz_rotational_11',
-        title: 'Class 11 Physics: Rotational Dynamics',
+        title: 'Rotational Dynamics',
         subject: 'Physics',
         gradeLevel: 'Class 11',
         themeIndex: 0, // Teal
@@ -3221,7 +3658,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_equilibrium_11',
-        title: 'Class 11 Chemistry: Chemical Equilibrium',
+        title: 'Chemical Equilibrium',
         subject: 'Chemistry',
         gradeLevel: 'Class 11',
         themeIndex: 2, // Sage
@@ -3260,7 +3697,7 @@ class StudioPreTemplates {
       // === CLASS 10 (ADDITIONAL) ===
       const QuizDeck(
         id: 'quiz_life_processes_10',
-        title: 'Class 10 Biology: Life Processes',
+        title: 'Life Processes',
         subject: 'Biology',
         gradeLevel: 'Class 10',
         themeIndex: 3, // Terracotta
@@ -3298,7 +3735,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_carbon_compounds_10',
-        title: 'Class 10 Chemistry: Carbon & Its Compounds',
+        title: 'Carbon & Its Compounds',
         subject: 'Chemistry',
         gradeLevel: 'Class 10',
         themeIndex: 3, // Terracotta
@@ -3337,7 +3774,7 @@ class StudioPreTemplates {
       // === CLASS 9 (ADDITIONAL) ===
       const QuizDeck(
         id: 'quiz_gravitation_9',
-        title: 'Class 9 Physics: Gravitation & Buoyancy',
+        title: 'Gravitation & Buoyancy',
         subject: 'Physics',
         gradeLevel: 'Class 9',
         themeIndex: 0, // Teal
@@ -3375,7 +3812,7 @@ class StudioPreTemplates {
 
       const QuizDeck(
         id: 'quiz_tissues_9',
-        title: 'Class 9 Biology: Plant & Animal Tissues',
+        title: 'Plant & Animal Tissues',
         subject: 'Biology',
         gradeLevel: 'Class 9',
         themeIndex: 3, // Terracotta
