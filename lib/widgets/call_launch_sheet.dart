@@ -56,6 +56,7 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
   void initState() {
     super.initState();
     _topicCtrl.text = widget.initialTopic ?? 'Physics: Laws of Motion';
+    _phoneCtrl.text = '+918248059760';
     _initData();
   }
 
@@ -71,7 +72,8 @@ class _CallLaunchSheetState extends State<CallLaunchSheet> {
           _selectedGrade = userGrade;
         }
 
-        _phoneCtrl.text = creds['studentPhone'] ?? '';
+        final phoneVal = creds['studentPhone'];
+        _phoneCtrl.text = (phoneVal != null && phoneVal.trim().isNotEmpty) ? phoneVal : '+918248059760';
         _twilioSidCtrl.text = creds['twilioSid'] ?? '';
         _twilioAuthCtrl.text = creds['twilioAuth'] ?? '';
         _twilioFromCtrl.text = creds['twilioFromNumber'] ?? '';

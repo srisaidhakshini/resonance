@@ -15,6 +15,9 @@ import '../theme/app_theme.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import '../models/chat_message.dart';
+import '../models/video_recommendation.dart';
+import '../services/video_recommendation_service.dart';
+import '../widgets/video_recommendations_section.dart';
 import '../services/chat_to_studio_generator.dart';
 import '../services/video_script_generator.dart';
 import 'mind_map_screen.dart';
@@ -43,6 +46,48 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   bool _isIngestingFile = false;
   bool _showCelebration = false;
   Timer? _celebrationTimer;
+
+  // Video Recommendations Cache (keyed by message ID or user query)
+  final Map<String, List<VideoRecommendation>> _videoRecsMap = {};
+  String? _lastQueriedDoubt;
+
+  Future<void> _fetchVideoRecommendationsForLastExchange(List<ChatMessage> messages) async {
+    if (messages.length < 2) return;
+    
+    // Find the latest user message
+    String lastUserDoubt = '';
+    String lastAiMessageId = '';
+    String lastAiResponse = '';
+
+    for (int i = messages.length - 1; i >= 0; i--) {
+      final msg = messages[i];
+      if (msg.role != 'user' && lastAiMessageId.isEmpty) {
+        lastAiMessageId = msg.timestamp.toIso8601String();
+        lastAiResponse = msg.content;
+      } else if (msg.role == 'user') {
+        lastUserDoubt = msg.content;
+        break;
+      }
+    }
+
+    if (lastUserDoubt.isEmpty || lastAiMessageId.isEmpty) return;
+    if (_videoRecsMap.containsKey(lastAiMessageId)) return;
+    if (_lastQueriedDoubt == lastUserDoubt) return;
+
+    _lastQueriedDoubt = lastUserDoubt;
+
+    try {
+      final recs = await VideoRecommendationService.instance.getRecommendations(
+        lastUserDoubt,
+        maxResults: 3,
+      );
+      if (mounted && recs.isNotEmpty) {
+        setState(() {
+          _videoRecsMap[lastAiMessageId] = recs;
+        });
+      }
+    } catch (_) {}
+  }
 
   Future<void> _pickAndAttachFile() async {
     final processor = ref.read(contentProcessorServiceProvider);
@@ -604,6 +649,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         _celebrationTimer = Timer(const Duration(milliseconds: 1800), () {
           if (mounted) setState(() => _showCelebration = false);
         });
+
+        // Trigger video recommendations fetch for the completed doubt
+        _fetchVideoRecommendationsForLastExchange(ref.read(chatProvider));
       }
     });
 
@@ -820,6 +868,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             message.content != '...';
         final messageId = message.timestamp.toIso8601String();
 
+        final videoRecs = !isUser ? _videoRecsMap[messageId] : null;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -835,6 +885,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 message.provider,
               ),
             ),
+            if (videoRecs != null && videoRecs.isNotEmpty) ...[
+              VideoRecommendationsSection(
+                videos: videoRecs,
+                isDark: isDark,
+              ),
+            ],
             if (isLastAiMessage) ...[
               const SizedBox(height: 8),
               _buildEducationalActionChips(context, isDark, messages),

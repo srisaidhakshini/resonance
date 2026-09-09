@@ -6,6 +6,7 @@ import urllib.parse
 import base64
 import os
 import sys
+import re
 
 PORT = 8085
 DIRECTORY = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build', 'web')
@@ -45,14 +46,93 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
                 'elevenLabsAgentId': os.environ.get('ELEVENLABS_AGENT_ID') or env.get('ELEVENLABS_AGENT_ID', ''),
                 'elevenLabsVoiceId': os.environ.get('ELEVENLABS_VOICE_ID') or env.get('ELEVENLABS_VOICE_ID', 'Xb7hH8MSUJpSbSDYk0k2'),
                 'studentPhone': os.environ.get('STUDENT_PHONE_NUMBER') or env.get('STUDENT_PHONE_NUMBER', ''),
+                'geminiApiKey': os.environ.get('GEMINI_API_KEY') or env.get('GEMINI_API_KEY', ''),
             }
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             self.wfile.write(json.dumps(config).encode('utf-8'))
+        elif self.path.startswith('/api/youtube'):
+            self._handle_youtube_search()
         else:
             super().do_GET()
+
+    def _handle_youtube_search(self):
+        try:
+            parsed = urllib.parse.urlparse(self.path)
+            qs = urllib.parse.parse_qs(parsed.query)
+            query = qs.get('q', ['science concept'])[0]
+            max_results = int(qs.get('max', ['3'])[0])
+
+            encoded = urllib.parse.quote(query)
+            url = f'https://www.youtube.com/results?search_query={encoded}'
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9'
+            }
+            req = urllib.request.Request(url, headers=headers)
+            html = urllib.request.urlopen(req, timeout=6).read().decode('utf-8', errors='ignore')
+
+            videos = []
+            match = re.search(r'var ytInitialData = ({.*?});</script>', html)
+            if match:
+                try:
+                    data = json.loads(match.group(1))
+                    contents = data.get('contents', {}).get('twoColumnSearchResultsRenderer', {}).get('primaryContents', {}).get('sectionListRenderer', {}).get('contents', [])
+                    for sec in contents:
+                        items = sec.get('itemSectionRenderer', {}).get('contents', [])
+                        for item in items:
+                            vr = item.get('videoRenderer')
+                            if vr and 'videoId' in vr:
+                                vid = vr['videoId']
+                                title = vr.get('title', {}).get('runs', [{}])[0].get('text', 'Educational Video')
+                                channel = vr.get('ownerText', {}).get('runs', [{}])[0].get('text', 'YouTube Learning')
+                                duration = vr.get('lengthText', {}).get('simpleText', '')
+                                videos.append({
+                                    'id': vid,
+                                    'title': title,
+                                    'channel': channel,
+                                    'thumbnail': f'https://img.youtube.com/vi/{vid}/hqdefault.jpg',
+                                    'duration': duration,
+                                    'url': f'https://www.youtube.com/watch?v={vid}'
+                                })
+                                if len(videos) >= max_results:
+                                    break
+                        if len(videos) >= max_results:
+                            break
+                except Exception as ex:
+                    print('[YouTube Proxy Error]', ex)
+
+            if not videos:
+                matches = re.findall(r'/watch\?v=([a-zA-Z0-9_-]{11})', html)
+                seen = set()
+                for vid in matches:
+                    if vid not in seen:
+                        seen.add(vid)
+                        videos.append({
+                            'id': vid,
+                            'title': f'{query.title()} (Lesson)',
+                            'channel': 'YouTube Education',
+                            'thumbnail': f'https://img.youtube.com/vi/{vid}/hqdefault.jpg',
+                            'duration': '',
+                            'url': f'https://www.youtube.com/watch?v={vid}'
+                        })
+                        if len(videos) >= max_results:
+                            break
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps(videos).encode('utf-8'))
+        except Exception as e:
+            print('[YouTube Proxy Exception]', e)
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(b'[]')
 
     def do_POST(self):
         if self.path == '/api/call':

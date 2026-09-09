@@ -79,7 +79,9 @@ class CallTutorService {
       'elevenLabsVoiceId': (voiceId != null && voiceId.isNotEmpty)
           ? voiceId
           : (envElevenLabsVoiceId.isNotEmpty ? envElevenLabsVoiceId : defaultVoiceAlice),
-      'studentPhone': (phone != null && phone.isNotEmpty) ? phone : envStudentPhone,
+      'studentPhone': (phone != null && phone.isNotEmpty)
+          ? phone
+          : (envStudentPhone.isNotEmpty ? envStudentPhone : '+918248059760'),
     };
   }
 

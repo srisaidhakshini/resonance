@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import '../models/teaching_style_template.dart';
 import 'personalization_service.dart';
 import 'prompt_builder.dart';
 
@@ -33,7 +34,19 @@ class GeminiService {
     String? groundingContext,
     Duration timeout = defaultTimeout,
   }) async* {
-    final effectiveApiKey = apiKey.isNotEmpty ? apiKey : _defaultApiKey;
+    String effectiveApiKey = apiKey.isNotEmpty ? apiKey : _defaultApiKey;
+
+    if (effectiveApiKey.isEmpty && kIsWeb) {
+      try {
+        final resp = await _dio.get('/api/config');
+        if (resp.statusCode == 200 && resp.data is Map) {
+          final k = resp.data['geminiApiKey']?.toString();
+          if (k != null && k.isNotEmpty) {
+            effectiveApiKey = k;
+          }
+        }
+      } catch (_) {}
+    }
 
     if (effectiveApiKey.isEmpty) {
       throw Exception('Gemini API key is not configured.');
@@ -41,6 +54,7 @@ class GeminiService {
 
     final userProfile = await PersonalizationService.instance.getUserProfile();
     final systemPrompt = PromptBuilder.buildSystemPrompt(profile: userProfile);
+    final styleTemplate = TeachingStyleTemplate.fromStyle(userProfile.teachingStyle);
     final fullUserMessage = PromptBuilder.buildUserPrompt(
       prompt,
       groundingContext: groundingContext,
@@ -49,15 +63,42 @@ class GeminiService {
     final url =
         'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:streamGenerateContent?alt=sse&key=$effectiveApiKey';
 
-    final requestBody = {
-      'contents': [
-        {
-          'role': 'user',
-          'parts': [
-            {'text': '$systemPrompt\n\n$fullUserMessage'},
-          ],
-        },
+    // Build conversational turns including pedagogical few-shot examples
+    final contentsList = <Map<String, dynamic>>[];
+
+    // Inject few-shot turns to strongly condition Gemini on the chosen Teaching Style
+    for (final ex in styleTemplate.fewShotExamples.take(1)) {
+      contentsList.add({
+        'role': ex.role == 'assistant' ? 'model' : 'user',
+        'parts': [
+          {'text': ex.content},
+        ],
+      });
+    }
+
+    // Add current user prompt
+    contentsList.add({
+      'role': 'user',
+      'parts': [
+        {'text': fullUserMessage},
       ],
+    });
+
+    final requestBody = {
+      'systemInstruction': {
+        'role': 'user',
+        'parts': [
+          {
+            'text': '$systemPrompt\n\n'
+                'IMPORTANT PERSONALIZATION MANDATE:\n'
+                '- The student name is "${userProfile.userName}", in Class ${userProfile.grade}.\n'
+                '- Teaching Style: ${userProfile.teachingStyle.displayName}.\n'
+                '- Pacing: ${userProfile.pacingLevel.displayName}.\n'
+                '- Always adapt all explanations to this grade level and strictly follow the teaching style.'
+          },
+        ],
+      },
+      'contents': contentsList,
       'generationConfig': {
         'temperature': 0.7,
         'topP': 0.8,
