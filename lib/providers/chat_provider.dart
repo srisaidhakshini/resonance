@@ -3,12 +3,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
+import '../models/ai_response.dart';
 import '../models/chat_message.dart';
 import '../models/chat_session.dart';
 import '../models/study_content.dart';
 import '../services/llm_service.dart';
 import '../services/embedding_service.dart';
 import '../services/retrieval_service.dart';
+import '../services/internet_service.dart';
+import '../services/gemini_service.dart';
+import '../services/local_llm_service.dart';
+import '../services/ai_router.dart';
 import '../utils/math_formatter.dart';
 import 'download_provider.dart';
 
@@ -35,6 +40,26 @@ final retrievalServiceProvider = Provider<RetrievalService>((ref) {
   return RetrievalService(embeddingService);
 });
 
+final internetServiceProvider = Provider<InternetService>((ref) => InternetService());
+
+final geminiServiceProvider = Provider<GeminiService>((ref) => GeminiService());
+
+final localLLMServiceProvider = Provider<LocalLLMService>((ref) {
+  final llmService = ref.watch(llmServiceProvider);
+  return LocalLLMService(llmService);
+});
+
+final aiRouterProvider = Provider<AIRouter>((ref) {
+  final internetService = ref.watch(internetServiceProvider);
+  final geminiService = ref.watch(geminiServiceProvider);
+  final localLLMService = ref.watch(localLLMServiceProvider);
+  return AIRouter(
+    internetService: internetService,
+    geminiService: geminiService,
+    localLLMService: localLLMService,
+  );
+});
+
 final currentSessionIdProvider = StateProvider<String?>((ref) => null);
 final currentChatSubjectProvider = StateProvider<String?>((ref) => null);
 // Id of the StudyContent chapter grounding the current/next chat, if any.
@@ -48,8 +73,9 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
   final Box<StudyContent> _contentBox;
   final LLMService _llmService;
   final RetrievalService _retrievalService;
+  final AIRouter _aiRouter;
   final Ref _ref;
-  StreamSubscription<String>? _currentInferenceSubscription;
+  StreamSubscription<AIResponseChunk>? _currentInferenceSubscription;
   DateTime? _lastUIUpdate; // For UI throttling
   DateTime? _lastCancelTime; // For cancel debouncing
 
@@ -58,6 +84,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
     this._contentBox,
     this._llmService,
     this._retrievalService,
+    this._aiRouter,
     this._ref,
   ) : super([]);
 
@@ -148,8 +175,9 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
         ); // Give service time to reset
       }
 
-      // Stream Response (non-blocking)
+      // Stream Response (non-blocking via AIRouter)
       String fullResponse = '';
+      String activeProviderName = 'local';
 
       // Set generating state to true
       _ref.read(isGeneratingProvider.notifier).state = true;
@@ -157,15 +185,16 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
       // Retrieve grounding context from the active chapter, if any.
       final groundingContext = await _buildGroundingContext(content);
 
-      // Listen to the stream from managed isolate (non-blocking!)
-      if (kDebugMode) print('📡 [PROVIDER] Starting stream for: "$content"');
-      final stream = _llmService.streamResponse(
+      // Listen to the stream from AIRouter (handles hybrid online/offline + fallback)
+      if (kDebugMode) print('📡 [PROVIDER] Starting hybrid stream for: "$content"');
+      final stream = _aiRouter.streamResponse(
         content,
         groundingContext: groundingContext,
       );
       _currentInferenceSubscription = stream.listen(
-        (token) {
-          fullResponse += token;
+        (chunk) {
+          fullResponse += chunk.textDelta;
+          activeProviderName = chunk.provider.name;
 
           // UI Throttling: Only update every 100ms to reduce frame skips
           final now = DateTime.now();
@@ -179,6 +208,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
                 role: 'assistant',
                 content: MathFormatter.format(fullResponse),
                 timestamp: DateTime.now(),
+                provider: activeProviderName,
               );
               state = updatedMessages;
             }
@@ -196,6 +226,7 @@ class ChatNotifier extends StateNotifier<List<ChatMessage>> {
               role: 'assistant',
               content: formattedResponse,
               timestamp: DateTime.now(),
+              provider: activeProviderName,
             );
             state = updatedMessages;
           }
@@ -435,7 +466,8 @@ final chatProvider = StateNotifierProvider<ChatNotifier, List<ChatMessage>>((
   final contentBox = ref.watch(contentBoxProvider);
   final llmService = ref.watch(llmServiceProvider);
   final retrievalService = ref.watch(retrievalServiceProvider);
-  return ChatNotifier(box, contentBox, llmService, retrievalService, ref);
+  final aiRouter = ref.watch(aiRouterProvider);
+  return ChatNotifier(box, contentBox, llmService, retrievalService, aiRouter, ref);
 });
 
 // This provider watches the box and updates when it changes
