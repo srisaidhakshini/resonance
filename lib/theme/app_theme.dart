@@ -31,31 +31,31 @@ class AppColors {
   static const Color lightRing = Color(0xFF159A8C); // Echo Teal
   static const Color lightTeal = Color(0xFF159A8C);
 
-  // Dark Mode Colors
-  static const Color darkBackground = Color(0xFF0B171B);
-  static const Color darkForeground = Color(0xFFEDF7F5);
-  static const Color darkCard = Color(0xFF112328);
-  static const Color darkCardForeground = Color(0xFFEDF7F5);
-  static const Color darkPopover = Color(0xFF112328);
-  static const Color darkPopoverForeground = Color(0xFFEDF7F5);
+  // Dark Mode Colors - Spirit Luxury Obsidian Palette
+  static const Color darkBackground = Color(0xFF070B11); // Deep obsidian base
+  static const Color darkForeground = Color(0xFFFFFFFF);
+  static const Color darkCard = Color(0xFF0E1520); // Frosted dark glass
+  static const Color darkCardForeground = Color(0xFFFFFFFF);
+  static const Color darkPopover = Color(0xFF0E1520);
+  static const Color darkPopoverForeground = Color(0xFFFFFFFF);
 
-  static const Color darkPrimary = Color(0xFF45C4B4); // Luminous Teal
-  static const Color darkPrimaryForeground = Color(0xFF092024);
+  static const Color darkPrimary = Color(0xFF00F5A0); // Spirit electric mint green
+  static const Color darkPrimaryForeground = Color(0xFF04281B);
 
-  static const Color darkSecondary = Color(0xFF183238);
-  static const Color darkSecondaryForeground = Color(0xFFCBE9E4);
+  static const Color darkSecondary = Color(0xFF131F2E);
+  static const Color darkSecondaryForeground = Color(0xFFC7E8DE);
 
-  static const Color darkMuted = Color(0xFF14282D);
-  static const Color darkMutedForeground = Color(0xFF91AAA9);
+  static const Color darkMuted = Color(0xFF131D28);
+  static const Color darkMutedForeground = Color(0xFF7E8F9F);
 
-  static const Color darkAccent = Color(0xFF183C3D);
-  static const Color darkAccentForeground = Color(0xFFBDEDE6);
+  static const Color darkAccent = Color(0xFF0D2823);
+  static const Color darkAccentForeground = Color(0xFF00F5A0);
 
-  static const Color darkBorder = Color(0xFF254247);
-  static const Color darkInput = Color(0xFF203A3F);
+  static const Color darkBorder = Color(0x1FFFFFFF); // 12% translucent white glass border
+  static const Color darkInput = Color(0xFF14202D);
 
-  static const Color darkRing = Color(0xFF45C4B4);
-  static const Color darkTeal = Color(0xFF45C4B4);
+  static const Color darkRing = Color(0xFF00F5A0);
+  static const Color darkTeal = Color(0xFF00F5A0);
 
   // Chart & Progress Colors
   static const Color chart1 = Color(0xFF159A8C); // Teal
