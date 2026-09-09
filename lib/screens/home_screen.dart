@@ -880,7 +880,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       Navigator.pushNamed(
         context,
         '/chat',
-        arguments: {'initialText': prompt},
+        arguments: {
+          'initialText': prompt,
+          'autoSubmit': true,
+        },
       );
     }
   }

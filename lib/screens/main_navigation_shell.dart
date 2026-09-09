@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_theme.dart';
 import '../providers/ui_provider.dart';
+import '../providers/chat_provider.dart';
 import 'home_screen.dart';
 import 'learn_screen.dart';
 import 'quiz_screen.dart';
@@ -28,23 +29,11 @@ class _MainNavigationShellState extends ConsumerState<MainNavigationShell> {
   }
 
   void _navigateToChatWithPrompt(String prompt) {
-    final trimmed = prompt.trim();
-    // Short, punctuation-free phrases (e.g. "Newton's Laws of Motion") read
-    // as a topic name: route those into the mascot-guided Practice tab.
-    // Longer conversational asks (e.g. "Help me study Biology. Can you...")
-    // aren't quiz topics, so they still open a real chat instead.
-    final looksLikeTopic = trimmed.isNotEmpty &&
-        trimmed.split(RegExp(r'\s+')).length <= 6 &&
-        !trimmed.contains('?') &&
-        !trimmed.endsWith('.') &&
-        !trimmed.endsWith(':');
-
-    if (looksLikeTopic) {
-      ref.read(pendingQuizTopicProvider.notifier).state = trimmed;
-      ref.read(selectedNavIndexProvider.notifier).state = 2; // Switch to Practice Tab
-    } else {
-      Navigator.of(context).pushNamed('/chat', arguments: {'initialText': prompt});
-    }
+    ref.read(chatProvider.notifier).startNewChat();
+    Navigator.of(context).pushNamed('/chat', arguments: {
+      'initialText': prompt,
+      'autoSubmit': true,
+    });
   }
 
   @override
