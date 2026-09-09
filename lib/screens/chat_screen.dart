@@ -832,6 +832,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 isDark,
                 messageId,
                 isStreamingNow,
+                message.provider,
               ),
             ),
             if (isLastAiMessage) ...[
@@ -1033,6 +1034,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     bool isDark, [
     String? messageId,
     bool isStreamingNow = false,
+    String? providerName,
   ]) {
     if (isUser) {
       // User Message Bubble
@@ -1068,6 +1070,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } else {
       // AI Message Bubble
       final isThinking = content == '...';
+      final isGemini = providerName == 'gemini';
 
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1079,7 +1082,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             Container(
               margin: const EdgeInsets.only(top: 2, right: 10),
               child: _PulsingGlow(
-                color: AppColors.lightTeal,
+                color: isGemini ? const Color(0xFF0EA5E9) : AppColors.lightTeal,
                 active: isThinking,
                 child: Container(
                   width: 28,
@@ -1125,6 +1128,44 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (!isThinking && providerName != null) ...[
+                      Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: isGemini
+                              ? const Color(0xFF0EA5E9).withValues(alpha: 0.12)
+                              : AppColors.lightTeal.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isGemini
+                                ? const Color(0xFF0EA5E9).withValues(alpha: 0.3)
+                                : AppColors.lightTeal.withValues(alpha: 0.3),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isGemini ? '⚡' : '📱',
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              isGemini ? 'Gemini AI' : 'Offline AI',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: isGemini
+                                    ? (isDark ? const Color(0xFF38BDF8) : const Color(0xFF0284C7))
+                                    : (isDark ? AppColors.darkTeal : AppColors.lightTeal),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
